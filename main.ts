@@ -11,7 +11,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    frame: false
+    frame: isDev ? true : false
   });
 
   console.error('Directory', __dirname, isDev);
