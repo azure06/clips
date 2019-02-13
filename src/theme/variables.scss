@@ -4,28 +4,43 @@
 /** Ionic CSS Variables **/
 :root {
   /** primary **/
-  --ion-color-primary: #3880ff;
-  --ion-color-primary-rgb: 56, 128, 255;
+  // --ion-color-primary: #3880ff;
+  // --ion-color-primary-rgb: 56, 128, 255;
+  // --ion-color-primary-contrast: #ffffff;
+  // --ion-color-primary-contrast-rgb: 255, 255, 255;
+  // --ion-color-primary-shade: #3171e0;
+  // --ion-color-primary-tint: #4c8dff;
+
+  --ion-color-primary: rgba(0, 115, 245, 1);
+  --ion-color-primary-rgb: 0, 125, 255;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #3171e0;
-  --ion-color-primary-tint: #4c8dff;
+  --ion-color-primary-shade: rgb(15, 100, 200);
+  --ion-color-primary-tint: rgba(0, 127, 255, 1);
 
   /** secondary **/
-  --ion-color-secondary: #0cd1e8;
-  --ion-color-secondary-rgb: 12, 209, 232;
+  --ion-color-secondary: rgba(254, 66, 97, 1);
+  --ion-color-secondary-rgb: 254, 66, 97;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #0bb8cc;
-  --ion-color-secondary-tint: #24d6ea;
+  --ion-color-secondary-shade: rgb(235, 63, 91);
+  --ion-color-secondary-tint: rgb(228, 83, 107);
+
+  // /** tertiary **/
+  // --ion-color-tertiary: #7044ff;
+  // --ion-color-tertiary-rgb: 112, 68, 255;
+  // --ion-color-tertiary-contrast: #ffffff;
+  // --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  // --ion-color-tertiary-shade: #633ce0;
+  // --ion-color-tertiary-tint: #7e57ff;
 
   /** tertiary **/
-  --ion-color-tertiary: #7044ff;
-  --ion-color-tertiary-rgb: 112, 68, 255;
+  --ion-color-tertiary: #373d59;
+  --ion-color-tertiary-rgb: 55, 61, 89;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #633ce0;
-  --ion-color-tertiary-tint: #7e57ff;
+  --ion-color-tertiary-shade: rgb(53, 50, 77);
+  --ion-color-tertiary-tint: rgb(69, 77, 112);
 
   /** success **/
   --ion-color-success: #10dc60;
@@ -74,4 +89,6 @@
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
+
+  --ion-text-color: rgba(56, 56, 56, 1);
 }

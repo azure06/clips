@@ -10,15 +10,14 @@ function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 600,
-    width: 800
+    width: 800,
+    frame: false
   });
 
   console.error('Directory', __dirname, isDev);
   // and load the index.html of the app.
   mainWindow.loadURL(
-    isDev
-      ? 'http://localhost:4200'
-      : path.join(__dirname, '../www/index.html')
+    isDev ? 'http://localhost:4200' : path.join(__dirname, '../www/index.html')
   );
 
   // Open the DevTools.
@@ -53,4 +52,8 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+app.on('browser-window-created', (e, window) => {
+  window.setMenu(null);
 });

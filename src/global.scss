@@ -9,3 +9,35 @@
 @import '~@ionic/angular/css/text-alignment.css';
 @import '~@ionic/angular/css/text-transformation.css';
 @import '~@ionic/angular/css/flex-utils.css';
+
+/** Angular Material */
+@import '~@angular/material/theming';
+// @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,800,900');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@include mat-core();
+
+$light-theme-primary: mat-palette($mat-blue, A400);
+$light-theme-accent: mat-palette($mat-red, A400, A100, A200);
+$light-theme-warn: mat-palette($mat-amber, A700);
+$light-theme-theme: mat-light-theme(
+  $light-theme-primary,
+  $light-theme-accent,
+  $light-theme-warn
+);
+
+$dark-theme-primary: mat-palette($mat-blue);
+$dark-theme-accent: mat-palette($mat-red, A400, A100, A200);
+$dark-theme-warn: mat-palette($mat-amber);
+$dark-theme-theme: mat-dark-theme(
+  $dark-theme-primary,
+  $dark-theme-accent,
+  $dark-theme-warn
+);
+
+.light-theme {
+  @include angular-material-theme($light-theme-theme);
+}
+
+.dark-theme {
+  @include angular-material-theme($dark-theme-theme);
+}

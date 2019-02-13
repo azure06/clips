@@ -93,6 +93,18 @@
     "no-output-rename": true,
     "use-life-cycle-interface": true,
     "use-pipe-transform-interface": true,
-    "directive-class-suffix": true
+    "no-submodule-imports": [
+      true,
+      "rxjs",
+      "@angular/platform-browser",
+      "@angular/core/testing",
+      "zone.js/dist/zone-testing",
+      "@angular/platform-browser-dynamic/testing",
+      "@ionic-native/status-bar/ngx",
+      "@ionic-native/splash-screen/ngx"
+    ],
+    "directive-class-suffix": true,
+    "no-implicit-dependencies": [true, "dev"],
+    "component-class-suffix": [true, "Component", "Page"]
   }
 }
