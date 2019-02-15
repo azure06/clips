@@ -6,7 +6,7 @@
         <ion-icon slot="icon-only" name="menu"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Clipboard History</ion-title>
+    <ion-title>clipboard history</ion-title>
   </ion-toolbar>
 </ion-header>
 <!-- <ion-toolbar color="light">
@@ -28,9 +28,11 @@
     Toggle Infinite Scroll
   </ion-button>
 
-  <ion-list></ion-list>
+  <ion-list *ngFor="let item of data">
+    {{ item }}
+  </ion-list>
 
-  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)">
+  <ion-infinite-scroll threshold="50px" (ionInfinite)="loadData($event)">
     <ion-infinite-scroll-content
       loadingSpinner="bubbles"
       loadingText="Loading more data..."
