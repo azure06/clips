@@ -1,8 +1,16 @@
-<ion-header no-border>
-  <ion-title class="title"><span>XC</span> - clipboard</ion-title>
-  <ion-toolbar color="light">
+<!-- <ion-header no-border> -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button>
+        <ion-icon slot="icon-only" name="menu"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Clipboard History</ion-title>
+  </ion-toolbar>
+</ion-header>
+<!-- <ion-toolbar color="light">
     <ion-searchbar animated search-icon="search" type="search"></ion-searchbar>
-
     <ion-buttons slot="secondary">
       <ion-button>
         <ion-icon color="primary" slot="icon-only" name="contact"></ion-icon>
@@ -13,7 +21,20 @@
         <ion-icon color="primary" slot="icon-only" name="more"></ion-icon>
       </ion-button>
     </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+  </ion-toolbar> -->
 
-<ion-content></ion-content>
+<ion-content>
+  <ion-button (click)="toggleInfiniteScroll()" expand="block">
+    Toggle Infinite Scroll
+  </ion-button>
+
+  <ion-list></ion-list>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more data..."
+    >
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>
