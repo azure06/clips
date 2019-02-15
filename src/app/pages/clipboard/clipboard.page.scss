@@ -1,0 +1,40 @@
+.sidenav-container {
+  display: flex;
+  height: calc(100vh - 58px);
+}
+
+.sidenav {
+  display: flex;
+  position: relative;
+  width: 56px;
+  flex-direction: column;
+  border-right: 1px solid var(--ion-toolbar-border-color);
+}
+
+.sidenav-content {
+  position: relative;
+  width: calc(100vw - 48px);
+}
+
+.header.header-md {
+  border: 1px solid var(--line-rule-color);
+}
+
+h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 2px 4px 2px 4px;
+  color: var(--text-color--dark);
+  > span {
+    font-weight: 500;
+    color: var(--ion-color-primary);
+  }
+}
+
+p {
+  font-size: 0.8rem;
+  font-weight: 300;
+  margin: 0 4px 0 4px;
+  color: var(--text-color--light);
+}

@@ -3,8 +3,6 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-clipboard',
   templateUrl: './clipboard.page.html',
-  styleUrls: ['./clipboard.page.scss'],
+  styleUrls: ['./clipboard.page.scss']
 })
-export class ClipboardPage {
-  title = 'x-clipboard';
-}
+export class ClipboardPage {}

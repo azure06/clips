@@ -1,29 +1,42 @@
-<ion-content>
-  <ion-tabs>
-    <div>
-      <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="history">
-          <ion-icon name="laptop"></ion-icon>
-        </ion-tab-button>
-
-        <ion-tab-button tab="history1">
-          <ion-icon name="image"></ion-icon>
-        </ion-tab-button>
-
-        <ion-tab-button tab="history2">
-          <ion-icon name="browsers"></ion-icon>
-        </ion-tab-button>
-
-        <!-- share icon -->
-
-        <ion-tab-button tab="history">
-          <ion-icon name="search"></ion-icon>
-        </ion-tab-button>
-
-        <ion-tab-button tab="history">
-          <ion-icon name="settings"></ion-icon>
-        </ion-tab-button>
-      </ion-tab-bar>
+<ion-header no-border>
+  <ion-toolbar>
+    <ion-title>
+      <h4>XCORE <span>clipboard </span></h4>
+      <p>A realtime clipboard</p>
+    </ion-title>
+    <ion-buttons slot="secondary">
+      <ion-button color="tertiary">
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      </ion-button>
+      <ion-button color="tertiary">
+        <ion-icon slot="icon-only" name="contact"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="primary">
+      <ion-button color="tertiary">
+        <ion-icon slot="icon-only" name="more"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="light-theme">
+  <div class="sidenav-container">
+    <div class="sidenav">
+      <ion-button fill="clear">
+        <ion-icon slot="icon-only" name="laptop"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear">
+        <ion-icon slot="icon-only" name="search"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear">
+        <ion-icon slot="icon-only" name="image"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear">
+        <ion-icon slot="icon-only" name="browsers"></ion-icon>
+      </ion-button>
     </div>
-  </ion-tabs>
+    <div class="sidenav-content">
+      <ion-router-outlet> </ion-router-outlet>
+    </div>
+  </div>
 </ion-content>

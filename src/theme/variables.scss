@@ -90,5 +90,9 @@
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
 
-  --ion-text-color: rgba(56, 56, 56, 1);
+  --ion-text-color: #020814;
+  --text-color--dark: #0c162b;
+  --text-color--light: #73849a;
+  --line-rule-color: #edf2f6; //#c1c4cd
+  --ion-toolbar-border-color: var(--line-rule-color);
 }

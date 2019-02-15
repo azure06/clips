@@ -37,7 +37,6 @@ export class ClipboardHistoryPage {
   constructor() {}
 
   loadData(event) {
-    console.error('here');
     setTimeout(() => {
       console.log('Done');
       event.target.complete();
@@ -51,7 +50,6 @@ export class ClipboardHistoryPage {
   }
 
   toggleInfiniteScroll() {
-    console.error(this.infiniteScroll.disabled);
     // this.infiniteScroll.disabled = !this.infiniteScroll.disabled;
   }
 }
