@@ -27,8 +27,8 @@
     Toggle Infinite Scroll
   </ion-button>
 
-  <ion-list *ngFor="let item of data">
-    {{ item }}
+  <ion-list *ngFor="let item of (clips$ | async)">
+    {{ item.content }}
   </ion-list>
 
   <ion-infinite-scroll threshold="50px" (ionInfinite)="loadData($event)">

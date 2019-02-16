@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ClipboardPage } from './clipboard.page';
 import { ClipboardPageRoutingModule } from './clipboard.router.module';
+import { ClipboardStoreModule } from './store/clipboard.module';
 
 @NgModule({
   declarations: [ClipboardPage],
@@ -13,7 +14,8 @@ import { ClipboardPageRoutingModule } from './clipboard.router.module';
     IonicModule,
     CommonModule,
     FormsModule,
-    ClipboardPageRoutingModule
+    ClipboardPageRoutingModule,
+    ClipboardStoreModule
   ],
   exports: [],
   providers: [],

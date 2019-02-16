@@ -4,7 +4,7 @@ interface Base {
   createdAt: string;
 }
 
-interface Clip extends Partial<Base> {
+export interface Clip extends Partial<Base> {
   content: string;
   type: string;
 }

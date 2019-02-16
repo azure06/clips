@@ -1,5 +1,13 @@
 import { Component, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
+import { select, Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { Clip } from '../../models/models';
+import {
+  AddClip,
+  ClipActions
+} from '../clipboard/store/actions/clipboard.actions';
+import * as fromClips from '../clipboard/store/index';
 
 @Component({
   selector: 'app-clipboard-history-page',
@@ -7,34 +15,17 @@ import { IonInfiniteScroll } from '@ionic/angular';
   styleUrls: ['./clipboard-history.page.scss']
 })
 export class ClipboardHistoryPage {
-  data: any = [
-    100,
-    23,
-    321,
-    312312,
-    321,
-    43,
-    43,
-    432,
-    231,
-    42,
-    432,
-    432,
-    54,
-    43,
-    432,
-    423,
-    423,
-    43,
-    23,
-    32,
-    312,
-    43,
-    54
-  ];
+  clips$: Observable<Clip[]>;
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
 
-  constructor() {}
+  constructor(private store: Store<fromClips.State>) {
+    // ClipActions.AddClip
+    this.clips$ = store.pipe(select(fromClips.getClips));
+
+    this.clips$.subscribe(items => {
+      console.error(items);
+    });
+  }
 
   loadData(event) {
     setTimeout(() => {
@@ -42,14 +33,17 @@ export class ClipboardHistoryPage {
       event.target.complete();
       // App logic to determine if all data is loaded
       // and disable the infinite scroll
-      this.data.push(1232, 32, 432, 423, 423);
+      this.addClip({
+        content: 'rondom1234',
+        type: 'super'
+      });
       // if (this.data.length === 1000) {
       // event.target.disabled = true;
       // }
     }, 500);
   }
 
-  toggleInfiniteScroll() {
-    // this.infiniteScroll.disabled = !this.infiniteScroll.disabled;
+  addClip(clip: Clip) {
+    this.store.dispatch(new AddClip(clip));
   }
 }
