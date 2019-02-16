@@ -105,7 +105,7 @@
     ],
     "directive-class-suffix": true,
     "no-implicit-dependencies": [true, "dev"],
-    "component-class-suffix": [true, "Component", "Page"],
+    "component-class-suffix": [true, "Component", "Page", "Service"],
     "interface-name": [true, "never-prefix"]
   }
 }

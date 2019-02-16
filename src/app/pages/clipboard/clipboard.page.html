@@ -22,16 +22,32 @@
 <ion-content class="light-theme">
   <div class="sidenav-container">
     <div class="sidenav">
-      <ion-button fill="clear">
+      <ion-button
+        fill="clear"
+        [color]="router.url === '/clipboard/history' ? 'primary' : 'tertiary'"
+        (click)="navigate('clipboard/history')"
+      >
         <ion-icon slot="icon-only" name="laptop"></ion-icon>
       </ion-button>
-      <ion-button fill="clear">
+      <ion-button
+        fill="clear"
+        [color]="router.url === '/clipboard/searcher' ? 'primary' : 'tertiary'"
+        (click)="navigate('clipboard/searcher')"
+      >
         <ion-icon slot="icon-only" name="search"></ion-icon>
       </ion-button>
-      <ion-button fill="clear">
+      <ion-button
+        fill="clear"
+        [color]="router.url === '/clipboard/history3' ? 'primary' : 'tertiary'"
+        (click)="navigate('clipboard/history3')"
+      >
         <ion-icon slot="icon-only" name="image"></ion-icon>
       </ion-button>
-      <ion-button fill="clear">
+      <ion-button
+        fill="clear"
+        [color]="router.url === '/clipboard/history4' ? 'primary' : 'tertiary'"
+        (click)="navigate('clipboard/history4')"
+      >
         <ion-icon slot="icon-only" name="browsers"></ion-icon>
       </ion-button>
     </div>

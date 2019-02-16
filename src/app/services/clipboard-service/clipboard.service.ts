@@ -4,10 +4,10 @@ import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-clipboard',
-  templateUrl: './clipboard.page.html',
-  styleUrls: ['./clipboard.page.scss']
+  templateUrl: './clipboard.service.html',
+  styleUrls: ['./clipboard.service.scss']
 })
-export class ClipboardPage {
+export class ClipboardService {
   constructor(public router: Router, public navCtrl: NavController) {
     console.error(router);
   }

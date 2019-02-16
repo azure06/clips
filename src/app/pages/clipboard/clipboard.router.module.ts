@@ -8,27 +8,37 @@ const routes: Routes = [
     component: ClipboardPage,
     children: [
       {
-        path: 'history',
+        path: '',
         children: [
           {
-            path: '',
+            path: 'history',
             loadChildren:
               '../clipboard-history/clipboard-history.module#ClipboardHistoryPageModule'
           }
         ]
       },
       {
-        path: 'history2',
+        path: '',
         children: [
           {
-            path: '',
+            path: 'searcher',
             loadChildren:
-              '../clipboard-history/clipboard-history.module#ClipboardHistoryPageModule'
+              '../clipboard-searcher/clipboard-searcher.module#ClipboardSearcherPageModule'
           }
         ]
       },
       {
         path: 'history3',
+        children: [
+          {
+            path: '',
+            loadChildren:
+              '../clipboard-history/clipboard-history.module#ClipboardHistoryPageModule'
+          }
+        ]
+      },
+      {
+        path: 'history4',
         children: [
           {
             path: '',

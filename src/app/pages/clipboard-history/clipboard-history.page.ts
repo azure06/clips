@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
 
 @Component({
-  selector: 'app-clipboard-page',
+  selector: 'app-clipboard-history-page',
   templateUrl: './clipboard-history.page.html',
   styleUrls: ['./clipboard-history.page.scss']
 })
