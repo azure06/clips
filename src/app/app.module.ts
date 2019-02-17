@@ -11,6 +11,7 @@ import { StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
+import { GoogleApisPageModule } from './pages/google-apis/google-apis.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,7 +22,8 @@ import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
     AppRoutingModule,
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
-    ClipboardStoreModule
+    ClipboardStoreModule,
+    GoogleApisPageModule
   ],
   providers: [
     StatusBar,
