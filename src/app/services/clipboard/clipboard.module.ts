@@ -2,10 +2,10 @@ import { NgModule } from '@angular/core';
 import { ClipboardService } from './clipboard.service';
 
 @NgModule({
-  declarations: [ClipboardService],
+  declarations: [],
   imports: [],
   exports: [],
-  providers: [],
+  providers: [ClipboardService],
   bootstrap: []
 })
 export class ClipboardServiceModule {}

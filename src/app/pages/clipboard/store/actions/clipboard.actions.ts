@@ -3,9 +3,12 @@ import { Clip } from '../../../../models/models';
 
 // tslint:disable: max-classes-per-file
 export enum ClipboardActionTypes {
-  AddClip = '[Clipboard Item] Add clipboard item',
-  RemoveClip = '[Clipboard Item] Remove clipboard item',
-  Reset = '[Clipboard] Reset clipboard'
+  AddClip = '[Clipboard Item] Add Clipboard Item',
+  RemoveClip = '[Clipboard Item] Remove Clipboard Item',
+  Reset = '[Clipboard] Reset Clipboard',
+
+  AddClipSuccess = '[Clipboard Item] Add Clipboard Item Success',
+  AddClipFailure = '[Clipboard Item] Add Clipboard Item Failure'
 }
 
 export class AddClip implements Action {
@@ -23,4 +26,19 @@ export class ResetClip implements Action {
   constructor(public payload: Clip) {}
 }
 
-export type ClipActions = AddClip | RemoveClip | ResetClip;
+export class AddClipSuccess implements Action {
+  readonly type = ClipboardActionTypes.AddClipSuccess;
+  constructor(public payload: { clip: Clip }) {}
+}
+
+export class AddClipFailure implements Action {
+  readonly type = ClipboardActionTypes.AddClipFailure;
+  constructor(public payload?: { error: any }) {}
+}
+
+export type ClipActions =
+  | AddClip
+  | RemoveClip
+  | ResetClip
+  | AddClipFailure
+  | AddClipSuccess;
