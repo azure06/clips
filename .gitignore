@@ -21,7 +21,7 @@ npm-debug.log*
 coverage/
 www/
 node_modules/
-src/environments/environment.ts
+src/environments/environemnt.ts
 dist/
 tmp/
 temp/
