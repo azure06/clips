@@ -1,1 +1,10 @@
-<ion-content> </ion-content>
+<ion-content>
+  <div *ngIf="(afAuth.user | async) as user; else showLogin">
+    <h1>Hello {{ user.displayName }}!</h1>
+    <ion-button (click)="signOut()">Sign-out</ion-button>
+  </div>
+  <ng-template #showLogin>
+    <p>Please Sign-in.</p>
+    <ion-button (click)="signInWithGoogle()">Sign-in with Google</ion-button>
+  </ng-template>
+</ion-content>

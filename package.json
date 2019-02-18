@@ -17,6 +17,7 @@
   "dependencies": {
     "@angular/common": "^7.2.2",
     "@angular/core": "^7.2.2",
+    "@angular/fire": "^5.1.1",
     "@angular/forms": "^7.2.2",
     "@angular/http": "^7.2.2",
     "@angular/platform-browser": "^7.2.2",
@@ -31,6 +32,7 @@
     "@types/electron-is-dev": "^0.3.0",
     "core-js": "^2.5.4",
     "electron-is-dev": "^1.0.1",
+    "firebase": "^5.8.3",
     "googleapis": "^37.2.0",
     "rxjs": "~6.3.3",
     "zone.js": "~0.8.29"
