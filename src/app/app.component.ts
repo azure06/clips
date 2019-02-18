@@ -1,8 +1,16 @@
-
 import { Component } from '@angular/core';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { Platform } from '@ionic/angular';
+
+declare global {
+  interface Window {
+    require: any;
+  }
+}
+/* from app code, require('electron').remote calls back to main process */
+const electron = window.require('electron');
+const ipcRenderer = electron.ipcRenderer;
 
 @Component({
   selector: 'app-root',
@@ -21,6 +29,10 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+    });
+
+    ipcRenderer.on('oauth-token', (event, token) => {
+      console.error(token);
     });
   }
 }
