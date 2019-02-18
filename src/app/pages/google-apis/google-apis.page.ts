@@ -13,24 +13,41 @@ declare global {
 })
 export class GoogleApisPage {
   constructor() {
-    window.gapi.load('client', this.start);
+    setTimeout(() => {
+      window.gapi.load('client', this.start);
+    }, 500);
   }
+
+  async signInWithGoogle() {}
+
+  signOut() {}
+
   start() {
     // 2. Initialize the JavaScript client library.
-    console.error(window.gapi);
-
     window.gapi.client
       .init({
-        apiKey: '***REMOVED***',
+        apiKey: 'AIzaSyAXdTm3odBhi8gBAH_-e6GwmaUvBarTG3I',
         clientId:
-          '***REMOVED***',
+          '380966082151-pcfn9nej8s9dqere5aocgtcpf3k1njb4.apps.googleusercontent.com',
         discoveryDocs: [
-          'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"'
+          'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
         ],
         scope: 'https://www.googleapis.com/auth/drive.metadata.readonly'
       })
-      .then(function() {
-        // gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+      .then(() => {
+        console.error(window.gapi.auth2.getAuthInstance());
+
+        window.gapi.auth2.getAuthInstance().signIn();
+
+        window.gapi.client.drive.files
+          .list({
+            pageSize: 10,
+            fields: 'nextPageToken, files(id, name)'
+          })
+          .then(response => {
+            const files = response.result.files;
+            console.error(files);
+          });
       });
   }
 }

@@ -3,21 +3,33 @@
   "version": "0.0.1",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
-  "main": "dist/out-tsc/main.js",
+  "main": "www/electron/main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build & tsc",
-    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"npm run build && electron .\"",
+    "build": "ng build",
+    "electronBuild": "ionic build --prod -- --base-href ./ && tsc -p ./electron",
+    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"npm run electronBuild && electron .\"",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.infiniti.cloud-clips",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
   },
   "private": true,
   "dependencies": {
     "@angular/common": "^7.2.2",
     "@angular/core": "^7.2.2",
-    "@angular/fire": "^5.1.1",
     "@angular/forms": "^7.2.2",
     "@angular/http": "^7.2.2",
     "@angular/platform-browser": "^7.2.2",
@@ -33,7 +45,6 @@
     "core-js": "^2.5.4",
     "electron-is-dev": "^1.0.1",
     "firebase": "^5.8.3",
-    "googleapis": "^37.2.0",
     "rxjs": "~6.3.3",
     "zone.js": "~0.8.29"
   },
@@ -53,6 +64,7 @@
     "codelyzer": "~4.5.0",
     "concurrently": "^4.1.0",
     "electron": "^4.0.4",
+    "electron-builder": "^20.38.5",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~3.1.4",
