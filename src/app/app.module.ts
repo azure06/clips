@@ -19,9 +19,9 @@ import { GoogleApisPageModule } from './pages/google-apis/google-apis.module';
   imports: [
     BrowserModule,
     IonicModule.forRoot(),
-    AppRoutingModule,
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
+    AppRoutingModule,
     ClipboardStoreModule,
     GoogleApisPageModule
   ],
