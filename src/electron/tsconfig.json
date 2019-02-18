@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "../www/electron",
+    "outDir": "../../www/electron",
     "sourceMap": true,
     "declaration": false,
     "module": "commonjs",

@@ -21,6 +21,7 @@ npm-debug.log*
 coverage/
 www/
 node_modules/
+src/electron/electron-config.ts
 dist/
 tmp/
 temp/

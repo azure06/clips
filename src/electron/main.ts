@@ -3,6 +3,8 @@ import { app, BrowserWindow } from 'electron';
 import * as isDev from 'electron-is-dev';
 import * as path from 'path';
 import * as url from 'url';
+import { electronConfig } from './electron-config';
+import ElectronGoogleOAuth2 from './electron-google-oauth2';
 
 let mainWindow: Electron.BrowserWindow;
 
@@ -14,10 +16,16 @@ function createWindow() {
     frame: isDev ? true : false
   });
 
+  const googleOAuth2 = new ElectronGoogleOAuth2(electronConfig.googleOAuth2);
+
+  googleOAuth2.openAuthWindowAndGetTokens().then(token => {
+    mainWindow.webContents.send('oauth-token', token);
+  });
+
   console.error('Directory', __dirname, isDev);
   // and load the index.html of the app.
   mainWindow.loadURL(
-    !isDev ? 'http://localhost:4200' : path.join(__dirname, '../index.html')
+    isDev ? 'http://localhost:4200' : path.join(__dirname, '../index.html')
   );
 
   // Open the DevTools.

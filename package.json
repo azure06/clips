@@ -8,7 +8,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "electronBuild": "ionic build --prod -- --base-href ./ && tsc -p ./electron",
+    "electronBuild": "ionic build --prod -- --base-href ./ && tsc -p ./src/electron",
     "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"npm run electronBuild && electron .\"",
     "test": "ng test",
     "lint": "ng lint",
@@ -44,7 +44,8 @@
     "@types/electron-is-dev": "^0.3.0",
     "core-js": "^2.5.4",
     "electron-is-dev": "^1.0.1",
-    "firebase": "^5.8.3",
+    "google-auth-library": "^3.1.0",
+    "googleapis": "^37.2.0",
     "rxjs": "~6.3.3",
     "zone.js": "~0.8.29"
   },
