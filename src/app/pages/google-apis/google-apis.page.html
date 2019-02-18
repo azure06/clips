@@ -1,1 +1,10 @@
-<ion-content> </ion-content>
+<ion-content>
+  <div *ngIf="true; else showLogin">
+    <h1>Hello!</h1>
+    <ion-button>Sign-out</ion-button>
+  </div>
+  <ng-template #showLogin>
+    <p>Please Sign-in.</p>
+    <ion-button>Sign-in with Google</ion-button>
+  </ng-template>
+</ion-content>

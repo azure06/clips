@@ -17,7 +17,7 @@ function createWindow() {
   console.error('Directory', __dirname, isDev);
   // and load the index.html of the app.
   mainWindow.loadURL(
-    isDev ? 'http://localhost:4200' : path.join(__dirname, '../www/index.html')
+    !isDev ? 'http://localhost:4200' : path.join(__dirname, '../index.html')
   );
 
   // Open the DevTools.
