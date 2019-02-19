@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { Clip } from '../../models/models';
 import { AddClip } from '../clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../clipboard/store/index';
+import { ClipboardService } from './../../services/clipboard/clipboard.service';
 
 @Component({
   selector: 'app-clipboard-history-page',
@@ -15,7 +16,10 @@ export class ClipboardHistoryPage {
   clips$: Observable<Clip[]> = this.store.pipe(select(fromClips.getClips));
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
 
-  constructor(private store: Store<fromClips.State>) {
+  constructor(
+    private clipboardService: ClipboardService,
+    private store: Store<fromClips.State>
+  ) {
     console.error('here');
     this.clips$.subscribe(item => {
       console.error(item);

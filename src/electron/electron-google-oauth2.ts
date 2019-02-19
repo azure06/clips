@@ -7,8 +7,6 @@ import { google } from 'googleapis';
 import { stringify } from 'querystring';
 import * as url from 'url';
 
-// https://github.com/getstation/electron-google-oauth2
-
 /**
  * Tokens updated event
  *
@@ -90,7 +88,6 @@ export default class ElectronGoogleOAuth2 {
    * @returns {Promise<Credentials>}
    */
   public async openAuthWindowAndSetCredentials(addSession?: boolean) {
-    console.error('here');
     const authorizationCode = await this.getAuthorizationCode(addSession);
     const { tokens } = await this.oauth2Client.getToken(authorizationCode);
     this.setCredentials(tokens);

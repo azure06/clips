@@ -36,18 +36,18 @@ async function createWindow() {
   const googleOAuth2 = new ElectronGoogleOAuth2(electronConfig.googleOAuth2);
 
   googleOAuth2.onTokensRefresh(authTokens =>
-    mainWindow.webContents.send('cloud-clips-tokens-refresh', authTokens)
+    mainWindow.webContents.send('oauth2tokens-refresh', authTokens)
   );
 
-  ipcMain.on('cloud-clips-tokens', async (event, authTokens) => {
+  ipcMain.on('oauth2tokens', async (event, authTokens) => {
     authTokens
       ? googleOAuth2.setCredentials(authTokens)
       : await googleOAuth2.openAuthWindowAndSetCredentials();
   });
 
-  mainWindow.webContents.once('did-finish-load', () =>
-    mainWindow.webContents.send('oauth2-client', googleOAuth2.getOAuth2Client)
-  );
+  ipcMain.on('client-load', () => {
+    mainWindow.webContents.send('oauth2-client', googleOAuth2.getOAuth2Client);
+  });
 }
 
 // This method will be called when Electron has finished
