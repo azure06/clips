@@ -45,7 +45,9 @@ async function createWindow() {
       : await googleOAuth2.openAuthWindowAndSetCredentials();
   });
 
-  mainWindow.webContents.send('oauth2-client', googleOAuth2.getOAuth2Client);
+  mainWindow.webContents.once('did-finish-load', () =>
+    mainWindow.webContents.send('oauth2-client', googleOAuth2.getOAuth2Client)
+  );
 }
 
 // This method will be called when Electron has finished

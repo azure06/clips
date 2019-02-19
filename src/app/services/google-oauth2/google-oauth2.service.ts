@@ -7,19 +7,23 @@ export class GoogleOAuth2Service {
   private ipcRenderer?: IpcRenderer;
   private oAuth2Client?: OAuth2Client;
 
+  get isAuthenticated() {
+    return !!this.oAuth2Client;
+  }
+
   constructor() {
     if ((window as any).require) {
       this.ipcRenderer = (window as any).require('electron').ipcRenderer;
 
       this.ipcRenderer.send(
-        'cloud-clips-tokens',
+        'oauth2tokens',
         JSON.parse(localStorage.getItem('cloud-clips-tokens') || null)
       );
+      this.ipcRenderer.send('client-load');
 
-      this.ipcRenderer.on('cloud-clips-tokens-refresh', (event, authTokens) =>
+      this.ipcRenderer.on('oauth2tokens-refresh', (event, authTokens) =>
         localStorage.setItem('cloud-clips-tokens', JSON.stringify(authTokens))
       );
-
       this.ipcRenderer.on('oauth2-client', (event, oAuth2Client) => {
         console.error('here 2');
         this.oAuth2Client = oAuth2Client;
@@ -27,5 +31,9 @@ export class GoogleOAuth2Service {
     } else {
       console.warn('Could not load electron ipc');
     }
+  }
+
+  public getOAuth2Client() {
+    return this.oAuth2Client;
   }
 }

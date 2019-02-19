@@ -13,7 +13,7 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private googleDriveService: GoogleOAuth2Service
+    private googleOAuth2Service: GoogleOAuth2Service
   ) {
     this.initializeApp();
   }
