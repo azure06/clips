@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
+import { ElectronService } from './services/electron/electron.service';
 
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
@@ -22,6 +23,7 @@ import { GoogleApisPageModule } from './pages/google-apis/google-apis.module';
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     AppRoutingModule,
+    ElectronService,
     ClipboardStoreModule,
     GoogleApisPageModule
   ],
