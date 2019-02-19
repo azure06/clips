@@ -1,5 +1,5 @@
 // tslint:disable-next-line: no-implicit-dependencies
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as isDev from 'electron-is-dev';
 import * as path from 'path';
 import * as url from 'url';
@@ -8,18 +8,12 @@ import ElectronGoogleOAuth2 from './electron-google-oauth2';
 
 let mainWindow: Electron.BrowserWindow;
 
-function createWindow() {
+async function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
     frame: isDev ? true : false
-  });
-
-  const googleOAuth2 = new ElectronGoogleOAuth2(electronConfig.googleOAuth2);
-
-  googleOAuth2.openAuthWindowAndGetTokens().then(token => {
-    mainWindow.webContents.send('oauth-token', token);
   });
 
   console.error('Directory', __dirname, isDev);
@@ -38,6 +32,20 @@ function createWindow() {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
+  const googleOAuth2 = new ElectronGoogleOAuth2(electronConfig.googleOAuth2);
+
+  googleOAuth2.onTokensRefresh(authTokens =>
+    mainWindow.webContents.send('cloud-clips-tokens-refresh', authTokens)
+  );
+
+  ipcMain.on('cloud-clips-tokens', async (event, authTokens) => {
+    authTokens
+      ? googleOAuth2.setCredentials(authTokens)
+      : await googleOAuth2.openAuthWindowAndSetCredentials();
+  });
+
+  mainWindow.webContents.send('oauth2-client', googleOAuth2.getOAuth2Client);
 }
 
 // This method will be called when Electron has finished

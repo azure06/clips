@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
-import { ElectronService } from './services/electron/electron.service';
 
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
@@ -12,7 +11,7 @@ import { StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
-import { GoogleApisPageModule } from './pages/google-apis/google-apis.module';
+import { GoogleOAuth2Module } from './services/google-oauth2/google-oauth2.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -23,9 +22,8 @@ import { GoogleApisPageModule } from './pages/google-apis/google-apis.module';
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     AppRoutingModule,
-    ElectronService,
-    ClipboardStoreModule,
-    GoogleApisPageModule
+    GoogleOAuth2Module,
+    ClipboardStoreModule
   ],
   providers: [
     StatusBar,

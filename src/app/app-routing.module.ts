@@ -1,19 +1,10 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { GoogleApisPage } from './pages/google-apis/google-apis.page';
 
 const routes: Routes = [
-  // {
-  //   path: '',
-  //   loadChildren: './pages/clipboard/clipboard.module#ClipboardPageModule'
-  // },
   {
     path: '',
     loadChildren: './pages/clipboard/clipboard.module#ClipboardPageModule'
-  },
-  {
-    path: 'google-apis',
-    component: GoogleApisPage
   }
 ];
 @NgModule({

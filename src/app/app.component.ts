@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { Platform } from '@ionic/angular';
-import { ElectronService } from './services/electron/electron.service';
+import { GoogleOAuth2Service } from './services/google-oauth2/google-oauth2.service';
 
 @Component({
   selector: 'app-root',
@@ -13,23 +13,14 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private electronService: ElectronService
+    private googleDriveService: GoogleOAuth2Service
   ) {
     this.initializeApp();
   }
 
-  initializeApp() {
-    this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
-    });
-
-    const { ipcRenderer } = this.electronService;
-
-    if (ipcRenderer) {
-      ipcRenderer.on('oauth-token', (event, token) => {
-        console.error(token);
-      });
-    }
+  async initializeApp() {
+    await this.platform.ready();
+    this.statusBar.styleDefault();
+    this.splashScreen.hide();
   }
 }
