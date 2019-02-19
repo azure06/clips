@@ -23,7 +23,7 @@ export class GoogleOAuth2Service {
       );
       this.ipcRenderer.on(
         'oauth2-client',
-        (event, { oAuth2Client, google }) => (this.oAuth2Client = oAuth2Client)
+        (event, oAuth2Client) => (this.oAuth2Client = oAuth2Client)
       );
     } else {
       console.warn('Could not load electron ipc');

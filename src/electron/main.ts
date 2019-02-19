@@ -46,7 +46,10 @@ async function createWindow() {
   });
 
   ipcMain.on('client-load', () => {
-    mainWindow.webContents.send('oauth2-client', googleOAuth2.getOAuth2Client);
+    mainWindow.webContents.send(
+      'oauth2-client',
+      googleOAuth2.getOAuth2Client()
+    );
   });
 }
 
