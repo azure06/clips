@@ -1,4 +1,8 @@
 <ion-content>
+  <app-clipboard-item-component
+    *ngFor="let clip of (clips$ | async); let i = index"
+  >
+  </app-clipboard-item-component>
   <ion-infinite-scroll threshold="50px" (ionInfinite)="loadData($event)">
     <ion-infinite-scroll-content
       loadingSpinner="bubbles"
