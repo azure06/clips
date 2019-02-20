@@ -3,14 +3,6 @@
 
 /** Ionic CSS Variables **/
 :root {
-  /** primary **/
-  // --ion-color-primary: #3880ff;
-  // --ion-color-primary-rgb: 56, 128, 255;
-  // --ion-color-primary-contrast: #ffffff;
-  // --ion-color-primary-contrast-rgb: 255, 255, 255;
-  // --ion-color-primary-shade: #3171e0;
-  // --ion-color-primary-tint: #4c8dff;
-
   --ion-color-primary: rgba(0, 115, 245, 1);
   --ion-color-primary-rgb: 0, 125, 255;
   --ion-color-primary-contrast: #ffffff;
@@ -26,14 +18,6 @@
   --ion-color-secondary-shade: rgb(235, 63, 91);
   --ion-color-secondary-tint: rgb(228, 83, 107);
 
-  // /** tertiary **/
-  // --ion-color-tertiary: #7044ff;
-  // --ion-color-tertiary-rgb: 112, 68, 255;
-  // --ion-color-tertiary-contrast: #ffffff;
-  // --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  // --ion-color-tertiary-shade: #633ce0;
-  // --ion-color-tertiary-tint: #7e57ff;
-
   /** tertiary **/
   --ion-color-tertiary: #373d59;
   --ion-color-tertiary-rgb: 55, 61, 89;
@@ -41,6 +25,13 @@
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
   --ion-color-tertiary-shade: rgb(53, 50, 77);
   --ion-color-tertiary-tint: rgb(69, 77, 112);
+
+  --ion-color-azure: rgba(0, 160, 210, 1);
+  --ion-color-azure-rgb: 0, 145, 210;
+  --ion-color-azure-contrast: #ffffff;
+  --ion-color-azure-contrast-rgb: 255, 255, 255;
+  --ion-color-azure-shade: rgba(0, 130, 190, 1);
+  --ion-color-azure-tint: rgb(50, 150, 170);
 
   /** success **/
   --ion-color-success: #10dc60;
@@ -90,9 +81,10 @@
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
 
-  --ion-text-color: #020814;
+  --ion-text-color: #020814; // Dedault(?)
   --text-color--dark: #0c162b;
   --text-color--light: #73849a;
+  --text-color--light-blue: #448aff;
   --line-rule-color: #edf2f6; //#c1c4cd
   --ion-toolbar-border-color: var(--line-rule-color);
 }

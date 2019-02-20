@@ -1,0 +1,66 @@
+.container.side {
+  position: absolute;
+  display: flex;
+  top: 36px;
+  right: 0;
+
+  .btn {
+    margin: 0;
+  }
+
+  ion-button {
+    --padding-start: 2px;
+    --padding-end: 2px;
+  }
+}
+
+.button {
+  margin-inline-end: 8px;
+
+  &[custom] {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.document {
+  position: relative;
+  .badge {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 12px;
+    left: 8px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+  }
+}
+
+ion-icon[name='document'] {
+  width: 2rem;
+  height: 2rem;
+  color: var(--ion-color-tertiary-tint);
+}
+
+ion-item {
+  --padding-start: 0;
+  --padding-end: 8px;
+  --inner-padding-end: 0;
+}
+
+h3,
+p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+h3 {
+  color: var(--text-color--dark);
+}
+p {
+  color: var(--text-color--light);
+}

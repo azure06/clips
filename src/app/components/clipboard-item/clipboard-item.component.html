@@ -1,15 +1,25 @@
-<ion-item>
-  <ion-button slot="start" fill="clear" shape="round">
-    <ion-icon slot="icon-only" name="home" slot="end"></ion-icon>
-  </ion-button>
-  <ion-label text-wrap>
-    <h3>Because change happened</h3>
-    <div>
-      <div>This is sparta</div>
-      <p>Hello World</p>
+<ion-item (click)="buttonClick()" button="true">
+  <ion-button custom slot="start" fill="clear">
+    <div class="document">
+      <div class="badge">
+        <span>1</span>
+      </div>
+      <ion-icon slot="icon-only" name="document"></ion-icon>
     </div>
-  </ion-label>
-  <ion-button slot="end" fill="clear" shape="round">
-    <ion-icon slot="icon-only" name="star" slot="end"></ion-icon>
   </ion-button>
+  <ion-label>
+    <ion-text>
+      <h3>Believe that anything you can imagine, you can make real.</h3>
+      <p>1 minutes ago</p>
+    </ion-text>
+  </ion-label>
+
+  <div class="container side">
+    <ion-button class="btn" fill="clear" shape="round">
+      remove
+    </ion-button>
+    <ion-button class="btn" fill="clear" shape="round">
+      <ion-icon name="star"></ion-icon>
+    </ion-button>
+  </div>
 </ion-item>
