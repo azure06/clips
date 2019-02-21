@@ -1,7 +1,7 @@
 interface Base {
   id: string;
-  updatedAt: string;
-  createdAt: string;
+  updatedAt: Date;
+  createdAt: Date;
 }
 
 export interface Clip extends Partial<Base> {
