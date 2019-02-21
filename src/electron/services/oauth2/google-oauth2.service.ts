@@ -19,10 +19,9 @@ import * as url from 'url';
  * This class automatically renews expired tokens.
  * @fires GoogleOAuth2#tokens
  */
-export default class GoogleOAuth2Service {
+export default class GoogleOAuth2Service extends EventEmitter {
   private oauth2Client: OAuth2Client;
   private scopes: string[] = ['profile', 'email'];
-  private tokensRefreshCallback: (token: Credentials) => void;
 
   /**
    * Create a new instance of ElectronGoogleOAuth2
@@ -43,6 +42,7 @@ export default class GoogleOAuth2Service {
     scopes: string[];
     redirectUri?: string;
   }) {
+    super();
     this.scopes = [...new Set([...this.scopes, ...scopes])];
     this.oauth2Client = new google.auth.OAuth2(
       clientId,
@@ -71,15 +71,7 @@ export default class GoogleOAuth2Service {
    */
   public setCredentials(tokens: Credentials) {
     this.oauth2Client.setCredentials(tokens);
-    this.tokensRefreshCallback(tokens);
-  }
-
-  /**
-   * The callback will be executed whenever new Credentials will be set
-   * @param {Credentials} credentials
-   */
-  public onTokensRefresh(callback: (tokens: Credentials) => void) {
-    this.tokensRefreshCallback = callback;
+    this.emit('tokens', tokens);
   }
 
   /**

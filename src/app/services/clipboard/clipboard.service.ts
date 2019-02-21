@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
-import { GoogleOAuth2Service } from './../google-oauth2/google-oauth2.service';
+import { ElectronService } from '../electron/electron.service';
 
 @Injectable()
 export class ClipboardService {
-  constructor(private googleOAtuh2Service: GoogleOAuth2Service) {}
+  constructor(private electronService: ElectronService) {
+    if (this.electronService.isAvailable) {
+      const ipcRenderer = this.electronService.electron.ipcRenderer;
+      ipcRenderer.on('clipboard-change', (event, data) => {
+        console.error(data);
+      });
+    }
+  }
 
   listFiles() {
     // const drive = google.drive({

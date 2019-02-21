@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ClipboardItemComponentModule } from './../../components/clipboard-item/clipboard-item.module';
-import { ClipboardServiceModule } from './../../services/clipboard/clipboard.module';
 import { ClipboardHistoryPage } from './clipboard-history.page';
 
 @NgModule({
@@ -14,8 +13,7 @@ import { ClipboardHistoryPage } from './clipboard-history.page';
     CommonModule,
     FormsModule,
     ClipboardItemComponentModule,
-    RouterModule.forChild([{ path: '', component: ClipboardHistoryPage }]),
-    ClipboardServiceModule
+    RouterModule.forChild([{ path: '', component: ClipboardHistoryPage }])
   ],
   exports: [ClipboardHistoryPage],
   providers: [],

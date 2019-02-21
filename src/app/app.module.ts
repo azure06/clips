@@ -11,7 +11,8 @@ import { StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
-import { GoogleOAuth2Module } from './services/google-oauth2/google-oauth2.module';
+import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
+import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,7 +23,8 @@ import { GoogleOAuth2Module } from './services/google-oauth2/google-oauth2.modul
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     AppRoutingModule,
-    GoogleOAuth2Module,
+    GoogleOAuth2ServiceModule,
+    ClipboardServiceModule,
     ClipboardStoreModule
   ],
   providers: [
