@@ -1,7 +1,8 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Clip } from '../../models/models';
 import { AddClip } from '../clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../clipboard/store/index';
@@ -12,39 +13,46 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
   templateUrl: './clipboard-history.page.html',
   styleUrls: ['./clipboard-history.page.scss']
 })
-export class ClipboardHistoryPage {
-  clips$: Observable<Clip[]> = this.store.pipe(select(fromClips.getClips));
+export class ClipboardHistoryPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
+  clips$: Observable<Clip[]>;
+  ionicInfiniteScrollCount = 0;
+  infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollCount);
 
   constructor(
     private clipboardService: ClipboardService,
     private store: Store<fromClips.State>
-  ) {
-    console.error('here');
-    this.clips$.subscribe(item => {
-      console.error(item);
-    });
+  ) {}
+
+  ngOnInit(): void {
+    const clipsObservable = this.store.pipe(select(fromClips.getClips));
+    const infiniteScrollCountObservable = this.infiniteScrollSubject.asObservable();
+    this.clips$ = combineLatest(
+      clipsObservable,
+      infiniteScrollCountObservable
+    ).pipe(
+      map(([clips, count]) => clips.filter((clip, index) => index < count))
+    );
+
+    this.showMore();
   }
 
-  loadData(event) {
+  loadData(event): void {
     setTimeout(() => {
-      console.log('Done');
       event.target.complete();
-      // App logic to determine if all data is loaded
-      // and disable the infinite scroll
-
-      this.addClip({
-        content: 'rondom1234',
-        type: 'super'
-      });
-
+      this.showMore();
       // if (this.data.length === 1000) {
       // event.target.disabled = true;
       // }
-    }, 500);
+    }, 200);
   }
 
-  addClip(clip: Clip) {
+  showMore(): void {
+    this.ionicInfiniteScrollCount += 10;
+    this.infiniteScrollSubject.next(this.ionicInfiniteScrollCount);
+  }
+
+  addClip(clip: Clip): void {
     this.store.dispatch(new AddClip(clip));
   }
 }

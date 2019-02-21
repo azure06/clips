@@ -4,6 +4,10 @@ ion-item {
   --inner-padding-end: 0;
 }
 
+ion-item:hover {
+  --background: rgba(248, 248, 252, 1);
+}
+
 h3,
 p {
   overflow: hidden;
