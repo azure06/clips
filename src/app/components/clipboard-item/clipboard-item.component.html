@@ -1,6 +1,6 @@
 <ion-item (click)="buttonClick()" button="true">
-  <ion-button custom slot="start" fill="clear">
-    <div class="document">
+  <ion-button class="container start" slot="start" fill="clear">
+    <div class="doc">
       <div class="badge">
         <span>1</span>
       </div>
@@ -8,18 +8,19 @@
     </div>
   </ion-button>
   <ion-label>
-    <ion-text>
-      <h3>Believe that anything you can imagine, you can make real.</h3>
-      <p>1 minutes ago</p>
-    </ion-text>
+    <h3>Believe that anything you can imagine, you can make real.</h3>
+    <p>1 minutes ago</p>
+    <div class="container bottom">
+      <div>
+        <ion-button class="btn" fill="clear" shape="round">
+          <ion-icon name="star"></ion-icon>
+        </ion-button>
+      </div>
+      <div>
+        <ion-button class="btn" fill="clear" shape="round">
+          remove
+        </ion-button>
+      </div>
+    </div>
   </ion-label>
-
-  <div class="container side">
-    <ion-button class="btn" fill="clear" shape="round">
-      remove
-    </ion-button>
-    <ion-button class="btn" fill="clear" shape="round">
-      <ion-icon name="star"></ion-icon>
-    </ion-button>
-  </div>
 </ion-item>
