@@ -1,4 +1,4 @@
-<ion-item (click)="buttonClick()" button="true">
+<ion-item (click)="onClick($event)" button="true">
   <ion-button class="container start" slot="start" fill="clear">
     <div class="doc">
       <div class="badge">
@@ -8,8 +8,8 @@
     </div>
   </ion-button>
   <ion-label>
-    <h3>Believe that anything you can imagine, you can make real.</h3>
-    <p>1 minutes ago</p>
+    <h3>{{ clip.content }}</h3>
+    <p>{{ moment(clip.createdAt).fromNow() }}</p>
     <div class="container bottom">
       <div>
         <ion-button fill="clear" shape="round" color="light">
@@ -23,7 +23,7 @@
         </ion-button>
       </div>
       <div>
-        <ion-button fill="clear">
+        <ion-button fill="tertiary">
           remove
         </ion-button>
       </div>

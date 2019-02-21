@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import * as moment from 'moment';
+import { Clip } from '../../models/models';
 
 @Component({
   selector: 'app-clipboard-item-component',
@@ -6,7 +8,16 @@ import { Component } from '@angular/core';
   styleUrls: ['./clipboard-item.component.scss']
 })
 export class ClipboardItemComponent {
+  @Input()
+  clip: Clip;
+  @Input()
+  index;
+
   constructor() {}
 
-  buttonClick() {}
+  get moment() {
+    return moment;
+  }
+
+  onClick(event: Event): void {}
 }

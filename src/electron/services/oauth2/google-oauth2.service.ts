@@ -10,16 +10,16 @@ import * as url from 'url';
 /**
  * Tokens updated event
  *
- * @event ElectronGoogleOAuth2#tokens
+ * @event GoogleOAuth2#tokens
  * @type {Credentials}
  */
 
 /**
  * Handle Google Auth processes through Electron.
  * This class automatically renews expired tokens.
- * @fires ElectronGoogleOAuth2#tokens
+ * @fires GoogleOAuth2#tokens
  */
-export default class ElectronGoogleOAuth2 {
+export default class GoogleOAuth2Service {
   private oauth2Client: OAuth2Client;
   private scopes: string[] = ['profile', 'email'];
   private tokensRefreshCallback: (token: Credentials) => void;
