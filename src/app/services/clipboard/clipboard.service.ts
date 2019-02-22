@@ -1,9 +1,11 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { EffectNotification } from '@ngrx/effects';
+import { select, Store } from '@ngrx/store';
 import { Clip } from '../../models/models';
 import { AddClip } from '../../pages/clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../../pages/clipboard/store/index';
 import { ElectronService } from '../electron/electron.service';
+import { first, take, tap, last } from 'rxjs/operators';
 
 @Injectable()
 export class ClipboardService {
@@ -69,5 +71,14 @@ export class ClipboardService {
     //     }
     //   }
     // );
+  }
+
+  async storeState({ effect }: { effect: EffectNotification }) {
+    const clips = await this.store
+      .pipe(select(fromClips.getClips))
+      .pipe(last())
+      .toPromise();
+    this.electronService.electron.ipcRenderer.send('clips-renewed', clips);
+    console.error('clips', clips);
   }
 }
