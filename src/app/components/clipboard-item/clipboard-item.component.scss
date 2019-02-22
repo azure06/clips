@@ -4,6 +4,10 @@ ion-item {
   --inner-padding-end: 0;
 }
 
+ion-label {
+  margin-bottom: 6px;
+}
+
 ion-item:hover {
   --background: rgba(248, 248, 252, 1);
 }
@@ -20,6 +24,7 @@ h3 {
 }
 p {
   color: var(--text-color--light);
+  font-size: 0.8rem;
 }
 
 ion-button {

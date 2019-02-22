@@ -15,33 +15,33 @@ export default class ClipboardService extends EventEmitter {
     this.watchClipboard();
   }
 
-  escapeCharacters(unsageStr) {
-    return unsageStr
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
+  // escapeCharacters(unsageStr) {
+  //   return unsageStr
+  //     .replace(/&/g, '&amp;')
+  //     .replace(/</g, '&lt;')
+  //     .replace(/>/g, '&gt;')
+  //     .replace(/"/g, '&quot;')
+  //     .replace(/'/g, '&#039;');
+  // }
 
   async watchClipboard() {
-    const clipboardText = clipboard.readText();
-    const clipboardHtml = clipboard.readHTML();
-    const clipboardImage = clipboard.readImage();
+    const plainText = clipboard.readText();
+    const htmlText = clipboard.readHTML();
+    const image = clipboard.readImage();
     const availableFormats = clipboard.availableFormats();
 
     if (availableFormats.length > 0) {
-      const isPlainText = availableFormats.includes(Types.PlainText);
-      const isHtmlText = availableFormats.includes(Types.HtmlText);
-      if (isPlainText && clipboardText && clipboardText !== this.previousText) {
-        this.previousText = clipboardText;
-        this.emit(
-          'clipboard-change',
-          isHtmlText ? { clipboardHtml } : { clipboardText }
-        );
-      } else if (!isPlainText) {
-        this.emit('clipboard-change', {
-          clipboardImage,
+      const isText = availableFormats.includes(Types.PlainText);
+      if (isText && plainText && plainText !== this.previousText) {
+        this.previousText = plainText;
+        this.emit('clipboard-text-change', {
+          htmlText,
+          plainText,
+          availableFormats
+        });
+      } else if (!isText) {
+        this.emit('clipboard-multimedia-change', {
+          image,
           availableFormats
         });
       }

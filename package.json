@@ -44,9 +44,12 @@
     "@types/electron-is-dev": "^0.3.0",
     "core-js": "^2.5.4",
     "electron-is-dev": "^1.0.1",
+    "electron-store": "^2.0.0",
     "google-auth-library": "^3.1.0",
     "googleapis": "^37.2.0",
+    "install": "^0.12.2",
     "moment": "^2.24.0",
+    "npm": "^6.8.0",
     "rxjs": "~6.3.3",
     "zone.js": "~0.8.29"
   },

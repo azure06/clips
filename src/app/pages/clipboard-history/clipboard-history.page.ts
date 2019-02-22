@@ -18,6 +18,7 @@ export class ClipboardHistoryPage implements OnInit {
   clips$: Observable<Clip[]>;
   ionicInfiniteScrollCount = 0;
   infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollCount);
+  counter = 0;
 
   constructor(
     private clipboardService: ClipboardService,
@@ -26,6 +27,7 @@ export class ClipboardHistoryPage implements OnInit {
 
   ngOnInit(): void {
     const clipsObservable = this.store.pipe(select(fromClips.getClips));
+
     const infiniteScrollCountObservable = this.infiniteScrollSubject.asObservable();
     this.clips$ = combineLatest(
       clipsObservable,

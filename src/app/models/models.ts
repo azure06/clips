@@ -5,6 +5,8 @@ interface Base {
 }
 
 export interface Clip extends Partial<Base> {
-  content: string;
-  type: string;
+  plainText?: string;
+  htmlText?: string;
+  dataUri?: any;
+  types: string[];
 }
