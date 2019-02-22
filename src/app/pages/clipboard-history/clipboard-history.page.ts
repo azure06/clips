@@ -26,6 +26,7 @@ export class ClipboardHistoryPage implements OnInit {
 
   ngOnInit(): void {
     const clipsObservable = this.store.pipe(select(fromClips.getClips));
+
     const infiniteScrollCountObservable = this.infiniteScrollSubject.asObservable();
     this.clips$ = combineLatest(
       clipsObservable,
@@ -34,6 +35,9 @@ export class ClipboardHistoryPage implements OnInit {
       map(([clips, count]) => clips.filter((clip, index) => index < count))
     );
 
+    this.clips$.subscribe(item => {
+      console.error(item);
+    });
     this.showMore();
   }
 
