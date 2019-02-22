@@ -18,6 +18,7 @@ export class ClipboardHistoryPage implements OnInit {
   clips$: Observable<Clip[]>;
   ionicInfiniteScrollCount = 0;
   infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollCount);
+  counter = 0;
 
   constructor(
     private clipboardService: ClipboardService,
@@ -35,9 +36,6 @@ export class ClipboardHistoryPage implements OnInit {
       map(([clips, count]) => clips.filter((clip, index) => index < count))
     );
 
-    this.clips$.subscribe(item => {
-      console.error(item);
-    });
     this.showMore();
   }
 
