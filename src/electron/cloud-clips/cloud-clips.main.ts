@@ -36,8 +36,12 @@ const signinWithGoogle = () => {
 const handleClipboard = () => {
   const clipboardService = new ClipboardService();
 
-  clipboardService.on('clipboard-change', clipboard =>
-    mainWindow.webContents.send('clipboard-change', clipboard)
+  clipboardService.on('clipboard-text-change', clipboard =>
+    mainWindow.webContents.send('clipboard-text-change', clipboard)
+  );
+
+  clipboardService.on('clipboard-multimedia-change', clipboard =>
+    mainWindow.webContents.send('clipboard-multimedia-change', clipboard)
   );
 };
 

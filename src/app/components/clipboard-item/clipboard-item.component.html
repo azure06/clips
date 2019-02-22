@@ -2,13 +2,13 @@
   <ion-button class="container start" slot="start" fill="clear">
     <div class="doc">
       <div class="badge">
-        <span>1</span>
+        <span>{{ index + 1 }}</span>
       </div>
       <ion-icon slot="icon-only" name="document"></ion-icon>
     </div>
   </ion-button>
   <ion-label>
-    <h3>{{ clip.content }}</h3>
+    <h3>{{ clip.plainText }}</h3>
     <p>{{ moment(clip.createdAt).fromNow() }}</p>
     <div class="container bottom">
       <div>
@@ -23,7 +23,7 @@
         </ion-button>
       </div>
       <div>
-        <ion-button fill="tertiary">
+        <ion-button fill="azure">
           remove
         </ion-button>
       </div>

@@ -4,6 +4,10 @@ ion-item {
   --inner-padding-end: 0;
 }
 
+ion-label {
+  margin-bottom: 6px;
+}
+
 ion-item:hover {
   --background: rgba(248, 248, 252, 1);
 }
