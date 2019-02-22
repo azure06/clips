@@ -21,8 +21,14 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
   switch (action.type) {
     case ClipboardActionTypes.AddClip: {
       return {
+        ...state
+      };
+    }
+
+    case ClipboardActionTypes.AddClipSuccess: {
+      return {
         ...state,
-        clips: [action.payload, ...state.clips]
+        clips: [action.payload.clip, ...state.clips]
       };
     }
 
@@ -34,7 +40,7 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
 
     case ClipboardActionTypes.Reset: {
       return {
-        state: [...state.clips]
+        state: []
       };
     }
 

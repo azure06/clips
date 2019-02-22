@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { Action } from '@ngrx/store';
-import { empty, EMPTY, Observable, of } from 'rxjs';
+import { EMPTY, from, Observable, of } from 'rxjs';
 
 import { catchError, concatMap, map, mergeMap } from 'rxjs/operators';
 import { Clip } from '../../../../models/models';
@@ -23,9 +23,13 @@ export class ClipboardEffects {
   addClip$: Observable<Action> = this.actions$.pipe(
     ofType<AddClip>(ClipboardActionTypes.AddClip),
     mergeMap(action => {
-      console.error('Effects');
-      return EMPTY.pipe(
-        map(() => new AddClipSuccess({ clip: action.payload }))
+      return from(new Promise(resolve => setTimeout(resolve, 1000))).pipe(
+        map(
+          () =>
+            new AddClipSuccess({
+              clip: action.payload
+            })
+        )
       );
     }),
     catchError(error => of(new AddClipFailure({ error })))
