@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Clip } from '../../models/models';
 
 @Component({

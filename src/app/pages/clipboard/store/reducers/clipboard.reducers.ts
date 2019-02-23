@@ -9,12 +9,7 @@ export interface State {
 }
 
 export const initialState: State = {
-  clips: [
-    {
-      plainText: 'Believe that anything you can imagine',
-      types: []
-    }
-  ]
+  clips: []
 };
 
 export function clipboardReducer(state = initialState, action: ClipActions) {
@@ -41,6 +36,13 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
     case ClipboardActionTypes.Reset: {
       return {
         state: []
+      };
+    }
+
+    case ClipboardActionTypes.SetClips: {
+      return {
+        ...state,
+        clips: action.payload.clips
       };
     }
 

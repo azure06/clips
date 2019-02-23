@@ -1,17 +1,8 @@
 {
+  "extends": "../../tsconfig.json",
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "../../www/electron",
-    "sourceMap": true,
-    "declaration": false,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "target": "es5",
-    "downlevelIteration": true,
-    "typeRoots": ["node_modules/@types"],
-    "lib": ["es2018", "dom"]
+    "outDir": "../../www/electron"
   }
 }

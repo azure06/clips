@@ -4,7 +4,7 @@ interface Base {
   createdAt: Date;
 }
 
-export interface Clip extends Partial<Base> {
+export interface Clip extends Base {
   plainText?: string;
   htmlText?: string;
   dataUri?: any;

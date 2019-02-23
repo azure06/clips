@@ -35,7 +35,7 @@ export class ClipboardEffects implements OnRunEffects {
         map(
           () =>
             new AddClipSuccess({
-              clip: action.payload
+              clip: action.payload.clip
             })
         )
       );
@@ -45,7 +45,7 @@ export class ClipboardEffects implements OnRunEffects {
 
   ngrxOnRunEffects(resolvedEffects$: Observable<EffectNotification>) {
     return resolvedEffects$.pipe(
-      tap(effect => this.clipboardService.storeState({ effect }))
+      tap(effect => this.clipboardService.updateElectronStore(effect))
     );
   }
 }

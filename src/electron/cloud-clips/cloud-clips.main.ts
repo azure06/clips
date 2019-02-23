@@ -36,12 +36,8 @@ const signinWithGoogle = () => {
 const handleClipboard = () => {
   const clipboardService = new ClipboardService();
 
-  clipboardService.on('clipboard-text-change', clipboard =>
-    mainWindow.webContents.send('clipboard-text-change', clipboard)
-  );
-
-  clipboardService.on('clipboard-multimedia-change', clipboard =>
-    mainWindow.webContents.send('clipboard-multimedia-change', clipboard)
+  clipboardService.on('clipboard-change', clipboard =>
+    mainWindow.webContents.send('clipboard-change', clipboard)
   );
 };
 
@@ -57,11 +53,11 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadURL(
-    isDev ? 'http://localhost:4200' : path.join(__dirname, '../index.html')
+    isDev ? 'http://localhost:4200' : path.join(__dirname, '../../index.html')
   );
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   signinWithGoogle();
   handleClipboard();
