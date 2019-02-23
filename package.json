@@ -15,7 +15,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "pack": "electron-builder --dir",
-    "dist": "npm run ionicBuild && npm run electronBuild && electron-builder"
+    "dist": "npm run ionicBuild && npm run electronBuild && electron-builder",
+    "d": "npm run electronBuild && electron-builder"
   },
   "build": {
     "appId": "com.infiniti.cloud-clips",
