@@ -10,13 +10,12 @@
     "build": "ng build",
     "ionicBuild": "ionic build --prod -- --base-href ./",
     "electronBuild": "tsc -p ./src/electron",
-    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"npm run electronBuild && electron .\"",
+    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"wait-on http-get://localhost:4200 && electron .\"",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "pack": "electron-builder --dir",
-    "dist": "npm run ionicBuild && npm run electronBuild && electron-builder",
-    "d": "npm run electronBuild && electron-builder"
+    "dist": "npm run ionicBuild && npm run electronBuild && electron-builder"
   },
   "build": {
     "appId": "com.infiniti.cloud-clips",
