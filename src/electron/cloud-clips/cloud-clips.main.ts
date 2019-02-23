@@ -59,9 +59,11 @@ const createWindow = () => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
-  signinWithGoogle();
-  handleClipboard();
+  mainWindow.webContents.once('did-finish-load', () => {
+    handleClipboard();
+  });
 
+  signinWithGoogle();
   // Emitted when the window is closed.
   mainWindow.on('closed', () => (mainWindow = null));
 };

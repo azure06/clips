@@ -34,7 +34,6 @@ export class ClipboardHistoryPage implements OnInit {
     ).pipe(
       map(([clips, count]) => clips.filter((clip, index) => index < count))
     );
-
     this.showMore();
   }
 

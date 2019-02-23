@@ -1,7 +1,9 @@
 import { Injectable, NgZone } from '@angular/core';
 import { EffectNotification } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { scan } from 'rxjs/operators';
+import { first, scan } from 'rxjs/operators';
+// tslint:disable-next-line: no-submodule-imports
+import uuidv4 from 'uuid/v4';
 import { Clip } from '../../models/models';
 import {
   AddClip,
@@ -9,43 +11,60 @@ import {
 } from '../../pages/clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../../pages/clipboard/store/index';
 import { ElectronService } from '../electron/electron.service';
+import { IndexDBService } from '../index-db/index-db.service';
 
 @Injectable()
 export class ClipboardService {
   constructor(
     private electronService: ElectronService,
+    private indexDBService: IndexDBService,
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {
-    if (this.electronService.isAvailable) {
-      this.onElectronStoreChange();
+    if (electronService.isAvailable) {
+      this.init();
     }
   }
 
-  observeState() {
-    this.store.pipe(select(fromClips.getClips)).subscribe(items => {
-      console.error(items);
+  private async init() {
+    const clips = await this.indexDBService.getClips();
+    this.setState(clips);
+    const ipcRenderer = this.electronService.electron.ipcRenderer;
+    ipcRenderer.on('clipboard-change', (event, clip: Clip) => {
+      this.handleEvent(clip);
     });
   }
 
-  updateState() {}
+  private async handleEvent(clip: Clip) {
+    const currentClips = await this.store
+      .pipe(
+        select(fromClips.getClips),
+        first()
+      )
+      .toPromise();
 
-  addClip(clip: Clip) {
+    const targetClip = currentClips.find(
+      _clip => clip.plainText === _clip.plainText
+    );
+
+    targetClip ? this.modifyClip(targetClip) : this.addClip(clip);
+  }
+
+  private setState(clips: Clip[]) {
+    this.ngZone.run(() => {
+      this.store.dispatch(new SetClips({ clips }));
+    });
+  }
+
+  public modifyClip(clip: Clip) {}
+
+  public addClip(clip: Clip) {
+    clip = { ...clip, id: uuidv4() };
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
     });
-  }
 
-  onElectronStoreChange() {
-    const ipcRenderer = this.electronService.electron.ipcRenderer;
-    ipcRenderer.on('clipboard-change', (event, clips: Clip[]) => {
-      this.ngZone.run(() => {
-        this.store.dispatch(new SetClips({ clips }));
-      });
-    });
-  }
-
-  async updateElectronStore(effect: EffectNotification) {
-    // this.electronService.electron.ipcRenderer.send('clips-renewed', clips);
+    // Update Index DB
+    this.indexDBService.addClip(clip);
   }
 }

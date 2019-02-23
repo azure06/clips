@@ -1,12 +1,12 @@
 interface Base {
   id: string;
-  updatedAt: Date;
-  createdAt: Date;
+  updatedAt: Date | string;
+  createdAt: Date | string;
 }
 
 export interface Clip extends Base {
   plainText?: string;
   htmlText?: string;
-  dataUri?: any;
+  dataURI?: any;
   types: string[];
 }

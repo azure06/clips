@@ -7,17 +7,14 @@ import {
   OnRunEffects
 } from '@ngrx/effects';
 import { Action } from '@ngrx/store';
-import { EMPTY, from, Observable, of } from 'rxjs';
-import { catchError, concatMap, map, mergeMap, tap } from 'rxjs/operators';
-import { Clip } from '../../../../models/models';
+import { from, Observable, of } from 'rxjs';
+import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 import { ClipboardService } from '../../../../services/clipboard/clipboard.service';
 import {
   AddClip,
   AddClipFailure,
   AddClipSuccess,
-  ClipboardActionTypes,
-  RemoveClip,
-  ResetClip
+  ClipboardActionTypes
 } from '../actions/clipboard.actions';
 
 @Injectable()
@@ -31,7 +28,7 @@ export class ClipboardEffects implements OnRunEffects {
   addClip$: Observable<Action> = this.actions$.pipe(
     ofType<AddClip>(ClipboardActionTypes.AddClip),
     mergeMap(action => {
-      return from(new Promise(resolve => setTimeout(resolve, 1000))).pipe(
+      return from(Promise.resolve()).pipe(
         map(
           () =>
             new AddClipSuccess({
@@ -45,7 +42,7 @@ export class ClipboardEffects implements OnRunEffects {
 
   ngrxOnRunEffects(resolvedEffects$: Observable<EffectNotification>) {
     return resolvedEffects$.pipe(
-      tap(effect => this.clipboardService.updateElectronStore(effect))
+      tap(effect => 'this.clipboardService.updateElectronStore(effect)')
     );
   }
 }
