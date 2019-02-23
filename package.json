@@ -10,8 +10,7 @@
     "build": "ng build",
     "ionicBuild": "ionic build --prod -- --base-href ./",
     "electronBuild": "tsc -p ./src/electron",
-    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"npm run ionicBuild && npm run electronBuild && electron .\"",
-    "electronLight": "concurrently  \"SET BROWSER=none && npm run start\" \"npm run electronBuild && electron .\"",
+    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"run electronBuild && electron .\"",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
@@ -32,8 +31,7 @@
       "target": [
         "nsis"
       ]
-    },
-    "extends": null
+    }
   },
   "private": true,
   "dependencies": {
@@ -58,7 +56,6 @@
     "electron-store": "^2.0.0",
     "google-auth-library": "^3.1.0",
     "googleapis": "^37.2.0",
-    "install": "^0.12.2",
     "moment": "^2.24.0",
     "npm": "^6.8.0",
     "rxjs": "~6.3.3",
