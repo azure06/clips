@@ -10,7 +10,7 @@
     "build": "ng build",
     "ionicBuild": "ionic build --prod -- --base-href ./",
     "electronBuild": "tsc -p ./src/electron",
-    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"wait-on http-get://localhost:4200 && electron .\"",
+    "electron": "concurrently  \"SET BROWSER=none && npm run start\" \"npm run electronBuild\" \"wait-on http-get://localhost:4200 && electron .\"",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",

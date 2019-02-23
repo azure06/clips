@@ -2,7 +2,7 @@
   <ion-button class="container start" slot="start" fill="clear">
     <div class="doc">
       <div class="badge">
-        <span>{{ index + 1 }}</span>
+        <span>{{ index + 1 > 99 ? '...' : index + 1 }}</span>
       </div>
       <ion-icon slot="icon-only" name="document"></ion-icon>
     </div>
