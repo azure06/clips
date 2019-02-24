@@ -104,6 +104,7 @@ export class IndexedDBService {
     objectStore.createIndex('plainText', 'plainText', { unique: true });
     objectStore.createIndex('htmlText', 'htmlText', { unique: false });
     objectStore.createIndex('dataURI', 'dataURI', { unique: false });
+    objectStore.createIndex('starred', 'starred', { unique: false });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
     objectStore.createIndex('createdAt', 'createdAt', { unique: false });
 

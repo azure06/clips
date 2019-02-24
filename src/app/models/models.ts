@@ -4,7 +4,11 @@ interface Base {
   createdAt: number;
 }
 
-export interface Clip extends Base {
+interface Bookmark {
+  starred: boolean;
+}
+
+export interface Clip extends Bookmark, Base {
   plainText?: string;
   htmlText?: string;
   dataURI?: any;

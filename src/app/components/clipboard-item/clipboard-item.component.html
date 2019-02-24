@@ -1,5 +1,15 @@
-<ion-item (click)="onClick($event)" button="true">
-  <ion-button class="container start" slot="start" fill="clear">
+<ion-item
+  (click)="onClick($event)"
+  button="true"
+  (mouseenter)="onMouseEnter($event)"
+  (mouseleave)="onMouseLeave($event)"
+>
+  <ion-button
+    class="container start"
+    slot="start"
+    fill="clear"
+    [title]="index + 1"
+  >
     <div class="doc">
       <div class="badge">
         <span>{{ index + 1 > 99 ? '...' : index + 1 }}</span>
@@ -13,7 +23,7 @@
   <ion-label>
     <h3
       [innerHTML]="
-        clip.htmlText
+        clip.isHtmlView
           ? (clip.htmlText | sanitizeHtml)
           : '<span>' + clip.plainText + '</span>'
       "
@@ -22,20 +32,28 @@
     <p>{{ clip.fromNow }}</p>
     <div class="container bottom">
       <div>
-        <ion-button fill="clear" shape="round" color="light">
-          <ion-icon name="cloud"></ion-icon>
+        <ion-button fill="clear" shape="round" color="medium">
+          <ion-icon name="globe"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" shape="round" color="light">
+        <ion-button *ngIf="false" fill="clear" shape="round" color="medium">
           <ion-icon name="share"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" shape="round" color="secondary">
-          <ion-icon name="swap"></ion-icon>
+        <ion-button
+          fill="clear"
+          shape="round"
+          [color]="clip.isHtmlView ? 'secondary' : 'medium'"
+        >
+          <ion-icon *ngIf="clip.isHtmlView" name="logo-html5"></ion-icon>
+          <i *ngIf="!clip.isHtmlView" class="material-icons">text_format</i>
         </ion-button>
-        <ion-button fill="clear" shape="round">
+        <ion-button fill="clear" shape="round" color="medium">
           <i class="material-icons">translate</i>
         </ion-button>
         <ion-button fill="clear" shape="round">
-          <ion-icon name="star"></ion-icon>
+          <ion-icon
+            name="star"
+            [color]="clip.isHtmlView ? 'secondary' : 'medium'"
+          ></ion-icon>
         </ion-button>
       </div>
       <div>

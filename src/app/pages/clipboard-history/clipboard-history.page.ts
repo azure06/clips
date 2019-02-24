@@ -9,6 +9,11 @@ import { AddClip } from '../clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../clipboard/store/index';
 import { ClipboardService } from './../../services/clipboard/clipboard.service';
 
+interface ClipDetails extends Clip {
+  fromNow: string;
+  isHtmlView: boolean;
+}
+
 @Component({
   selector: 'app-clipboard-history-page',
   templateUrl: './clipboard-history.page.html',
@@ -16,7 +21,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
 })
 export class ClipboardHistoryPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
-  clips$: Observable<Array <Clip& { fromNow: string }>>;
+  clips$: Observable<ClipDetails[]>;
   ionicInfiniteScrollCount = 0;
   infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollCount);
 
@@ -35,21 +40,14 @@ export class ClipboardHistoryPage implements OnInit {
     ).pipe(
       delay(0),
       map(([clips, count]) =>
-        clips.reduce(
-          (
-            acc: Array<Clip & { fromNow: string }>,
-            clip: Clip & { fromNow: string },
-            index
-          ) => {
-            if (index < count) {
-              // expression-has-changed-after-it-was-checked
-              clip.fromNow = moment(clip.updatedAt).fromNow();
-              acc.push(clip);
-            }
-            return acc;
-          },
-          []
-        )
+        clips.reduce((acc: ClipDetails[], clip: ClipDetails, index) => {
+          if (index < count) {
+            // expression-has-changed-after-it-was-checked
+            clip.fromNow = moment(clip.updatedAt).fromNow();
+            acc.push(clip);
+          }
+          return acc;
+        }, [])
       )
     );
     this.showMore();

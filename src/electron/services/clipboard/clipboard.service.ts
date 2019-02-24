@@ -31,6 +31,7 @@ export default class ClipboardService extends EventEmitter {
           htmlText,
           dataURI: '',
           types: availableFormats,
+          starred: false,
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()
         });

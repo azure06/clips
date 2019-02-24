@@ -7,12 +7,19 @@ import { Clip } from '../../models/models';
   styleUrls: ['./clipboard-item.component.scss']
 })
 export class ClipboardItemComponent {
-  @Input()
-  clip: Clip;
-  @Input()
-  index;
+  @Input() clip: Clip;
+  @Input() index;
+  public hasMouseEntered = false;
 
   constructor() {}
 
   onClick(event: Event): void {}
+
+  onMouseEnter(event: MouseEvent) {
+    this.hasMouseEntered = true;
+  }
+
+  onMouseLeave(event: MouseEvent) {
+    this.hasMouseEntered = false;
+  }
 }

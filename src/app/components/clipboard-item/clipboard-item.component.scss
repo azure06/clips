@@ -57,7 +57,7 @@ ion-button.container.start {
       height: 16px;
       top: 20px;
       left: 18px;
-      color: #de4b25;
+      color: var(--ion-color-secondary);
       background-color: white;
       display: flex;
       justify-content: center;
@@ -88,4 +88,9 @@ ion-icon[name='document'] {
   width: 2rem;
   height: 2rem;
   color: var(--ion-color-tertiary-tint);
+}
+
+.material-icons {
+  margin-top: 3px;
+  font-size: 22px;
 }
