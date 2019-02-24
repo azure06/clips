@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
+import moment from 'moment';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { Clip } from '../../models/models';
@@ -15,7 +16,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
 })
 export class ClipboardHistoryPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
-  clips$: Observable<Clip[]>;
+  clips$: Observable<Array <Clip& { fromNow: string }>>;
   ionicInfiniteScrollCount = 0;
   infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollCount);
 
@@ -33,7 +34,23 @@ export class ClipboardHistoryPage implements OnInit {
       infiniteScrollCountObservable
     ).pipe(
       delay(0),
-      map(([clips, count]) => clips.filter((clip, index) => index < count))
+      map(([clips, count]) =>
+        clips.reduce(
+          (
+            acc: Array<Clip & { fromNow: string }>,
+            clip: Clip & { fromNow: string },
+            index
+          ) => {
+            if (index < count) {
+              // expression-has-changed-after-it-was-checked
+              clip.fromNow = moment(clip.updatedAt).fromNow();
+              acc.push(clip);
+            }
+            return acc;
+          },
+          []
+        )
+      )
     );
     this.showMore();
   }

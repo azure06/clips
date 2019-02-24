@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { SanitizeHtmlPipe } from './escape.pipe';
+import { SanitizeHtmlPipe } from './sanitize-html.pipe';
 @NgModule({
   declarations: [SanitizeHtmlPipe],
   imports: [],

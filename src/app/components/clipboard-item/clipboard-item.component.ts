@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import moment from 'moment';
 import { Clip } from '../../models/models';
 
 @Component({
@@ -14,10 +13,6 @@ export class ClipboardItemComponent {
   index;
 
   constructor() {}
-
-  get moment() {
-    return moment;
-  }
 
   onClick(event: Event): void {}
 }

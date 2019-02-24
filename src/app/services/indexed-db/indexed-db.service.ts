@@ -72,8 +72,9 @@ export class IndexedDBService {
 
         request.onerror = _reject;
         request.onsuccess = event => {
-          console.error((event.target as IDBRequest).result);
-          resolve((event.target as IDBRequest).result || []);
+          resolve(
+            (((event.target as IDBRequest).result as any[]) || []).reverse()
+          );
 
           // // Get the old value that we want to update
           // var data = event.target.result;
