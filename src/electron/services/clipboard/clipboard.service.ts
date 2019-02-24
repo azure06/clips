@@ -15,15 +15,6 @@ export default class ClipboardService extends EventEmitter {
     this.watchClipboard();
   }
 
-  // escapeCharacters(unsageStr) {
-  //   return unsageStr
-  //     .replace(/&/g, '&amp;')
-  //     .replace(/</g, '&lt;')
-  //     .replace(/>/g, '&gt;')
-  //     .replace(/"/g, '&quot;')
-  //     .replace(/'/g, '&#039;');
-  // }
-
   async watchClipboard() {
     const plainText = clipboard.readText();
     const htmlText = clipboard.readHTML();
@@ -40,8 +31,8 @@ export default class ClipboardService extends EventEmitter {
           htmlText,
           dataURI: '',
           types: availableFormats,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          createdAt: new Date().getTime(),
+          updatedAt: new Date().getTime()
         });
       } else if (!isText) {
         // this.emit('clipboard-change', {

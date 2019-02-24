@@ -1,7 +1,7 @@
 interface Base {
   id: string;
-  updatedAt: Date | string;
-  createdAt: Date | string;
+  updatedAt: number;
+  createdAt: number;
 }
 
 export interface Clip extends Base {

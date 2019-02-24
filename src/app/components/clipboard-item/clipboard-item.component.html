@@ -4,11 +4,21 @@
       <div class="badge">
         <span>{{ index + 1 > 99 ? '...' : index + 1 }}</span>
       </div>
+      <div *ngIf="clip.htmlText" class="logo-html5">
+        <ion-icon name="logo-html5"></ion-icon>
+      </div>
       <ion-icon slot="icon-only" name="document"></ion-icon>
     </div>
   </ion-button>
   <ion-label>
-    <h3>{{ clip.plainText }}</h3>
+    <h3
+      [innerHTML]="
+        clip.htmlText
+          ? (clip.htmlText | sanitizeHtml)
+          : '<span>' + clip.plainText + '</span>'
+      "
+      [title]="clip.plainText"
+    ></h3>
     <p>{{ moment(clip.createdAt).fromNow() }}</p>
     <div class="container bottom">
       <div>
@@ -18,12 +28,18 @@
         <ion-button fill="clear" shape="round" color="light">
           <ion-icon name="share"></ion-icon>
         </ion-button>
+        <ion-button fill="clear" shape="round" color="secondary">
+          <ion-icon name="swap"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" shape="round">
+          <i class="material-icons">translate</i>
+        </ion-button>
         <ion-button fill="clear" shape="round">
           <ion-icon name="star"></ion-icon>
         </ion-button>
       </div>
       <div>
-        <ion-button fill="clear">
+        <ion-button class="remove" fill="clear">
           remove
         </ion-button>
       </div>

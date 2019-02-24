@@ -11,13 +11,13 @@ import {
 } from '../../pages/clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../../pages/clipboard/store/index';
 import { ElectronService } from '../electron/electron.service';
-import { IndexDBService } from '../index-db/index-db.service';
+import { IndexedDBService } from '../indexed-db/indexed-db.service';
 
 @Injectable()
 export class ClipboardService {
   constructor(
     private electronService: ElectronService,
-    private indexDBService: IndexDBService,
+    private indexDBService: IndexedDBService,
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {

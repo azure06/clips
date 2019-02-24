@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { Clip } from '../../models/models';
 import { AddClip } from '../clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../clipboard/store/index';
@@ -32,6 +32,7 @@ export class ClipboardHistoryPage implements OnInit {
       clipsObservable,
       infiniteScrollCountObservable
     ).pipe(
+      delay(0),
       map(([clips, count]) => clips.filter((clip, index) => index < count))
     );
     this.showMore();
@@ -44,7 +45,7 @@ export class ClipboardHistoryPage implements OnInit {
       // if (this.data.length === 1000) {
       // event.target.disabled = true;
       // }
-    }, 200);
+    }, 0);
   }
 
   showMore(): void {

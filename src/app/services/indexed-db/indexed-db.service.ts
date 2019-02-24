@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Clip } from '../../models/models';
 
 @Injectable()
-export class IndexDBService {
+export class IndexedDBService {
   private dbName = 'cloud-clips';
   get idb() {
     return window.indexedDB;
@@ -65,11 +65,16 @@ export class IndexDBService {
       return new Promise((resolve, _reject) => {
         const objectStore = db
           .transaction(['clips'], 'readwrite')
-          .objectStore('clips');
+          .objectStore('clips')
+          .index('updatedAt');
+
         const request = objectStore.getAll();
+
         request.onerror = _reject;
         request.onsuccess = event => {
+          console.error((event.target as IDBRequest).result);
           resolve((event.target as IDBRequest).result || []);
+
           // // Get the old value that we want to update
           // var data = event.target.result;
           // // update the value(s) in the object that you want to change

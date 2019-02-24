@@ -21,6 +21,8 @@ p {
 
 h3 {
   color: var(--text-color--dark);
+  border-radius: 3px;
+  max-height: 60px;
 }
 p {
   color: var(--text-color--light);
@@ -49,7 +51,27 @@ ion-button.container.start {
       z-index: 1;
       font-size: 0.6rem;
     }
+    .logo-html5 {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      top: 20px;
+      left: 18px;
+      color: #de4b25;
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+      font-size: 0.6rem;
+    }
   }
+}
+
+ion-button.remove {
+  color: var(--text-color--light);
+  font-size: 0.7rem;
+  margin-top: 15px;
 }
 
 .container.bottom {
