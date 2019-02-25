@@ -14,7 +14,8 @@ export enum ClipboardActionTypes {
   ModifyClipFailure = '[Clipboard Item] Modify Clipboard Item Failure',
 
   RemoveClip = '[Clipboard Item] Remove Clipboard Item',
-  Reset = '[Clipboard] Reset Clipboard'
+  RemoveClipSuccess = '[Clipboard Item] Remove Clipboard Item Success',
+  RemoveClipFailure = '[Clipboard Item] Remove Clipboard Item Failure'
 }
 
 // Add Clip
@@ -55,9 +56,14 @@ export class RemoveClip implements Action {
   constructor(public payload: { clip: Clip }) {}
 }
 
-export class ResetClip implements Action {
-  readonly type = ClipboardActionTypes.Reset;
+export class RemoveClipSuccess implements Action {
+  readonly type = ClipboardActionTypes.RemoveClipSuccess;
   constructor(public payload: { clip: Clip }) {}
+}
+
+export class RemoveClipFailure implements Action {
+  readonly type = ClipboardActionTypes.RemoveClipFailure;
+  constructor(public payload: { error: any }) {}
 }
 
 // Set Clip
@@ -74,5 +80,6 @@ export type ClipActions =
   | ModifyClipSuccess
   | ModifyClipFailure
   | RemoveClip
-  | ResetClip
+  | RemoveClipSuccess
+  | RemoveClipFailure
   | SetClips;

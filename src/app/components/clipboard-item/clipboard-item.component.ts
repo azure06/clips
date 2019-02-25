@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Clip } from '../../models/models';
 
 @Component({
@@ -9,6 +9,7 @@ import { Clip } from '../../models/models';
 export class ClipboardItemComponent {
   @Input() clip: Clip;
   @Input() index;
+  @Output() removeClip = new EventEmitter();
   public hasMouseEntered = false;
 
   constructor() {}
@@ -23,5 +24,7 @@ export class ClipboardItemComponent {
     this.hasMouseEntered = false;
   }
 
-  remove() {}
+  remove(event: Event): void {
+    this.removeClip.emit(this.clip);
+  }
 }

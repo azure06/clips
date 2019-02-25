@@ -17,7 +17,10 @@ import {
   ClipboardActionTypes,
   ModifyClip,
   ModifyClipFailure,
-  ModifyClipSuccess
+  ModifyClipSuccess,
+  RemoveClip,
+  RemoveClipFailure,
+  RemoveClipSuccess
 } from '../actions/clipboard.actions';
 
 @Injectable()
@@ -57,6 +60,22 @@ export class ClipboardEffects implements OnRunEffects {
       );
     }),
     catchError(error => of(new ModifyClipFailure({ error })))
+  );
+
+  @Effect()
+  removeClip$: Observable<Action> = this.actions$.pipe(
+    ofType<RemoveClip>(ClipboardActionTypes.RemoveClip),
+    mergeMap(action => {
+      return from(Promise.resolve()).pipe(
+        map(
+          () =>
+            new RemoveClipSuccess({
+              clip: action.payload.clip
+            })
+        )
+      );
+    }),
+    catchError(error => of(new RemoveClipFailure({ error })))
   );
 
   ngrxOnRunEffects(resolvedEffects$: Observable<EffectNotification>) {

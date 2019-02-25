@@ -63,13 +63,24 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
 
     case ClipboardActionTypes.RemoveClip: {
       return {
-        state: [...state.clips]
+        ...state,
+        loading: true
       };
     }
-
-    case ClipboardActionTypes.Reset: {
+    case ClipboardActionTypes.RemoveClipSuccess: {
+      const filteredArray = state.clips.filter(
+        clip => clip.id !== action.payload.clip.id
+      );
       return {
-        state: []
+        ...state,
+        clips: [...filteredArray],
+        loading: false
+      };
+    }
+    case ClipboardActionTypes.RemoveClipFailure: {
+      return {
+        loading: false,
+        ...state
       };
     }
 

@@ -11,6 +11,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
 
 interface ClipDetails extends Clip {
   fromNow: string;
+  snippet: string;
   isHtmlView: boolean;
 }
 
@@ -32,7 +33,6 @@ export class ClipboardHistoryPage implements OnInit {
 
   ngOnInit(): void {
     const clipsObservable = this.store.pipe(select(fromClips.getClips));
-
     const infiniteScrollCountObservable = this.infiniteScrollSubject.asObservable();
     this.clips$ = combineLatest(
       clipsObservable,
@@ -43,6 +43,7 @@ export class ClipboardHistoryPage implements OnInit {
         clips.reduce((acc: ClipDetails[], clip: ClipDetails, index) => {
           if (index < count) {
             // expression-has-changed-after-it-was-checked
+            clip.snippet = (clip.plainText || '').substring(0, 240);
             clip.fromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);
           }
@@ -68,7 +69,7 @@ export class ClipboardHistoryPage implements OnInit {
     this.infiniteScrollSubject.next(this.ionicInfiniteScrollCount);
   }
 
-  addClip(clip: Clip): void {
-    this.store.dispatch(new AddClip({ clip }));
+  removeClip(clip: Clip) {
+    this.clipboardService.removeClip(clip);
   }
 }

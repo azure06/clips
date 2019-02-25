@@ -25,7 +25,7 @@
       [innerHTML]="
         clip.isHtmlView
           ? (clip.htmlText | sanitizeHtml)
-          : '<span>' + clip.plainText + '</span>'
+          : '<span>' + clip.snippet + '</span>'
       "
       [title]="clip.plainText"
     ></h3>
@@ -58,7 +58,12 @@
         </ion-button>
       </div>
       <div *ngIf="hasMouseEntered">
-        <ion-button class="remove" fill="clear" shape="round">
+        <ion-button
+          class="remove"
+          fill="clear"
+          shape="round"
+          (click)="remove($event)"
+        >
           <ion-icon name="trash"></ion-icon>
         </ion-button>
       </div>

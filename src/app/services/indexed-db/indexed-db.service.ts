@@ -43,21 +43,27 @@ export class IndexedDBService {
     });
   }
 
-  public getClips(): Promise<Clip[]> {
+  public getClips(limit?: number): Promise<Clip[]> {
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
+        const clips: Clip[] = [];
         const objectStore = db
           .transaction(['clips'], 'readwrite')
           .objectStore('clips')
           .index('updatedAt');
 
-        const request = objectStore.getAll();
+        const request = objectStore.openCursor(null, 'prev');
 
         request.onerror = _reject;
         request.onsuccess = event => {
-          resolve(
-            (((event.target as IDBRequest).result as any[]) || []).reverse()
-          );
+          const cursor = (event.target as IDBRequest)
+            .result as IDBCursorWithValue;
+          if (cursor && (!limit || clips.length < limit)) {
+            clips.push(cursor.value);
+            cursor.continue();
+          } else {
+            resolve(clips);
+          }
         };
       });
     };
@@ -65,6 +71,7 @@ export class IndexedDBService {
   }
 
   public addClip(clip: Clip): Promise<any> {
+    console.error(clip);
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
         const transaction = db.transaction(['clips'], 'readwrite');
@@ -88,10 +95,26 @@ export class IndexedDBService {
           .transaction(['clips'], 'readwrite')
           .objectStore('clips');
 
-        const requestUpdate = objectStore.put(clip);
-        requestUpdate.onerror = _reject;
-        requestUpdate.onsuccess = event =>
+        const updateRequest = objectStore.put(clip);
+        updateRequest.onerror = _reject;
+        updateRequest.onsuccess = event =>
           console.log('update transaction complete');
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
+  public removeClip(clip: Clip): Promise<Clip[]> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const objectStore = db
+          .transaction(['clips'], 'readwrite')
+          .objectStore('clips');
+
+        const removeRequest = objectStore.delete(clip.id);
+        removeRequest.onerror = _reject;
+        removeRequest.onsuccess = event =>
+          console.log('delete transaction complete');
       });
     };
     return this.makeRequest({ successHandler });

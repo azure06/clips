@@ -8,6 +8,7 @@ import { Clip } from '../../models/models';
 import {
   AddClip,
   ModifyClip,
+  RemoveClip,
   SetClips
 } from '../../pages/clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../../pages/clipboard/store/index';
@@ -83,5 +84,13 @@ export class ClipboardService {
     });
 
     this.indexDBService.modifyClip(clip);
+  }
+
+  public removeClip(clip: Clip) {
+    this.ngZone.run(() => {
+      this.store.dispatch(new RemoveClip({ clip }));
+    });
+
+    this.indexDBService.removeClip(clip);
   }
 }
