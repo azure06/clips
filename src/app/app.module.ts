@@ -13,6 +13,7 @@ import { AppComponent } from './app.component';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
 import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
 import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
+import { GoogleTranslateServiceModule } from './services/google-translate/google-translate.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -24,6 +25,7 @@ import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth
     EffectsModule.forRoot([]),
     AppRoutingModule,
     GoogleOAuth2ServiceModule,
+    GoogleTranslateServiceModule,
     ClipboardServiceModule,
     ClipboardStoreModule
   ],

@@ -1,6 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import * as isDev from 'electron-is-dev';
 import * as path from 'path';
+import GoogleTranslate from '../services/google-translate/google-translate.service';
 import { electronConfig } from './../electron.config';
 import ClipboardService from './../services/clipboard/clipboard.service';
 import GoogleOAuth2Service from './../services/oauth2/google-oauth2.service';
@@ -41,6 +42,19 @@ const handleClipboard = () => {
   );
 };
 
+const initGoogleTranslate = () => {
+  const googleTranslate = new GoogleTranslate();
+
+  ipcMain.on('google-translate-query', async (event, { text, options }) => {
+    try {
+      const result = await googleTranslate.translate(text, options);
+      mainWindow.webContents.send('google-translate-result', result);
+    } catch (error) {
+      console.error('google translate error - ', error);
+    }
+  });
+};
+
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -64,6 +78,9 @@ const createWindow = () => {
   });
 
   signinWithGoogle();
+
+  initGoogleTranslate();
+
   // Emitted when the window is closed.
   mainWindow.on('closed', () => (mainWindow = null));
 };

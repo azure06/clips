@@ -14,3 +14,23 @@ export interface Clip extends Bookmark, Base {
   dataURI?: any;
   types: string[];
 }
+
+/**
+ *
+ *
+ */
+export interface GoogleTraslateResult {
+  text: string;
+  from: {
+    language: {
+      didYouMean: boolean;
+      iso: string;
+    };
+    text: {
+      autoCorrected: boolean;
+      value: string;
+      didYouMean: boolean;
+    };
+    raw: string;
+  };
+}
