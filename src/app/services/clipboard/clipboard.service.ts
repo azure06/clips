@@ -54,12 +54,16 @@ export class ClipboardService {
     const oldClip = currentClips.find(
       targetClip => targetClip.plainText === clip.plainText
     );
-    const modifyClip = (newClip: Clip, _oldClip: Clip): Clip => ({
-      ..._oldClip,
-      updatedAt: new Date().getTime()
-    });
 
-    oldClip ? this.modifyClip(modifyClip(clip, oldClip)) : this.addClip(clip);
+    oldClip
+      ? this.modifyClip(
+          {
+            ...oldClip,
+            updatedAt: new Date().getTime()
+          },
+          true
+        )
+      : this.addClip(clip);
   }
 
   private setState(clips: Clip[]) {
@@ -78,9 +82,9 @@ export class ClipboardService {
     this.indexDBService.addClip(clip);
   }
 
-  public modifyClip(clip: Clip) {
+  public modifyClip(clip: Clip, sort?: boolean) {
     this.ngZone.run(() => {
-      this.store.dispatch(new ModifyClip({ clip }));
+      this.store.dispatch(new ModifyClip({ clip, sort }));
     });
 
     this.indexDBService.modifyClip(clip);

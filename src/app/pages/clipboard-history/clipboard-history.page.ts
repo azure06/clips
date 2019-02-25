@@ -12,7 +12,6 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
 interface ClipDetails extends Clip {
   fromNow: string;
   snippet: string;
-  isHtmlView: boolean;
 }
 
 @Component({
@@ -67,6 +66,10 @@ export class ClipboardHistoryPage implements OnInit {
   showMore(): void {
     this.ionicInfiniteScrollCount += 10;
     this.infiniteScrollSubject.next(this.ionicInfiniteScrollCount);
+  }
+
+  modifyClip(clip: Clip) {
+    this.clipboardService.modifyClip(clip);
   }
 
   removeClip(clip: Clip) {

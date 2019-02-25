@@ -10,9 +10,19 @@ export class ClipboardItemComponent {
   @Input() clip: Clip;
   @Input() index;
   @Output() removeClip = new EventEmitter();
+  @Output() addToBookmark = new EventEmitter();
+  public currentView: 'plain' | 'html' = 'plain';
   public hasMouseEntered = false;
 
   constructor() {}
+
+  get hasHtmlView() {
+    return !!this.clip.htmlText;
+  }
+
+  invertCurrentView(view: 'plain' | 'html') {
+    this.currentView = this.currentView === 'plain' ? 'html' : 'plain';
+  }
 
   onClick(event: Event): void {}
 
@@ -24,7 +34,14 @@ export class ClipboardItemComponent {
     this.hasMouseEntered = false;
   }
 
-  remove(event: Event): void {
+  onAddToBookmarkClick(event: Event): void {
+    this.addToBookmark.emit({
+      ...this.clip,
+      starred: !this.clip.starred
+    });
+  }
+
+  onRemoveClick(event: Event): void {
     this.removeClip.emit(this.clip);
   }
 }

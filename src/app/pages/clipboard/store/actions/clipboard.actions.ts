@@ -37,12 +37,12 @@ export class AddClipFailure implements Action {
 // Modify Clip
 export class ModifyClip implements Action {
   readonly type = ClipboardActionTypes.ModifyClip;
-  constructor(public payload: { clip: Clip }) {}
+  constructor(public payload: { clip: Clip; sort?: boolean }) {}
 }
 
 export class ModifyClipSuccess implements Action {
   readonly type = ClipboardActionTypes.ModifyClipSuccess;
-  constructor(public payload: { clip: Clip }) {}
+  constructor(public payload: { clip: Clip; sort?: boolean }) {}
 }
 
 export class ModifyClipFailure implements Action {

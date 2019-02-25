@@ -23,7 +23,7 @@
   <ion-label>
     <h3
       [innerHTML]="
-        clip.isHtmlView
+        currentView === 'html'
           ? (clip.htmlText | sanitizeHtml)
           : '<span>' + clip.snippet + '</span>'
       "
@@ -41,10 +41,14 @@
         <ion-button
           fill="clear"
           shape="round"
-          [color]="clip.isHtmlView ? 'secondary' : 'medium'"
+          [color]="currentView === 'plain' ? 'medium' : 'secondary'"
+          [disabled]="!hasHtmlView"
+          (click)="invertCurrentView($event)"
         >
-          <ion-icon *ngIf="clip.isHtmlView" name="logo-html5"></ion-icon>
-          <i *ngIf="!clip.isHtmlView" class="material-icons">text_format</i>
+          <ion-icon *ngIf="currentView === 'html'" name="logo-html5"></ion-icon>
+          <i *ngIf="currentView === 'plain'" class="material-icons"
+            >text_format</i
+          >
         </ion-button>
         <ion-button fill="clear" shape="round" color="medium">
           <i class="material-icons">translate</i>
@@ -52,7 +56,8 @@
         <ion-button
           fill="clear"
           shape="round"
-          [color]="clip.isHtmlView ? 'secondary' : 'medium'"
+          [color]="clip.starred ? 'secondary' : 'medium'"
+          (click)="onAddToBookmarkClick($event)"
         >
           <ion-icon name="star"></ion-icon>
         </ion-button>
@@ -62,7 +67,8 @@
           class="remove"
           fill="clear"
           shape="round"
-          (click)="remove($event)"
+          color="medium"
+          (click)="onRemoveClick($event)"
         >
           <ion-icon name="trash"></ion-icon>
         </ion-button>

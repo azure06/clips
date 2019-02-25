@@ -1,6 +1,7 @@
 <ion-content>
   <app-clipboard-item-component
     *ngFor="let clip of (clips$ | async); let i = index"
+    (addToBookmark)="modifyClip($event)"
     (removeClip)="removeClip($event)"
     [clip]="clip"
     [index]="i"

@@ -54,7 +54,8 @@ export class ClipboardEffects implements OnRunEffects {
         map(
           () =>
             new ModifyClipSuccess({
-              clip: action.payload.clip
+              clip: action.payload.clip,
+              sort: action.payload.sort
             })
         )
       );

@@ -71,7 +71,6 @@ export class IndexedDBService {
   }
 
   public addClip(clip: Clip): Promise<any> {
-    console.error(clip);
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
         const transaction = db.transaction(['clips'], 'readwrite');

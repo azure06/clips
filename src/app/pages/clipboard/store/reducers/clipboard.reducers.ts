@@ -45,14 +45,23 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
       };
     }
     case ClipboardActionTypes.ModifyClipSuccess: {
-      const filteredArray = state.clips.filter(
-        clip => clip.id !== action.payload.clip.id
-      );
-      return {
+      const modifyClipWithSort = () => ({
         ...state,
-        clips: [action.payload.clip, ...filteredArray],
-        loading: false
+        loading: false,
+        clips: [
+          action.payload.clip,
+          ...state.clips.filter(clip => clip.id !== action.payload.clip.id)
+        ]
+      });
+      const modifyClip = () => {
+        const index = state.clips.findIndex(
+          clip => clip.id === action.payload.clip.id
+        );
+        const clips = [...state.clips];
+        clips[index] = action.payload.clip;
+        return { ...state, loading: false, clips };
       };
+      return action.payload.sort ? modifyClipWithSort() : modifyClip();
     }
     case ClipboardActionTypes.ModifyClipFailure: {
       return {
