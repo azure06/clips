@@ -22,4 +22,6 @@ export class ClipboardItemComponent {
   onMouseLeave(event: MouseEvent) {
     this.hasMouseEntered = false;
   }
+
+  remove() {}
 }

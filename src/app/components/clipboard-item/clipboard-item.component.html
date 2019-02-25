@@ -49,16 +49,17 @@
         <ion-button fill="clear" shape="round" color="medium">
           <i class="material-icons">translate</i>
         </ion-button>
-        <ion-button fill="clear" shape="round">
-          <ion-icon
-            name="star"
-            [color]="clip.isHtmlView ? 'secondary' : 'medium'"
-          ></ion-icon>
+        <ion-button
+          fill="clear"
+          shape="round"
+          [color]="clip.isHtmlView ? 'secondary' : 'medium'"
+        >
+          <ion-icon name="star"></ion-icon>
         </ion-button>
       </div>
-      <div>
-        <ion-button class="remove" fill="clear">
-          remove
+      <div *ngIf="hasMouseEntered">
+        <ion-button class="remove" fill="clear" shape="round" color="secondary">
+          <ion-icon name="trash"></ion-icon>
         </ion-button>
       </div>
     </div>

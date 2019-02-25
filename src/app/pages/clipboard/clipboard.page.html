@@ -6,10 +6,23 @@
     </ion-title>
     <ion-buttons slot="secondary">
       <ion-button color="tertiary">
-        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+        <ion-icon
+          *ngIf="!(isLoading | async)"
+          slot="icon-only"
+          name="refresh"
+        ></ion-icon>
+        <ion-spinner
+          *ngIf="(isLoading | async)"
+          class="spinner"
+          name="lines-small"
+          color="tertiary"
+        ></ion-spinner>
       </ion-button>
       <ion-button color="tertiary">
         <ion-icon slot="icon-only" name="contact"></ion-icon>
+      </ion-button>
+      <ion-button color="tertiary">
+        <ion-icon slot="icon-only" name="settings"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="primary">
@@ -31,13 +44,6 @@
       </ion-button>
       <ion-button
         fill="clear"
-        [color]="router.url === '/clipboard/searcher' ? 'primary' : 'tertiary'"
-        (click)="navigate('clipboard/searcher')"
-      >
-        <ion-icon slot="icon-only" name="search"></ion-icon>
-      </ion-button>
-      <ion-button
-        fill="clear"
         [color]="router.url === '/clipboard/history3' ? 'primary' : 'tertiary'"
         (click)="navigate('clipboard/history3')"
       >
@@ -48,7 +54,14 @@
         [color]="router.url === '/clipboard/history4' ? 'primary' : 'tertiary'"
         (click)="navigate('clipboard/history4')"
       >
-        <ion-icon slot="icon-only" name="settings"></ion-icon>
+        <ion-icon slot="icon-only" name="star"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="clear"
+        [color]="router.url === '/clipboard/searcher' ? 'primary' : 'tertiary'"
+        (click)="navigate('clipboard/searcher')"
+      >
+        <ion-icon slot="icon-only" name="search"></ion-icon>
       </ion-button>
     </div>
     <div class="sidenav-content">

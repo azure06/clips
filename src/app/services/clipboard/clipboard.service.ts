@@ -7,6 +7,7 @@ import uuidv4 from 'uuid/v4';
 import { Clip } from '../../models/models';
 import {
   AddClip,
+  ModifyClip,
   SetClips
 } from '../../pages/clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../../pages/clipboard/store/index';
@@ -35,6 +36,12 @@ export class ClipboardService {
     });
   }
 
+  /**
+   * Handle Clipboard events. If the target item is already in the clipboard an update request will be performed,
+   * otherwise the target item will be added.
+   *
+   * @param clip Clipboard Item
+   */
   private async handleEvent(clip: Clip) {
     const currentClips = await this.store
       .pipe(
@@ -43,11 +50,15 @@ export class ClipboardService {
       )
       .toPromise();
 
-    const targetClip = currentClips.find(
-      _clip => clip.plainText === _clip.plainText
+    const oldClip = currentClips.find(
+      targetClip => targetClip.plainText === clip.plainText
     );
+    const modifyClip = (newClip: Clip, _oldClip: Clip): Clip => ({
+      ..._oldClip,
+      updatedAt: new Date().getTime()
+    });
 
-    targetClip ? this.modifyClip(targetClip) : this.addClip(clip);
+    oldClip ? this.modifyClip(modifyClip(clip, oldClip)) : this.addClip(clip);
   }
 
   private setState(clips: Clip[]) {
@@ -56,15 +67,21 @@ export class ClipboardService {
     });
   }
 
-  public modifyClip(clip: Clip) {}
-
   public addClip(clip: Clip) {
     clip = { ...clip, id: uuidv4() };
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
     });
 
-    // Update Index DB
+    // Add to IndexedDB
     this.indexDBService.addClip(clip);
+  }
+
+  public modifyClip(clip: Clip) {
+    this.ngZone.run(() => {
+      this.store.dispatch(new ModifyClip({ clip }));
+    });
+
+    this.indexDBService.modifyClip(clip);
   }
 }

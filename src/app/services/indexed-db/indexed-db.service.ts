@@ -43,6 +43,27 @@ export class IndexedDBService {
     });
   }
 
+  public getClips(): Promise<Clip[]> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const objectStore = db
+          .transaction(['clips'], 'readwrite')
+          .objectStore('clips')
+          .index('updatedAt');
+
+        const request = objectStore.getAll();
+
+        request.onerror = _reject;
+        request.onsuccess = event => {
+          resolve(
+            (((event.target as IDBRequest).result as any[]) || []).reverse()
+          );
+        };
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
   public addClip(clip: Clip): Promise<any> {
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
@@ -60,35 +81,17 @@ export class IndexedDBService {
     return this.makeRequest({ successHandler });
   }
 
-  public getClips(): Promise<Clip[]> {
+  public modifyClip(clip: Clip): Promise<Clip[]> {
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
         const objectStore = db
           .transaction(['clips'], 'readwrite')
-          .objectStore('clips')
-          .index('updatedAt');
+          .objectStore('clips');
 
-        const request = objectStore.getAll();
-
-        request.onerror = _reject;
-        request.onsuccess = event => {
-          resolve(
-            (((event.target as IDBRequest).result as any[]) || []).reverse()
-          );
-
-          // // Get the old value that we want to update
-          // var data = event.target.result;
-          // // update the value(s) in the object that you want to change
-          // data.age = 42;
-          // // Put this updated object back into the database.
-          // var requestUpdate = objectStore.put(data);
-          // requestUpdate.onerror = function(event) {
-          //   // Do something with the error
-          // };
-          // requestUpdate.onsuccess = function(event) {
-          //   // Success - the data is updated!
-          // };
-        };
+        const requestUpdate = objectStore.put(clip);
+        requestUpdate.onerror = _reject;
+        requestUpdate.onsuccess = event =>
+          console.log('update transaction complete');
       });
     };
     return this.makeRequest({ successHandler });
