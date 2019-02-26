@@ -1,4 +1,3 @@
-// tslint:disable-next-line: no-implicit-dependencies
 import { app } from 'electron';
 import cloudClips, { isAvailable } from './cloud-clips/cloud-clips.main';
 
