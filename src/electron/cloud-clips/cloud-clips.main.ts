@@ -67,7 +67,9 @@ const createWindow = () => {
 
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
   mainWindow.loadURL(
-    isDev ? 'http://localhost:4200' : path.join(__dirname, '../../index.html')
+    isDev
+      ? 'http://localhost:4200'
+      : path.join(`file://${__dirname}`, '../../index.html')
   );
 
   // Open the DevTools.
