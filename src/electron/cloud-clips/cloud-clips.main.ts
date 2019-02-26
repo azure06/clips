@@ -51,7 +51,7 @@ const createWindow = () => {
 
   console.error('Directory', __dirname, isDev);
 
-  // and load the index.html of the app.
+  // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
   mainWindow.loadURL(
     isDev ? 'http://localhost:4200' : path.join(__dirname, '../../index.html')
   );

@@ -7,7 +7,7 @@ import { Clip } from '../../models/models';
   styleUrls: ['./clipboard-item.component.scss']
 })
 export class ClipboardItemComponent {
-  @Input() clip: Clip;
+  @Input() clip: any; // FIXME Should be like ClipDetails in clipboard-history.page.ts
   @Input() index;
   @Output() removeClip = new EventEmitter();
   @Output() addToBookmark = new EventEmitter();
