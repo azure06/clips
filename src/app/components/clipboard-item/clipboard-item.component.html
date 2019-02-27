@@ -30,6 +30,7 @@
       [title]="clip.plainText"
     ></h3>
     <p>{{ clip.fromNow }}</p>
+    <p>{{ clip.translation }}</p>
     <div class="container bottom">
       <div>
         <ion-button fill="clear" shape="round" color="medium">
@@ -45,12 +46,14 @@
           [disabled]="!hasHtmlView"
           (click)="invertCurrentView($event)"
         >
-          <ion-icon *ngIf="currentView === 'html'" name="logo-html5"></ion-icon>
-          <i *ngIf="currentView === 'plain'" class="material-icons"
-            >text_format</i
-          >
+          <ion-icon name="logo-html5"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" shape="round" color="medium">
+        <ion-button
+          fill="clear"
+          shape="round"
+          color="medium"
+          (click)="translate($event)"
+        >
           <i class="material-icons">translate</i>
         </ion-button>
         <ion-button

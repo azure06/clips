@@ -11,7 +11,7 @@ interface Bookmark {
 export interface Clip extends Bookmark, Base {
   plainText?: string;
   htmlText?: string;
-  dataURI?: any;
+  dataURI: any;
   types: string[];
 }
 

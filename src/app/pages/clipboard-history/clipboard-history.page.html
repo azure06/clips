@@ -3,6 +3,7 @@
     *ngFor="let clip of (clips$ | async); let i = index"
     (addToBookmark)="modifyClip($event)"
     (removeClip)="removeClip($event)"
+    (translateText)="translateText($event)"
     [clip]="clip"
     [index]="i"
   >

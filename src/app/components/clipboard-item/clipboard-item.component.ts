@@ -11,6 +11,7 @@ export class ClipboardItemComponent {
   @Input() index;
   @Output() removeClip = new EventEmitter();
   @Output() addToBookmark = new EventEmitter();
+  @Output() translateText = new EventEmitter();
   public currentView: 'plain' | 'html' = 'plain';
   public hasMouseEntered = false;
 
@@ -43,5 +44,9 @@ export class ClipboardItemComponent {
 
   onRemoveClick(event: Event): void {
     this.removeClip.emit(this.clip);
+  }
+
+  translate(): void {
+    this.translateText.emit(this.clip);
   }
 }
