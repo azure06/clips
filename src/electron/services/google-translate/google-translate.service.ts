@@ -1,6 +1,6 @@
+import translate from '@vitalets/google-translate-api';
 import { EventEmitter } from 'events';
 import { Languages } from './languages';
-const translate = require('@vitalets/google-translate-api');
 
 export default class GoogleTranslate extends EventEmitter {
   private options: { from?: Languages; to: Languages; raw?: boolean } = {

@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron';
-import * as isDev from 'electron-is-dev';
+import isDev from 'electron-is-dev';
 import * as path from 'path';
 import GoogleTranslate from '../services/google-translate/google-translate.service';
 import { electronConfig } from './../electron.config';
