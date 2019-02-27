@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron';
-import isDev from 'electron-is-dev';
+import * as isDev from 'electron-is-dev';
 import * as path from 'path';
 import GoogleTranslate from '../services/google-translate/google-translate.service';
 import { electronConfig } from './../electron.config';
@@ -56,18 +56,19 @@ const initGoogleTranslate = () => {
 };
 
 const createWindow = () => {
+  const isDevelopment = (isDev as any).default;
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    frame: isDev ? true : false
+    frame: isDevelopment ? true : false
   });
 
   console.error('Directory', __dirname, isDev);
 
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
   mainWindow.loadURL(
-    isDev
+    isDevelopment
       ? 'http://localhost:4200'
       : path.join(`file://${__dirname}`, '../../index.html')
   );
