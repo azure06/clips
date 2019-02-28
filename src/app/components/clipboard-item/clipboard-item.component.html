@@ -52,6 +52,7 @@
           fill="clear"
           shape="round"
           color="medium"
+          [color]="clip.translationView ? 'secondary' : 'medium'"
           (click)="onTranslate($event)"
         >
           <i class="material-icons">translate</i>
