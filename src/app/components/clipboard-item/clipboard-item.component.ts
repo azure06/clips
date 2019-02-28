@@ -10,9 +10,9 @@ export class ClipboardItemComponent {
   @Input() clip: any; // FIXME Should be like ClipDetails in clipboard-history.page.ts
   @Input() index;
   @Output() removeClip = new EventEmitter();
-  @Output() addToBookmark = new EventEmitter();
+  @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
-  public currentView: 'plain' | 'html' = 'plain';
+  public currentView: 'plainView' | 'htmlView' = 'plainView';
   public hasMouseEntered = false;
 
   constructor() {}
@@ -21,8 +21,9 @@ export class ClipboardItemComponent {
     return !!this.clip.htmlText;
   }
 
-  invertCurrentView(view: 'plain' | 'html') {
-    this.currentView = this.currentView === 'plain' ? 'html' : 'plain';
+  invertCurrentView(view: 'plainView' | 'htmlView') {
+    this.currentView =
+      this.currentView === 'plainView' ? 'htmlView' : 'plainView';
   }
 
   onClick(event: Event): void {}
@@ -36,7 +37,7 @@ export class ClipboardItemComponent {
   }
 
   onAddToBookmarkClick(event: Event): void {
-    this.addToBookmark.emit({
+    this.modifyClip.emit({
       ...this.clip,
       starred: !this.clip.starred
     });
@@ -46,7 +47,7 @@ export class ClipboardItemComponent {
     this.removeClip.emit(this.clip);
   }
 
-  translate(): void {
+  onTranslate(): void {
     this.translateText.emit(this.clip);
   }
 }

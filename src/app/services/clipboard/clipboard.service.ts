@@ -1,5 +1,4 @@
 import { Injectable, NgZone } from '@angular/core';
-import { EffectNotification } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
 import { first, scan } from 'rxjs/operators';
 // tslint:disable-next-line: no-submodule-imports
@@ -7,6 +6,7 @@ import uuidv4 from 'uuid/v4';
 import { Clip } from '../../models/models';
 import {
   AddClip,
+  LoadNext,
   ModifyClip,
   RemoveClip,
   SetClips
@@ -24,17 +24,14 @@ export class ClipboardService {
     private ngZone: NgZone
   ) {
     if (electronService.isAvailable) {
-      this.init();
-    }
-  }
+      const ipcRenderer = this.electronService.electron.ipcRenderer;
+      ipcRenderer.on('clipboard-change', (event, clip: Clip) => {
+        this.handleClipboardChangeEvent(clip);
+      });
 
-  private async init() {
-    const clips = await this.indexDBService.getClips();
-    this.setState(clips);
-    const ipcRenderer = this.electronService.electron.ipcRenderer;
-    ipcRenderer.on('clipboard-change', (event, clip: Clip) => {
-      this.handleEvent(clip);
-    });
+      // Populate state with 15 clipboard items;
+      this.setState(15);
+    }
   }
 
   /**
@@ -43,22 +40,12 @@ export class ClipboardService {
    *
    * @param clip Clipboard Item
    */
-  private async handleEvent(clip: Clip) {
-    const currentClips = await this.store
-      .pipe(
-        select(fromClips.getClips),
-        first()
-      )
-      .toPromise();
-
-    const oldClip = currentClips.find(
-      targetClip => targetClip.plainText === clip.plainText
-    );
-
-    oldClip
+  private async handleClipboardChangeEvent(clip: Clip) {
+    const result = await this.indexDBService.findClip(clip);
+    result
       ? this.modifyClip(
           {
-            ...oldClip,
+            ...result,
             updatedAt: new Date().getTime()
           },
           true
@@ -66,35 +53,48 @@ export class ClipboardService {
       : this.addClip(clip);
   }
 
-  private setState(clips: Clip[]) {
+  private async setState(limit?: number) {
+    const clips = await this.indexDBService.getClips({ upperBound: limit });
     this.ngZone.run(() => {
       this.store.dispatch(new SetClips({ clips }));
     });
   }
 
-  public addClip(clip: Clip) {
+  public getClipsFromState(): Promise<Clip[]> {
+    return this.store
+      .pipe(
+        select(fromClips.getClips),
+        first()
+      )
+      .toPromise();
+  }
+
+  public loadNext(amount: number) {
+    this.ngZone.run(() => {
+      this.store.dispatch(new LoadNext({ amount }));
+    });
+  }
+
+  public async addClip(clip: Clip) {
+    // Add to IndexedDB
     clip = { ...clip, id: uuidv4() };
+    await this.indexDBService.addClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
     });
-
-    // Add to IndexedDB
-    this.indexDBService.addClip(clip);
   }
 
-  public modifyClip(clip: Clip, sort?: boolean) {
+  public async modifyClip(clip: Clip, sort?: boolean) {
+    await this.indexDBService.modifyClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new ModifyClip({ clip, sort }));
     });
-
-    this.indexDBService.modifyClip(clip);
   }
 
-  public removeClip(clip: Clip) {
+  public async removeClip(clip: Clip) {
+    await this.indexDBService.removeClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new RemoveClip({ clip }));
     });
-
-    this.indexDBService.removeClip(clip);
   }
 }

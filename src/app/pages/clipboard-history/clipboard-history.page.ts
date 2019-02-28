@@ -3,18 +3,12 @@ import { IonInfiniteScroll } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import moment from 'moment';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
-import { GoogleTranslateService } from 'src/app/services/google-translate/google-translate.service';
+import { delay, filter, first, map } from 'rxjs/operators';
 import { Clip } from '../../models/models';
+import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
 import { AddClip } from '../clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../clipboard/store/index';
 import { ClipboardService } from './../../services/clipboard/clipboard.service';
-
-interface ClipDetails extends Clip {
-  fromNow: string;
-  snippet: string;
-  translation: string;
-}
 
 @Component({
   selector: 'app-clipboard-history-page',
@@ -23,12 +17,7 @@ interface ClipDetails extends Clip {
 })
 export class ClipboardHistoryPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
-  clips$: Observable<ClipDetails[]>;
-  ionicInfiniteScrollCount = 0;
-  infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollCount);
-  translationSubject: BehaviorSubject<
-    Partial<ClipDetails>
-  > = new BehaviorSubject({});
+  clips$: Observable<Clip[]>;
 
   constructor(
     private clipboardService: ClipboardService,
@@ -37,77 +26,48 @@ export class ClipboardHistoryPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const clipsObservable = this.store.pipe(select(fromClips.getClips));
-    const infiniteScrollCountObservable = this.infiniteScrollSubject.asObservable();
-    const translationSubectObservable = this.translationSubject.asObservable();
-
-    this.clips$ = combineLatest(
-      clipsObservable,
-      infiniteScrollCountObservable,
-      translationSubectObservable
-    ).pipe(
+    this.clips$ = this.store.pipe(
+      select(fromClips.getClips),
       delay(0),
-      map(([clips, count, translatedClip]) => {
-        const filteredClips = clips.reduce(
-          (acc: ClipDetails[], clip: ClipDetails, index) => {
-            if (index < count) {
-              // expression-has-changed-after-it-was-checked
-              clip.snippet = (clip.plainText || '').substring(0, 240);
-              clip.fromNow = moment(clip.updatedAt).fromNow();
-              acc.push(clip);
-            }
-            return acc;
-          },
-          []
-        );
-
-        const index = translatedClip.id
-          ? filteredClips.findIndex(clip => clip.id === translatedClip.id)
-          : undefined;
-
-        if (index !== undefined) {
-          console.error(index, translatedClip.translation);
-          filteredClips[index].translation = translatedClip.translation;
+      map(clips => {
+        for (const clip of clips) {
+          clip.plainView = clip.plainText.substring(0, 255);
+          clip.dateFromNow = moment(clip.updatedAt).fromNow();
         }
-
-        return filteredClips;
+        return clips;
       })
     );
-
-    this.showMore();
   }
 
-  loadData(event): void {
-    setTimeout(() => {
-      event.target.complete();
-      this.showMore();
-      // if (this.data.length === 1000) {
-      // event.target.disabled = true;
-      // }
-    }, 0);
+  async loadMore(event): Promise<void> {
+    this.clipboardService.loadNext(10);
+    const isLoadingNext = await this.store
+      .pipe(
+        select(fromClips.isLoadingNext),
+        filter(value => !value),
+        first()
+      )
+      .toPromise();
+    event.target.complete();
+    // if (this.data.length === 1000) {
+    // event.target.disabled = true;
+    // }
   }
 
-  showMore(): void {
-    this.ionicInfiniteScrollCount += 10;
-    this.infiniteScrollSubject.next(this.ionicInfiniteScrollCount);
-  }
-
-  modifyClip(clip: ClipDetails) {
+  modifyClip(clip: Clip) {
     this.clipboardService.modifyClip(clip);
   }
 
-  removeClip(clip: ClipDetails) {
+  removeClip(clip: Clip) {
     this.clipboardService.removeClip(clip);
   }
 
-  async translateText(clip: ClipDetails): Promise<void> {
-    const translation = await this.googleTranslateService.translate(
-      clip.plainText
-    );
-
-    this.translationSubject.next({
+  async translateText(clip: Clip): Promise<void> {
+    this.modifyClip({
       ...clip,
-      translation
+      translationView: await this.googleTranslateService.translate(
+        clip.plainText
+      )
     });
   }
 }

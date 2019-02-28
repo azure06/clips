@@ -6,11 +6,13 @@ import {
 
 export interface State {
   loading: boolean;
+  loadingNext: boolean;
   clips: Clip[];
 }
 
 export const initialState: State = {
   loading: false,
+  loadingNext: false,
   clips: []
 };
 
@@ -88,8 +90,31 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
     }
     case ClipboardActionTypes.RemoveClipFailure: {
       return {
+        ...state,
+        loading: false
+      };
+    }
+
+    case ClipboardActionTypes.LoadNext: {
+      return {
+        ...state,
+        loading: true,
+        loadingNext: true
+      };
+    }
+    case ClipboardActionTypes.LoadNextSuccess: {
+      return {
+        ...state,
+        clips: [...state.clips, ...action.payload.clips],
         loading: false,
-        ...state
+        loadingNext: false
+      };
+    }
+    case ClipboardActionTypes.LoadNextFailure: {
+      return {
+        ...state,
+        loading: false,
+        loadingNext: false
       };
     }
 
@@ -107,3 +132,4 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
 
 export const getClips = (state: State) => state.clips;
 export const isLoading = (state: State) => state.loading;
+export const isLoadingNext = (state: State) => state.loadingNext;

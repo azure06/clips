@@ -43,28 +43,40 @@ export class IndexedDBService {
     });
   }
 
-  public getClips(limit?: number): Promise<Clip[]> {
+  public getClips(options?: {
+    lowerBound?: number;
+    upperBound?: number;
+    direction?: IDBCursorDirection;
+  }): Promise<Clip[]> {
     const successHandler = (db: IDBDatabase) => {
+      const { lowerBound, upperBound, direction } = options;
       return new Promise((resolve, _reject) => {
-        const clips: Clip[] = [];
         const objectStore = db
           .transaction(['clips'], 'readwrite')
           .objectStore('clips')
           .index('updatedAt');
 
-        const request = objectStore.openCursor(null, 'prev');
+        const clips: Clip[] = [];
+        const request = objectStore.openCursor(null, direction || 'prev');
 
         request.onerror = _reject;
-        request.onsuccess = event => {
+        request.onsuccess = ((index = 0) => event => {
           const cursor = (event.target as IDBRequest)
             .result as IDBCursorWithValue;
-          if (cursor && (!limit || clips.length < limit)) {
-            clips.push(cursor.value);
+
+          if (cursor) {
+            if (
+              (lowerBound === undefined || index >= lowerBound) &&
+              (upperBound === undefined || index < upperBound)
+            ) {
+              clips.push(cursor.value);
+            }
+            index++;
             cursor.continue();
           } else {
             resolve(clips);
           }
-        };
+        })();
       });
     };
     return this.makeRequest({ successHandler });
@@ -96,8 +108,25 @@ export class IndexedDBService {
 
         const updateRequest = objectStore.put(clip);
         updateRequest.onerror = _reject;
-        updateRequest.onsuccess = event =>
-          console.log('update transaction complete');
+        updateRequest.onsuccess = resolve;
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
+  public findClip(clip: Clip): Promise<Clip | undefined> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const objectStore = db
+          .transaction(['clips'], 'readwrite')
+          .objectStore('clips');
+
+        const request = objectStore
+          .index('text')
+          .get(IDBKeyRange.only([clip.plainText, clip.htmlText]));
+
+        request.onerror = _reject;
+        request.onsuccess = () => resolve(request.result);
       });
     };
     return this.makeRequest({ successHandler });
@@ -112,8 +141,7 @@ export class IndexedDBService {
 
         const removeRequest = objectStore.delete(clip.id);
         removeRequest.onerror = _reject;
-        removeRequest.onsuccess = event =>
-          console.log('delete transaction complete');
+        removeRequest.onsuccess = resolve;
       });
     };
     return this.makeRequest({ successHandler });
@@ -126,8 +154,9 @@ export class IndexedDBService {
       keyPath: 'id'
     });
 
-    objectStore.createIndex('plainText', 'plainText', { unique: true });
-    objectStore.createIndex('htmlText', 'htmlText', { unique: false });
+    objectStore.createIndex('text', ['plainText', 'htmlText'], {
+      unique: true
+    });
     objectStore.createIndex('dataURI', 'dataURI', { unique: false });
     objectStore.createIndex('starred', 'starred', { unique: false });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
