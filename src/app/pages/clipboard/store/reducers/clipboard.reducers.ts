@@ -93,6 +93,27 @@ export function clipboardReducer(state = initialState, action: ClipActions) {
       };
     }
 
+    case ClipboardActionTypes.LoadNext: {
+      return {
+        ...state,
+        loading: true
+      };
+    }
+    case ClipboardActionTypes.LoadNextSuccess: {
+      console.error(action.payload.clips);
+      return {
+        ...state,
+        clips: [...state.clips, ...action.payload.clips],
+        loading: false
+      };
+    }
+    case ClipboardActionTypes.LoadNextFailure: {
+      return {
+        ...state,
+        loading: false
+      };
+    }
+
     case ClipboardActionTypes.SetClips: {
       return {
         ...state,

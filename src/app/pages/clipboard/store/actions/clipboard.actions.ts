@@ -3,7 +3,9 @@ import { Clip } from '../../../../models/models';
 
 // tslint:disable: max-classes-per-file
 export enum ClipboardActionTypes {
-  SetClips = '[Clipboard Items] Set all Clipboards items',
+  LoadNext = '[Clipboard Items] Load more Clipboard Item',
+  LoadNextSuccess = '[Clipboard Items] Load more Clipboard Items Success',
+  LoadNextFailure = '[Clipboard Items] Load more Clipboard Items Failure',
 
   AddClip = '[Clipboard Item] Add Clipboard Item',
   AddClipSuccess = '[Clipboard Item] Add Clipboard Item Success',
@@ -15,7 +17,9 @@ export enum ClipboardActionTypes {
 
   RemoveClip = '[Clipboard Item] Remove Clipboard Item',
   RemoveClipSuccess = '[Clipboard Item] Remove Clipboard Item Success',
-  RemoveClipFailure = '[Clipboard Item] Remove Clipboard Item Failure'
+  RemoveClipFailure = '[Clipboard Item] Remove Clipboard Item Failure',
+
+  SetClips = '[Clipboard Items] Set all Clipboards items'
 }
 
 // Add Clip
@@ -66,6 +70,21 @@ export class RemoveClipFailure implements Action {
   constructor(public payload: { error: any }) {}
 }
 
+export class LoadNext implements Action {
+  readonly type = ClipboardActionTypes.LoadNext;
+  constructor(public payload: { amount?: number }) {}
+}
+
+export class LoadNextSuccess implements Action {
+  readonly type = ClipboardActionTypes.LoadNextSuccess;
+  constructor(public payload: { clips: Clip[] }) {}
+}
+
+export class LoadNextFailure implements Action {
+  readonly type = ClipboardActionTypes.LoadNextFailure;
+  constructor(public payload: { error: any }) {}
+}
+
 // Set Clip
 export class SetClips implements Action {
   readonly type = ClipboardActionTypes.SetClips;
@@ -82,4 +101,7 @@ export type ClipActions =
   | RemoveClip
   | RemoveClipSuccess
   | RemoveClipFailure
+  | LoadNext
+  | LoadNextSuccess
+  | LoadNextFailure
   | SetClips;

@@ -43,28 +43,40 @@ export class IndexedDBService {
     });
   }
 
-  public getClips(limit?: number): Promise<Clip[]> {
+  public getClips(options?: {
+    lowerBound?: number;
+    upperBound?: number;
+    direction?: IDBCursorDirection;
+  }): Promise<Clip[]> {
     const successHandler = (db: IDBDatabase) => {
+      const { lowerBound, upperBound, direction } = options;
       return new Promise((resolve, _reject) => {
-        const clips: Clip[] = [];
         const objectStore = db
           .transaction(['clips'], 'readwrite')
           .objectStore('clips')
           .index('updatedAt');
 
-        const request = objectStore.openCursor(null, 'prev');
+        const clips: Clip[] = [];
+        const request = objectStore.openCursor(null, direction || 'prev');
 
         request.onerror = _reject;
-        request.onsuccess = event => {
+        request.onsuccess = ((index = 0) => event => {
           const cursor = (event.target as IDBRequest)
             .result as IDBCursorWithValue;
-          if (cursor && (!limit || clips.length < limit)) {
-            clips.push(cursor.value);
+
+          if (cursor) {
+            if (
+              (lowerBound === undefined || index >= lowerBound) &&
+              (upperBound === undefined || index < upperBound)
+            ) {
+              clips.push(cursor.value);
+            }
+            index++;
             cursor.continue();
           } else {
             resolve(clips);
           }
-        };
+        })();
       });
     };
     return this.makeRequest({ successHandler });

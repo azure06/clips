@@ -4,8 +4,8 @@ import { select, Store } from '@ngrx/store';
 import moment from 'moment';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
-import { GoogleTranslateService } from 'src/app/services/google-translate/google-translate.service';
 import { Clip } from '../../models/models';
+import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
 import { AddClip } from '../clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../clipboard/store/index';
 import { ClipboardService } from './../../services/clipboard/clipboard.service';
@@ -24,8 +24,6 @@ interface ClipDetails extends Clip {
 export class ClipboardHistoryPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<ClipDetails[]>;
-  ionicInfiniteScrollCount = 0;
-  infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollCount);
   translationSubject: BehaviorSubject<
     Partial<ClipDetails>
   > = new BehaviorSubject({});
@@ -38,58 +36,40 @@ export class ClipboardHistoryPage implements OnInit {
 
   ngOnInit(): void {
     const clipsObservable = this.store.pipe(select(fromClips.getClips));
-    const infiniteScrollCountObservable = this.infiniteScrollSubject.asObservable();
     const translationSubectObservable = this.translationSubject.asObservable();
 
     this.clips$ = combineLatest(
       clipsObservable,
-      infiniteScrollCountObservable,
       translationSubectObservable
     ).pipe(
       delay(0),
-      map(([clips, count, translatedClip]) => {
-        const filteredClips = clips.reduce(
-          (acc: ClipDetails[], clip: ClipDetails, index) => {
-            if (index < count) {
-              // expression-has-changed-after-it-was-checked
-              clip.snippet = (clip.plainText || '').substring(0, 240);
-              clip.fromNow = moment(clip.updatedAt).fromNow();
-              acc.push(clip);
-            }
-            return acc;
-          },
-          []
-        );
-
-        const index = translatedClip.id
-          ? filteredClips.findIndex(clip => clip.id === translatedClip.id)
-          : undefined;
-
-        if (index !== undefined) {
-          console.error(index, translatedClip.translation);
-          filteredClips[index].translation = translatedClip.translation;
+      map(([clips, translatedClip]: [ClipDetails[], ClipDetails]) => {
+        for (const clip of clips) {
+          clip.snippet = (clip.plainText || '').substring(0, 240);
+          clip.fromNow = moment(clip.updatedAt).fromNow();
         }
 
-        return filteredClips;
+        // const index = translatedClip.id
+        //   ? _clips.findIndex(clip => clip.id === translatedClip.id)
+        //   : undefined;
+
+        // if (index !== undefined) {
+        //   console.error(index, translatedClip.translation);
+        //   _clips[index].translation = translatedClip.translation;
+        // }
+        return clips;
       })
     );
-
-    this.showMore();
   }
 
   loadData(event): void {
+    this.clipboardService.loadNext(10);
     setTimeout(() => {
       event.target.complete();
-      this.showMore();
       // if (this.data.length === 1000) {
       // event.target.disabled = true;
       // }
-    }, 0);
-  }
-
-  showMore(): void {
-    this.ionicInfiniteScrollCount += 10;
-    this.infiniteScrollSubject.next(this.ionicInfiniteScrollCount);
+    }, 700);
   }
 
   modifyClip(clip: ClipDetails) {

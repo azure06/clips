@@ -6,15 +6,20 @@ import {
   ofType,
   OnRunEffects
 } from '@ngrx/effects';
-import { Action } from '@ngrx/store';
+import { Action, select } from '@ngrx/store';
 import { from, Observable, of } from 'rxjs';
-import { catchError, map, mergeMap, tap } from 'rxjs/operators';
+import { catchError, first, map, mergeMap, tap } from 'rxjs/operators';
+import { Clip } from '../../../../models/models';
 import { ClipboardService } from '../../../../services/clipboard/clipboard.service';
+import { IndexedDBService } from '../../../../services/indexed-db/indexed-db.service';
 import {
   AddClip,
   AddClipFailure,
   AddClipSuccess,
   ClipboardActionTypes,
+  LoadNext,
+  LoadNextFailure,
+  LoadNextSuccess,
   ModifyClip,
   ModifyClipFailure,
   ModifyClipSuccess,
@@ -27,8 +32,38 @@ import {
 export class ClipboardEffects implements OnRunEffects {
   constructor(
     private actions$: Actions,
+    private indexedDBService: IndexedDBService,
     private clipboardService: ClipboardService
   ) {}
+
+  @Effect()
+  loadNext$: Observable<Action> = this.actions$.pipe(
+    ofType<LoadNext>(ClipboardActionTypes.LoadNext),
+    mergeMap(action => {
+      return from(
+        (async () => {
+          const clips = await this.clipboardService.getClipsFromState();
+          const lowerBound = clips.length;
+          const upperBound =
+            action.payload.amount !== undefined
+              ? lowerBound + action.payload.amount
+              : undefined;
+          return this.indexedDBService.getClips({
+            lowerBound,
+            upperBound
+          });
+        })()
+      ).pipe(
+        map(clips => {
+          console.error(clips);
+          return new LoadNextSuccess({
+            clips
+          });
+        })
+      );
+    }),
+    catchError(error => of(new LoadNextFailure({ error })))
+  );
 
   @Effect()
   addClip$: Observable<Action> = this.actions$.pipe(
@@ -80,8 +115,6 @@ export class ClipboardEffects implements OnRunEffects {
   );
 
   ngrxOnRunEffects(resolvedEffects$: Observable<EffectNotification>) {
-    return resolvedEffects$.pipe(
-      tap(effect => 'this.clipboardService.updateElectronStore(effect)')
-    );
+    return resolvedEffects$.pipe(tap(effect => console.log(effect)));
   }
 }
