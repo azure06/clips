@@ -114,6 +114,24 @@ export class IndexedDBService {
     return this.makeRequest({ successHandler });
   }
 
+  public findClip(clip: Clip): Promise<Clip | undefined> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const objectStore = db
+          .transaction(['clips'], 'readwrite')
+          .objectStore('clips');
+
+        const request = objectStore
+          .index('text')
+          .get(IDBKeyRange.only([clip.plainText, clip.htmlText]));
+
+        request.onerror = _reject;
+        request.onsuccess = () => resolve(request.result);
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
   public removeClip(clip: Clip): Promise<Clip[]> {
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
@@ -123,8 +141,7 @@ export class IndexedDBService {
 
         const removeRequest = objectStore.delete(clip.id);
         removeRequest.onerror = _reject;
-        removeRequest.onsuccess = event =>
-          console.log('delete transaction complete');
+        removeRequest.onsuccess = resolve;
       });
     };
     return this.makeRequest({ successHandler });
@@ -137,8 +154,9 @@ export class IndexedDBService {
       keyPath: 'id'
     });
 
-    objectStore.createIndex('plainText', 'plainText', { unique: true });
-    objectStore.createIndex('htmlText', 'htmlText', { unique: false });
+    objectStore.createIndex('text', ['plainText', 'htmlText'], {
+      unique: true
+    });
     objectStore.createIndex('dataURI', 'dataURI', { unique: false });
     objectStore.createIndex('starred', 'starred', { unique: false });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });

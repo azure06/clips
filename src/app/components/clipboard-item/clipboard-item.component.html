@@ -23,7 +23,7 @@
   <ion-label>
     <h3
       *ngIf="currentView === 'htmlView'"
-      [innerHTML]="clip.htmlView | sanitizeHtml"
+      [innerHTML]="clip.htmlText | sanitizeHtml"
       [title]="clip.plainText"
     ></h3>
     <h3 *ngIf="currentView === 'plainView'">
@@ -42,7 +42,7 @@
         <ion-button
           fill="clear"
           shape="round"
-          [color]="currentView === 'plain' ? 'medium' : 'secondary'"
+          [color]="currentView === 'plainView' ? 'medium' : 'secondary'"
           [disabled]="!hasHtmlView"
           (click)="invertCurrentView($event)"
         >

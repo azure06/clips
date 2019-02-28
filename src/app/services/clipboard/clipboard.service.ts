@@ -41,11 +41,16 @@ export class ClipboardService {
    * @param clip Clipboard Item
    */
   private async handleClipboardChangeEvent(clip: Clip) {
-    this.addClip(clip);
-  }
-
-  private findClip(clip: Clip) {
-    return '';
+    const result = await this.indexDBService.findClip(clip);
+    result
+      ? this.modifyClip(
+          {
+            ...result,
+            updatedAt: new Date().getTime()
+          },
+          true
+        )
+      : this.addClip(clip);
   }
 
   private async setState(limit?: number) {
