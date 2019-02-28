@@ -8,15 +8,22 @@ interface Bookmark {
   starred: boolean;
 }
 
-export interface Clip extends Bookmark, Base {
-  plainText?: string;
-  htmlText?: string;
-  dataURI: any;
+interface ViewDetails {
+  plainView: string;
+  htmlView: string;
+  translationView: string;
+  dateFromNow: string;
+}
+
+export interface Clip extends Partial<ViewDetails>, Bookmark, Base {
+  plainText: string;
+  htmlText: string;
+  dataURI: string;
   types: string[];
 }
 
 /**
- *
+ * Translation result
  *
  */
 export interface GoogleTraslateResult {

@@ -55,7 +55,6 @@ export class ClipboardEffects implements OnRunEffects {
         })()
       ).pipe(
         map(clips => {
-          console.error(clips);
           return new LoadNextSuccess({
             clips
           });
@@ -115,6 +114,8 @@ export class ClipboardEffects implements OnRunEffects {
   );
 
   ngrxOnRunEffects(resolvedEffects$: Observable<EffectNotification>) {
-    return resolvedEffects$.pipe(tap(effect => console.log(effect)));
+    return resolvedEffects$.pipe(
+      tap(effect => console.log('Resolved effect: ', effect))
+    );
   }
 }

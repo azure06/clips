@@ -16,3 +16,8 @@ export const isLoading = createSelector(
   getFeatureState,
   fromClips.isLoading
 );
+
+export const isLoadingNext = createSelector(
+  getFeatureState,
+  fromClips.isLoadingNext
+);

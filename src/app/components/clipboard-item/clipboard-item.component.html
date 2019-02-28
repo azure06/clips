@@ -22,15 +22,15 @@
   </ion-button>
   <ion-label>
     <h3
-      [innerHTML]="
-        currentView === 'html'
-          ? (clip.htmlText | sanitizeHtml)
-          : '<span>' + clip.snippet + '</span>'
-      "
+      *ngIf="currentView === 'htmlView'"
+      [innerHTML]="clip.htmlView | sanitizeHtml"
       [title]="clip.plainText"
     ></h3>
-    <p>{{ clip.fromNow }}</p>
-    <p>{{ clip.translation }}</p>
+    <h3 *ngIf="currentView === 'plainView'">
+      {{ clip.plainView }}
+    </h3>
+    <p>{{ clip.translationView }}</p>
+    <p>{{ clip.dateFromNow }}</p>
     <div class="container bottom">
       <div>
         <ion-button fill="clear" shape="round" color="medium">
@@ -52,7 +52,7 @@
           fill="clear"
           shape="round"
           color="medium"
-          (click)="translate($event)"
+          (click)="onTranslate($event)"
         >
           <i class="material-icons">translate</i>
         </ion-button>

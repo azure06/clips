@@ -108,8 +108,7 @@ export class IndexedDBService {
 
         const updateRequest = objectStore.put(clip);
         updateRequest.onerror = _reject;
-        updateRequest.onsuccess = event =>
-          console.log('update transaction complete');
+        updateRequest.onsuccess = resolve;
       });
     };
     return this.makeRequest({ successHandler });
