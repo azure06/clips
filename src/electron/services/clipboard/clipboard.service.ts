@@ -9,6 +9,7 @@ enum Types {
 
 export default class ClipboardService extends EventEmitter {
   previousText: string;
+  previousDataURI: string;
 
   constructor() {
     super();
@@ -35,11 +36,17 @@ export default class ClipboardService extends EventEmitter {
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()
         });
-      } else if (!isText) {
-        // this.emit('clipboard-change', {
-        //   image,
-        //   availableFormats
-        // });
+      } else if (!isText && this.previousDataURI === image.toDataURL()) {
+        this.emit('clipboard-change', {
+          id: undefined,
+          plainText,
+          htmlText,
+          dataURI: image.toDataURL(),
+          types: availableFormats,
+          category: 'none',
+          createdAt: new Date().getTime(),
+          updatedAt: new Date().getTime()
+        });
       }
     }
 

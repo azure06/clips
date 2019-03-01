@@ -92,10 +92,15 @@ ion-icon[name='document'] {
 ion-icon[name='logo-html5'] {
   width: 20px;
   height: 20px;
-  margin-top: 2px;
 }
 
 .material-icons {
-  margin-top: 3px;
-  font-size: 22px;
+  &.translate {
+    font-size: 22px;
+    margin-top: 2px;
+  }
+  &.text-format {
+    font-size: 24px;
+    margin-top: 2px;
+  }
 }

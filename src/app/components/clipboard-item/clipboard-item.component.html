@@ -26,10 +26,16 @@
       [innerHTML]="clip.htmlText | sanitizeHtml"
       [title]="clip.htmlText"
     ></h3>
-    <h3 *ngIf="view === 'plainView'" [title]="clip.plainText">
+    <h3
+      *ngIf="view === 'plainView' && !clip.translationView"
+      [title]="clip.plainText"
+    >
       {{ clip.plainView }}
     </h3>
-    <h3 [title]="clip.translationView">
+    <h3
+      *ngIf="view !== 'htmlView' && clip.translationView"
+      [title]="clip.translationView"
+    >
       {{ clip.translationView }}
     </h3>
     <p>{{ clip.dateFromNow }}</p>
@@ -44,20 +50,22 @@
         <ion-button
           fill="clear"
           shape="round"
-          [color]="view === 'htmlView' ? 'secondary' : 'medium'"
+          [color]="view === 'htmlView' ? 'primary' : 'medium'"
           [disabled]="!hasHtmlView"
           (click)="switchView(view !== 'plainView' ? 'plainView' : 'htmlView')"
         >
-          <ion-icon name="logo-html5"></ion-icon>
+          <i class="material-icons text-format">text_format</i>
         </ion-button>
         <ion-button
           fill="clear"
           shape="round"
           color="medium"
-          [color]="view === 'clip.translationView' ? 'primary' : 'medium'"
+          [color]="
+            clip.translationView && view !== 'htmlView' ? 'primary' : 'medium'
+          "
           (click)="onTranslate($event)"
         >
-          <i class="material-icons">translate</i>
+          <i class="material-icons translate">translate</i>
         </ion-button>
         <ion-button
           fill="clear"

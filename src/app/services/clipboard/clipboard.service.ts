@@ -26,7 +26,9 @@ export class ClipboardService {
     if (electronService.isAvailable) {
       const ipcRenderer = this.electronService.electron.ipcRenderer;
       ipcRenderer.on('clipboard-change', (event, clip: Clip) => {
-        this.handleClipboardChangeEvent(clip);
+        clip.types.includes('text/plain')
+          ? this.handleClipboardChangeEvent(clip)
+          : console.error(clip);
       });
     }
   }
