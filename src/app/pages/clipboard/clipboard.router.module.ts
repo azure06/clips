@@ -18,22 +18,12 @@ const routes: Routes = [
         ]
       },
       {
-        path: '',
-        children: [
-          {
-            path: 'searcher',
-            loadChildren:
-              '../clipboard-searcher/clipboard-searcher.module#ClipboardSearcherPageModule'
-          }
-        ]
-      },
-      {
-        path: 'history3',
+        path: 'bookmark',
         children: [
           {
             path: '',
             loadChildren:
-              '../clipboard-history/clipboard-history.module#ClipboardHistoryPageModule'
+              '../clipboard-bookmark/clipboard-bookmark.module#ClipboardBookmarkPageModule'
           }
         ]
       },
@@ -44,6 +34,16 @@ const routes: Routes = [
             path: '',
             loadChildren:
               '../clipboard-history/clipboard-history.module#ClipboardHistoryPageModule'
+          }
+        ]
+      },
+      {
+        path: '',
+        children: [
+          {
+            path: 'finder',
+            loadChildren:
+              '../clipboard-finder/clipboard-finder.module#ClipboardFinderPageModule'
           }
         ]
       },

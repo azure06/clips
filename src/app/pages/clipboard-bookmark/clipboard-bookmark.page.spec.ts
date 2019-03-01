@@ -1,21 +1,21 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ClipboardSearcherPage } from './clipboard-searcher.page';
+import { ClipboardBookmarkPage } from './clipboard-bookmark.page';
 
-describe('Tab1Page', () => {
-  let component: ClipboardSearcherPage;
-  let fixture: ComponentFixture<ClipboardSearcherPage>;
+describe('ClipboardBookmarkPage', () => {
+  let component: ClipboardBookmarkPage;
+  let fixture: ComponentFixture<ClipboardBookmarkPage>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ClipboardSearcherPage],
+      declarations: [ClipboardBookmarkPage],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ClipboardSearcherPage);
+    fixture = TestBed.createComponent(ClipboardBookmarkPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

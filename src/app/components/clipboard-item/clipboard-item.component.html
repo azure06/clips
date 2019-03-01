@@ -24,12 +24,14 @@
     <h3
       *ngIf="currentView === 'htmlView'"
       [innerHTML]="clip.htmlText | sanitizeHtml"
-      [title]="clip.plainText"
+      [title]="clip.htmlText"
     ></h3>
-    <h3 *ngIf="currentView === 'plainView'">
+    <h3 *ngIf="currentView === 'plainView'" [title]="clip.plainText">
       {{ clip.plainView }}
     </h3>
-    <p>{{ clip.translationView }}</p>
+    <h3 class="translation-view" [title]="clip.translationView">
+      {{ clip.translationView }}
+    </h3>
     <p>{{ clip.dateFromNow }}</p>
     <div class="container bottom">
       <div>
@@ -52,7 +54,7 @@
           fill="clear"
           shape="round"
           color="medium"
-          [color]="clip.translationView ? 'secondary' : 'medium'"
+          [color]="clip.translationView ? 'primary' : 'medium'"
           (click)="onTranslate($event)"
         >
           <i class="material-icons">translate</i>
@@ -60,7 +62,7 @@
         <ion-button
           fill="clear"
           shape="round"
-          [color]="clip.starred ? 'secondary' : 'medium'"
+          [color]="clip.starred ? 'primary' : 'medium'"
           (click)="onAddToBookmarkClick($event)"
         >
           <ion-icon name="star"></ion-icon>

@@ -6,10 +6,9 @@ import {
   ofType,
   OnRunEffects
 } from '@ngrx/effects';
-import { Action, select } from '@ngrx/store';
+import { Action } from '@ngrx/store';
 import { from, Observable, of } from 'rxjs';
-import { catchError, first, map, mergeMap, tap } from 'rxjs/operators';
-import { Clip } from '../../../../models/models';
+import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 import { ClipboardService } from '../../../../services/clipboard/clipboard.service';
 import { IndexedDBService } from '../../../../services/indexed-db/indexed-db.service';
 import {
