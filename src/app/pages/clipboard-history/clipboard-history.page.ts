@@ -24,9 +24,9 @@ export class ClipboardHistoryPage implements OnInit {
     private store: Store<fromClips.State>
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     // Set clips from indexedDB into the state
-    this.clipboardService.getClipsFromIdbAndSetInState(15);
+    await this.clipboardService.getClipsFromIdbAndSetInState({ limit: 15 });
     this.clips$ = this.store.pipe(
       select(fromClips.getClips),
       delay(0),

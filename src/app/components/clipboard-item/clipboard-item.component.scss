@@ -21,7 +21,7 @@ p {
 
 h3 {
   font-weight: normal;
-  color: var(--text-color--dark);
+  color: var(--text-color--light);
   border-radius: 3px;
   max-height: 60px;
   font-size: 0.76rem;
@@ -29,10 +29,6 @@ h3 {
 p {
   color: var(--text-color--extra-light);
   font-size: 0.74rem;
-}
-
-h3.translation-view {
-  color: var(--text-color--light);
 }
 
 ion-button {

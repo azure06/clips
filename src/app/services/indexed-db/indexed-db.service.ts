@@ -164,7 +164,7 @@ export class IndexedDBService {
     objectStore.createIndex('text', ['plainText', 'htmlText'], {
       unique: true
     });
-    objectStore.createIndex('bookmark', ['updatedAt', 'category'], {
+    objectStore.createIndex('bookmark', ['category', 'updatedAt'], {
       unique: false
     });
     objectStore.createIndex('dataURI', 'dataURI', { unique: false });

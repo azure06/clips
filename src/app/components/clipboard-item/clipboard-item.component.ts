@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { clipboard } from 'electron';
 import { Clip } from '../../models/models';
 
 @Component({
@@ -7,12 +8,12 @@ import { Clip } from '../../models/models';
   styleUrls: ['./clipboard-item.component.scss']
 })
 export class ClipboardItemComponent {
-  @Input() clip: any; // FIXME Should be like ClipDetails in clipboard-history.page.ts
+  @Input() clip: Clip;
   @Input() index;
   @Output() removeClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
-  public currentView: 'plainView' | 'htmlView' = 'plainView';
+  public view: 'plainView' | 'htmlView' = 'plainView';
   public hasMouseEntered = false;
 
   constructor() {}
@@ -21,9 +22,8 @@ export class ClipboardItemComponent {
     return !!this.clip.htmlText;
   }
 
-  invertCurrentView(view: 'plainView' | 'htmlView') {
-    this.currentView =
-      this.currentView === 'plainView' ? 'htmlView' : 'plainView';
+  switchView(view: 'plainView' | 'htmlView') {
+    this.view = view;
   }
 
   onClick(event: Event): void {}
@@ -48,6 +48,15 @@ export class ClipboardItemComponent {
   }
 
   onTranslate(): void {
-    this.translateText.emit(this.clip);
+    if (!this.clip.translationView) {
+      console.error(this.clip.translationView);
+      this.translateText.emit(this.clip);
+    } else {
+      console.error(this.clip.translationView);
+      this.modifyClip.emit({
+        ...this.clip,
+        translationView: ''
+      });
+    }
   }
 }

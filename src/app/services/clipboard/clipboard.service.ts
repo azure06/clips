@@ -50,11 +50,15 @@ export class ClipboardService {
       : this.addClip(clip);
   }
 
-  public async getClipsFromIdbAndSetInState(
-    limit?: number,
-    index?: 'text' | 'bookmark' | 'category' | 'updatedAt' | 'createdAt',
-    keyRange?: IDBKeyRange
-  ) {
+  public async getClipsFromIdbAndSetInState({
+    limit,
+    index,
+    keyRange
+  }: {
+    limit?: number;
+    index?: 'text' | 'bookmark' | 'category' | 'updatedAt' | 'createdAt';
+    keyRange?: IDBKeyRange;
+  }) {
     const clips = await this.indexDBService.getClips({
       upperBound: limit,
       keyRange,
