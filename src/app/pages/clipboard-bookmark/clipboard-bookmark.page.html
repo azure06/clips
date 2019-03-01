@@ -1,3 +1,19 @@
-<ion-header no-border>
-
-<ion-content padding> </ion-content>
+<ion-header no-border></ion-header>
+<ion-content padding>
+  <app-clipboard-item-component
+    *ngFor="let clip of (clips$ | async); let i = index"
+    (modifyClip)="modifyClip($event)"
+    (removeClip)="removeClip($event)"
+    (translateText)="translateText($event)"
+    [clip]="clip"
+    [index]="i"
+  >
+  </app-clipboard-item-component>
+  <ion-infinite-scroll threshold="50px" (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more data..."
+    >
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

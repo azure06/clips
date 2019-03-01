@@ -28,9 +28,6 @@ export class ClipboardService {
       ipcRenderer.on('clipboard-change', (event, clip: Clip) => {
         this.handleClipboardChangeEvent(clip);
       });
-
-      // Populate state with 15 clipboard items;
-      this.setState(15);
     }
   }
 
@@ -53,7 +50,7 @@ export class ClipboardService {
       : this.addClip(clip);
   }
 
-  private async setState(limit?: number) {
+  public async setState(limit?: number) {
     const clips = await this.indexDBService.getClips({ upperBound: limit });
     this.ngZone.run(() => {
       this.store.dispatch(new SetClips({ clips }));

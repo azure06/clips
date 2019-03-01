@@ -37,7 +37,8 @@ export class IndexedDBService {
 
       request.onerror =
         errorHandler ||
-        (event => reject('Why didn t you allow my web app to use IndexedDB?!'));
+        (_event =>
+          reject('Why didn t you allow my web app to use IndexedDB?!'));
 
       request.onupgradeneeded = upgradeHandler;
     });
@@ -157,12 +158,15 @@ export class IndexedDBService {
     objectStore.createIndex('text', ['plainText', 'htmlText'], {
       unique: true
     });
+    objectStore.createIndex('starredWithOrder', ['updatedAt', 'starred'], {
+      unique: false
+    });
     objectStore.createIndex('dataURI', 'dataURI', { unique: false });
     objectStore.createIndex('starred', 'starred', { unique: false });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
     objectStore.createIndex('createdAt', 'createdAt', { unique: false });
 
-    objectStore.transaction.oncomplete = event => {
+    objectStore.transaction.oncomplete = _event => {
       // Store values in the newly created objectStore.
       const clipsObjectStore = db
         .transaction('clips', 'readwrite')

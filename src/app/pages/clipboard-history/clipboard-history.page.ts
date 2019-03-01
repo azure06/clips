@@ -2,11 +2,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import moment from 'moment';
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { delay, filter, first, map } from 'rxjs/operators';
 import { Clip } from '../../models/models';
 import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
-import { AddClip } from '../clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../clipboard/store/index';
 import { ClipboardService } from './../../services/clipboard/clipboard.service';
 
@@ -26,6 +25,8 @@ export class ClipboardHistoryPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.error('init');
+    this.clipboardService.setState(15);
     this.clips$ = this.store.pipe(
       select(fromClips.getClips),
       delay(0),
