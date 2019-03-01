@@ -50,8 +50,16 @@ export class ClipboardService {
       : this.addClip(clip);
   }
 
-  public async setState(limit?: number) {
-    const clips = await this.indexDBService.getClips({ upperBound: limit });
+  public async getClipsFromIdbAndSetInState(
+    limit?: number,
+    index?: 'text' | 'bookmark' | 'category' | 'updatedAt' | 'createdAt',
+    keyRange?: IDBKeyRange
+  ) {
+    const clips = await this.indexDBService.getClips({
+      upperBound: limit,
+      keyRange,
+      index
+    });
     this.ngZone.run(() => {
       this.store.dispatch(new SetClips({ clips }));
     });

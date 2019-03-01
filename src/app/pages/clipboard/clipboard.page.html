@@ -44,8 +44,8 @@
       </ion-button>
       <ion-button
         fill="clear"
-        [color]="router.url === '/clipboard/history3' ? 'primary' : 'tertiary'"
-        (click)="navigate('clipboard/history3')"
+        [color]="router.url === '/clipboard/images' ? 'primary' : 'tertiary'"
+        (click)="navigate('clipboard/history')"
       >
         <ion-icon slot="icon-only" name="image"></ion-icon>
       </ion-button>
@@ -65,7 +65,8 @@
       </ion-button>
     </div>
     <div class="sidenav-content">
-      <ion-router-outlet> </ion-router-outlet>
+      <!-- ion-router-outlet doesn't work correctly 2019-03-01 -->
+      <router-outlet> </router-outlet>
     </div>
   </div>
 </ion-content>

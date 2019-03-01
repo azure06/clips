@@ -45,34 +45,40 @@ export class IndexedDBService {
   }
 
   public getClips(options?: {
+    index?: 'text' | 'bookmark' | 'category' | 'updatedAt' | 'createdAt';
     lowerBound?: number;
     upperBound?: number;
+    keyRange?: IDBKeyRange;
     direction?: IDBCursorDirection;
   }): Promise<Clip[]> {
     const successHandler = (db: IDBDatabase) => {
-      const { lowerBound, upperBound, direction } = options;
+      const { lowerBound, upperBound, direction, keyRange, index } = {
+        index: 'updatedAt',
+        keyRange: null,
+        ...options
+      };
       return new Promise((resolve, _reject) => {
         const objectStore = db
           .transaction(['clips'], 'readwrite')
           .objectStore('clips')
-          .index('updatedAt');
+          .index(index || 'updatedAt');
 
         const clips: Clip[] = [];
-        const request = objectStore.openCursor(null, direction || 'prev');
+        const request = objectStore.openCursor(keyRange, direction || 'prev');
 
         request.onerror = _reject;
-        request.onsuccess = ((index = 0) => event => {
+        request.onsuccess = ((count = 0) => event => {
           const cursor = (event.target as IDBRequest)
             .result as IDBCursorWithValue;
 
           if (cursor) {
             if (
-              (lowerBound === undefined || index >= lowerBound) &&
-              (upperBound === undefined || index < upperBound)
+              (lowerBound === undefined || count >= lowerBound) &&
+              (upperBound === undefined || count < upperBound)
             ) {
               clips.push(cursor.value);
             }
-            index++;
+            count++;
             cursor.continue();
           } else {
             resolve(clips);
@@ -93,7 +99,7 @@ export class IndexedDBService {
 
         const clipStore = transaction.objectStore('clips');
         const clipStoreRequest = clipStore.add(clip);
-
+        console.error(clip);
         clipStoreRequest.onsuccess = resolve;
       });
     };
@@ -158,11 +164,11 @@ export class IndexedDBService {
     objectStore.createIndex('text', ['plainText', 'htmlText'], {
       unique: true
     });
-    objectStore.createIndex('starredWithOrder', ['updatedAt', 'starred'], {
+    objectStore.createIndex('bookmark', ['updatedAt', 'category'], {
       unique: false
     });
     objectStore.createIndex('dataURI', 'dataURI', { unique: false });
-    objectStore.createIndex('starred', 'starred', { unique: false });
+    objectStore.createIndex('category', 'category', { unique: false });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
     objectStore.createIndex('createdAt', 'createdAt', { unique: false });
 

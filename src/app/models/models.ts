@@ -5,7 +5,7 @@ interface Base {
 }
 
 interface Bookmark {
-  starred: boolean;
+  category?: 'starred' | 'none';
 }
 
 interface ViewDetails {

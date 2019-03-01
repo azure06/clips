@@ -8,12 +8,21 @@ const routes: Routes = [
     component: ClipboardPage,
     children: [
       {
-        path: '',
+        path: 'history',
         children: [
           {
-            path: 'history',
+            path: '',
             loadChildren:
               '../clipboard-history/clipboard-history.module#ClipboardHistoryPageModule'
+          }
+        ]
+      },
+      {
+        path: 'history2',
+        children: [
+          {
+            path: '',
+            loadChildren: ''
           }
         ]
       },
@@ -24,16 +33,6 @@ const routes: Routes = [
             path: '',
             loadChildren:
               '../clipboard-bookmark/clipboard-bookmark.module#ClipboardBookmarkPageModule'
-          }
-        ]
-      },
-      {
-        path: 'history4',
-        children: [
-          {
-            path: '',
-            loadChildren:
-              '../clipboard-history/clipboard-history.module#ClipboardHistoryPageModule'
           }
         ]
       },
