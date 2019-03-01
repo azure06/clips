@@ -10,6 +10,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ClipboardPageModule } from './pages/clipboard/clipboard.module';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
 import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
 import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
@@ -27,7 +28,8 @@ import { GoogleTranslateServiceModule } from './services/google-translate/google
     GoogleOAuth2ServiceModule,
     GoogleTranslateServiceModule,
     ClipboardServiceModule,
-    ClipboardStoreModule
+    ClipboardStoreModule,
+    ClipboardPageModule
   ],
   providers: [
     StatusBar,

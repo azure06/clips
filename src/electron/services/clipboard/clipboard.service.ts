@@ -20,29 +20,34 @@ export default class ClipboardService extends EventEmitter {
     const plainText = clipboard.readText();
     const htmlText = clipboard.readHTML();
     const image = clipboard.readImage();
-    const availableFormats = clipboard.availableFormats();
+    const formats = clipboard.availableFormats();
 
-    if (availableFormats.length > 0) {
-      const isText = availableFormats.includes(Types.PlainText);
-      if (isText && plainText && plainText !== this.previousText) {
+    if (formats.length > 0) {
+      if (
+        formats.find(format => format.includes('text')) &&
+        plainText !== this.previousText
+      ) {
         this.previousText = plainText;
         this.emit('clipboard-change', {
           id: undefined,
           plainText,
           htmlText,
           dataURI: undefined,
-          formats: availableFormats,
+          formats,
           category: 'none',
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()
         });
-      } else if (this.previousDataURI === image.toDataURL()) {
+      } else if (
+        formats.find(format => format.includes('image')) &&
+        image.toDataURL() !== this.previousDataURI
+      ) {
         this.emit('clipboard-change', {
           id: undefined,
           plainText,
           htmlText,
           dataURI: image.toDataURL(),
-          formats: availableFormats,
+          formats,
           category: 'none',
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()

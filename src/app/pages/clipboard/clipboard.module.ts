@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { ClipboardItemComponentModule } from '../../components/clipboard-item/clipboard-item.module';
 import { ClipboardPage } from './clipboard.page';
 import { ClipboardPageRoutingModule } from './clipboard.router.module';
 import { ClipboardStoreModule } from './store/clipboard.module';
@@ -15,7 +16,8 @@ import { ClipboardStoreModule } from './store/clipboard.module';
     CommonModule,
     FormsModule,
     ClipboardPageRoutingModule,
-    ClipboardStoreModule
+    ClipboardStoreModule,
+    ClipboardItemComponentModule
   ],
   exports: [],
   providers: [],
