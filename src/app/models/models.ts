@@ -19,7 +19,7 @@ export interface Clip extends Partial<ViewDetails>, Bookmark, Base {
   plainText: string;
   htmlText: string;
   dataURI: string;
-  types: string[];
+  formats: string[];
 }
 
 /**

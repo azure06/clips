@@ -99,7 +99,7 @@ export class IndexedDBService {
 
         const clipStore = transaction.objectStore('clips');
         const clipStoreRequest = clipStore.add(clip);
-        console.error(clip);
+
         clipStoreRequest.onsuccess = resolve;
       });
     };
@@ -167,6 +167,7 @@ export class IndexedDBService {
     objectStore.createIndex('bookmark', ['category', 'updatedAt'], {
       unique: false
     });
+    objectStore.createIndex('formats', 'formats', { multiEntry: true });
     objectStore.createIndex('dataURI', 'dataURI', { unique: false });
     objectStore.createIndex('category', 'category', { unique: false });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });

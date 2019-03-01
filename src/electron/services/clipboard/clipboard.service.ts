@@ -30,19 +30,19 @@ export default class ClipboardService extends EventEmitter {
           id: undefined,
           plainText,
           htmlText,
-          dataURI: '',
-          types: availableFormats,
+          dataURI: undefined,
+          formats: availableFormats,
           category: 'none',
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()
         });
-      } else if (!isText && this.previousDataURI === image.toDataURL()) {
+      } else if (this.previousDataURI === image.toDataURL()) {
         this.emit('clipboard-change', {
           id: undefined,
           plainText,
           htmlText,
           dataURI: image.toDataURL(),
-          types: availableFormats,
+          formats: availableFormats,
           category: 'none',
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()

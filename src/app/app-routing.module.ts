@@ -5,7 +5,8 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: './pages/clipboard/clipboard.module#ClipboardPageModule'
-  }
+  },  { path: 'clipboard-images', loadChildren: './pages/clipboard-images/clipboard-images.module#ClipboardImagesPageModule' }
+
 ];
 @NgModule({
   imports: [

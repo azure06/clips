@@ -49,10 +49,8 @@ export class ClipboardItemComponent {
 
   onTranslate(): void {
     if (!this.clip.translationView) {
-      console.error(this.clip.translationView);
       this.translateText.emit(this.clip);
     } else {
-      console.error(this.clip.translationView);
       this.modifyClip.emit({
         ...this.clip,
         translationView: ''

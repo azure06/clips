@@ -18,11 +18,12 @@ const routes: Routes = [
         ]
       },
       {
-        path: 'history2',
+        path: 'images',
         children: [
           {
             path: '',
-            loadChildren: ''
+            loadChildren:
+              '../clipboard-images/clipboard-images.module#ClipboardImagesPageModule'
           }
         ]
       },

@@ -64,7 +64,7 @@ const createWindow = () => {
     frame: isDevelopment ? true : false
   });
 
-  console.error('Directory', __dirname, isDev);
+  console.log('Directory', __dirname, isDev);
 
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
   mainWindow.loadURL(
