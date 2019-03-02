@@ -44,10 +44,11 @@ export class ClipboardEffects implements OnRunEffects {
           const clips = await this.clipboardService.getClipsFromState();
           const lowerBound = clips.length;
           const upperBound =
-            action.payload.amount !== undefined
-              ? lowerBound + action.payload.amount
+            action.payload.limit !== undefined
+              ? lowerBound + action.payload.limit
               : undefined;
           return this.indexedDBService.getClips({
+            ...action.payload,
             lowerBound,
             upperBound
           });

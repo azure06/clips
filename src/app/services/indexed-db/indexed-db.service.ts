@@ -45,7 +45,7 @@ export class IndexedDBService {
   }
 
   public getClips(options?: {
-    index?: 'text' | 'bookmark' | 'category' | 'updatedAt' | 'createdAt';
+    index?: 'text' | 'type' | 'categories' | 'updatedAt' | 'createdAt';
     lowerBound?: number;
     upperBound?: number;
     keyRange?: IDBKeyRange;
@@ -59,7 +59,7 @@ export class IndexedDBService {
       };
       return new Promise((resolve, _reject) => {
         const objectStore = db
-          .transaction(['clips'], 'readwrite')
+          .transaction(['clips'], 'readonly')
           .objectStore('clips')
           .index(index || 'updatedAt');
 
@@ -164,12 +164,11 @@ export class IndexedDBService {
     objectStore.createIndex('text', ['plainText', 'htmlText'], {
       unique: true
     });
-    objectStore.createIndex('bookmark', ['category', 'updatedAt'], {
-      unique: false
+    objectStore.createIndex('type', ['type', 'updatedAt'], {
+      unique: true
     });
+    objectStore.createIndex('categories', 'categories', { multiEntry: true });
     objectStore.createIndex('formats', 'formats', { multiEntry: true });
-    objectStore.createIndex('dataURI', 'dataURI', { unique: false });
-    objectStore.createIndex('category', 'category', { unique: false });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
     objectStore.createIndex('createdAt', 'createdAt', { unique: false });
 

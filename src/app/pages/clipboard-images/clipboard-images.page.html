@@ -1,5 +1,20 @@
 <ion-header> </ion-header>
 
 <ion-content>
-  <app-clipboard-image-item></app-clipboard-image-item>
+  <app-clipboard-image-item
+    *ngFor="let clip of (clips$ | async); let i = index"
+    (modifyClip)="modifyClip($event)"
+    (removeClip)="removeClip($event)"
+    (translateText)="translateText($event)"
+    [clip]="clip"
+    [index]="i"
+  ></app-clipboard-image-item>
+
+  <ion-infinite-scroll threshold="50px" (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more data..."
+    >
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

@@ -27,15 +27,15 @@ export class ClipboardBookmarkPage implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.clipboardService.getClipsFromIdbAndSetInState({
       limit: 15,
-      index: 'bookmark',
-      keyRange: IDBKeyRange.lowerBound(['', 'starred'])
+      index: 'type',
+      keyRange: IDBKeyRange.upperBound(['text', ''])
     });
     this.clips$ = this.store.pipe(
       select(fromClips.getClips),
       delay(0),
       map(clips => {
         return clips.reduce((acc: Clip[], clip) => {
-          if (clip.category === 'starred') {
+          if (clip.categories.includes('starred')) {
             clip.plainView = clip.plainText.substring(0, 255);
             clip.dateFromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);
@@ -47,7 +47,11 @@ export class ClipboardBookmarkPage implements OnInit {
   }
 
   async loadMore(event): Promise<void> {
-    this.clipboardService.loadNext(10);
+    this.clipboardService.loadNext({
+      limit: 10,
+      index: 'type',
+      keyRange: IDBKeyRange.upperBound(['text', ''])
+    });
     const isLoadingNext = await this.store
       .pipe(
         select(fromClips.isLoadingNext),

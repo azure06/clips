@@ -5,7 +5,7 @@ interface Base {
 }
 
 interface Bookmark {
-  category?: 'starred' | 'none';
+  categories: Array<'starred'>;
 }
 
 interface ViewDetails {
@@ -18,8 +18,9 @@ interface ViewDetails {
 export interface Clip extends Partial<ViewDetails>, Bookmark, Base {
   plainText: string;
   htmlText: string;
-  dataURI: string;
+  dataURI?: string;
   formats: string[];
+  type: 'text' | 'image';
 }
 
 /**

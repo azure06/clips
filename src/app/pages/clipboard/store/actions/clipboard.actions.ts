@@ -72,7 +72,14 @@ export class RemoveClipFailure implements Action {
 
 export class LoadNext implements Action {
   readonly type = ClipboardActionTypes.LoadNext;
-  constructor(public payload: { amount?: number }) {}
+  constructor(
+    public payload: {
+      limit?: number;
+      index?: 'text' | 'categories' | 'type' | 'updatedAt' | 'createdAt';
+      keyRange?: IDBKeyRange;
+      direction?: IDBCursorDirection;
+    }
+  ) {}
 }
 
 export class LoadNextSuccess implements Action {

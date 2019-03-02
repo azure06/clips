@@ -25,16 +25,16 @@ export default class ClipboardService extends EventEmitter {
     if (formats.length > 0) {
       if (
         formats.find(format => format.includes('text')) &&
+        !formats.find(format => format.includes('image')) &&
         plainText !== this.previousText
       ) {
         this.previousText = plainText;
         this.emit('clipboard-change', {
-          id: undefined,
           plainText,
           htmlText,
-          dataURI: undefined,
+          categories: [],
           formats,
-          category: 'none',
+          type: 'text',
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()
         });
@@ -42,13 +42,14 @@ export default class ClipboardService extends EventEmitter {
         formats.find(format => format.includes('image')) &&
         image.toDataURL() !== this.previousDataURI
       ) {
+        this.previousDataURI = image.toDataURL();
         this.emit('clipboard-change', {
-          id: undefined,
           plainText,
           htmlText,
           dataURI: image.toDataURL(),
+          categories: [],
           formats,
-          category: 'none',
+          type: 'image',
           createdAt: new Date().getTime(),
           updatedAt: new Date().getTime()
         });
