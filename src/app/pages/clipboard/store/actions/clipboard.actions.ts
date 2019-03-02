@@ -75,7 +75,7 @@ export class LoadNext implements Action {
   constructor(
     public payload: {
       limit?: number;
-      index?: 'text' | 'categories' | 'type' | 'updatedAt' | 'createdAt';
+      index?: 'text' | 'category' | 'type' | 'updatedAt' | 'createdAt';
       keyRange?: IDBKeyRange;
       direction?: IDBCursorDirection;
     }

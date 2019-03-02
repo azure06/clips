@@ -4,10 +4,6 @@ interface Base {
   createdAt: number;
 }
 
-interface Bookmark {
-  categories: Array<'starred'>;
-}
-
 interface ViewDetails {
   plainView: string;
   htmlView: string;
@@ -15,12 +11,13 @@ interface ViewDetails {
   dateFromNow: string;
 }
 
-export interface Clip extends Partial<ViewDetails>, Bookmark, Base {
+export interface Clip extends Partial<ViewDetails>, Base {
   plainText: string;
   htmlText: string;
   dataURI?: string;
-  formats: string[];
+  category: 'none' | 'starred';
   type: 'text' | 'image';
+  formats: string[];
 }
 
 /**

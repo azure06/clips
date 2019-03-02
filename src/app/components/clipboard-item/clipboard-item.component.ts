@@ -37,12 +37,10 @@ export class ClipboardItemComponent {
   }
 
   onAddToBookmarkClick(event: Event): void {
-    console.error(this.clip.categories.includes('starred'));
+    console.error(this.clip.category === 'starred');
     this.modifyClip.emit({
       ...this.clip,
-      categories: this.clip.categories.includes('starred')
-        ? this.clip.categories.filter(category => category !== 'starred')
-        : [...this.clip.categories, 'starred']
+      category: this.clip.category === 'starred' ? 'none' : 'starred'
     });
   }
 

@@ -27,15 +27,15 @@ export class ClipboardBookmarkPage implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.clipboardService.getClipsFromIdbAndSetInState({
       limit: 15,
-      index: 'type',
-      keyRange: IDBKeyRange.upperBound(['text', ''])
+      index: 'category',
+      keyRange: IDBKeyRange.upperBound(['starred', ''])
     });
     this.clips$ = this.store.pipe(
       select(fromClips.getClips),
       delay(0),
       map(clips => {
         return clips.reduce((acc: Clip[], clip) => {
-          if (clip.categories.includes('starred')) {
+          if (clip.category === 'starred' && clip.type === 'text') {
             clip.plainView = clip.plainText.substring(0, 255);
             clip.dateFromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);

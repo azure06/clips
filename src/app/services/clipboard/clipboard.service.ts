@@ -57,7 +57,7 @@ export class ClipboardService {
     keyRange
   }: {
     limit?: number;
-    index?: 'text' | 'type' | 'categories' | 'updatedAt' | 'createdAt';
+    index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     keyRange?: IDBKeyRange;
   }) {
     const clips = await this.indexDBService.getClips({
@@ -85,7 +85,7 @@ export class ClipboardService {
     keyRange
   }: {
     limit?: number;
-    index?: 'text' | 'type' | 'categories' | 'updatedAt' | 'createdAt';
+    index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     keyRange?: IDBKeyRange;
   }) {
     this.ngZone.run(() => {

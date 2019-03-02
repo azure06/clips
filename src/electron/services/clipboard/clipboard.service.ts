@@ -32,7 +32,7 @@ export default class ClipboardService extends EventEmitter {
         this.emit('clipboard-change', {
           plainText,
           htmlText,
-          categories: [],
+          category: 'none',
           formats,
           type: 'text',
           createdAt: new Date().getTime(),
@@ -47,7 +47,7 @@ export default class ClipboardService extends EventEmitter {
           plainText,
           htmlText,
           dataURI: image.toDataURL(),
-          categories: [],
+          category: 'none',
           formats,
           type: 'image',
           createdAt: new Date().getTime(),

@@ -1,4 +1,24 @@
 <ion-item
+  *ngIf="clip.type === 'image'"
+  button="true"
+  (mouseenter)="onMouseEnter($event)"
+  (mouseleave)="onMouseLeave($event)"
+>
+  <ion-thumbnail slot="start">
+    <img [src]="clip.dataURI" />
+  </ion-thumbnail>
+  <ion-label>
+    <div class="container bottom pic">
+      <h3 [innerHTML]="clip.htmlText | sanitizeHtml"></h3>
+      <p>{{ clip.dateFromNow }}</p>
+    </div>
+  </ion-label>
+</ion-item>
+
+<!-- Text  -->
+
+<ion-item
+  *ngIf="clip.type === 'text'"
   (click)="onClick($event)"
   button="true"
   (mouseenter)="onMouseEnter($event)"
@@ -70,7 +90,7 @@
         <ion-button
           fill="clear"
           shape="round"
-          [color]="clip.categories.includes('starred') ? 'primary' : 'medium'"
+          [color]="clip.category === 'starred' ? 'primary' : 'medium'"
           (click)="onAddToBookmarkClick($event)"
         >
           <ion-icon name="star"></ion-icon>

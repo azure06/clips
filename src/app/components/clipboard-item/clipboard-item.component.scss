@@ -75,12 +75,17 @@ ion-button.remove {
 }
 
 .container.bottom {
+  position: relative;
   justify-content: space-between;
   display: flex;
   ion-button {
     margin: 0;
     --padding-start: 4px;
     --padding-end: 4px;
+  }
+  &.pic {
+    justify-content: start;
+    flex-direction: column;
   }
 }
 

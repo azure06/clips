@@ -45,7 +45,7 @@ export class IndexedDBService {
   }
 
   public getClips(options?: {
-    index?: 'text' | 'type' | 'categories' | 'updatedAt' | 'createdAt';
+    index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     lowerBound?: number;
     upperBound?: number;
     keyRange?: IDBKeyRange;
@@ -167,7 +167,9 @@ export class IndexedDBService {
     objectStore.createIndex('type', ['type', 'updatedAt'], {
       unique: true
     });
-    objectStore.createIndex('categories', 'categories', { multiEntry: true });
+    objectStore.createIndex('category', ['category', 'updatedAt'], {
+      unique: true
+    });
     objectStore.createIndex('formats', 'formats', { multiEntry: true });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
     objectStore.createIndex('createdAt', 'createdAt', { unique: false });

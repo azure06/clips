@@ -1,11 +1,15 @@
 <ion-card>
   <ion-img [src]="clip.dataURI"></ion-img>
-
-  <!-- <ion-card-content>
-    <img [src]="card.postImageUrl" (click)="imageTapped(card)" />
-  </ion-card-content> -->
-  <ion-card-content>
-    This is content, without any paragraph or header tags, within an
-    ion-card-content element.
-  </ion-card-content>
+  <ion-card-header>
+    <ion-item lines="none">
+      <ion-label>
+        <p>
+          {{ clip.dateFromNow }}
+        </p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" shape="round">
+        <ion-icon color="tertiary" slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-card-header>
 </ion-card>
