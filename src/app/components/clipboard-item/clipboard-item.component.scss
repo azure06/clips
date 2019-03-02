@@ -83,10 +83,6 @@ ion-button.remove {
     --padding-start: 4px;
     --padding-end: 4px;
   }
-  &.pic {
-    justify-content: start;
-    flex-direction: column;
-  }
 }
 
 ion-icon[name='document'] {
@@ -108,4 +104,9 @@ ion-icon[name='logo-html5'] {
     font-size: 24px;
     margin-top: 2px;
   }
+}
+
+// FIXME shoud use ion-img
+img {
+  margin-top: -20%;
 }

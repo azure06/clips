@@ -37,7 +37,6 @@ export class ClipboardItemComponent {
   }
 
   onAddToBookmarkClick(event: Event): void {
-    console.error(this.clip.category === 'starred');
     this.modifyClip.emit({
       ...this.clip,
       category: this.clip.category === 'starred' ? 'none' : 'starred'

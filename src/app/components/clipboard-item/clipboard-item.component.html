@@ -4,13 +4,50 @@
   (mouseenter)="onMouseEnter($event)"
   (mouseleave)="onMouseLeave($event)"
 >
-  <ion-thumbnail slot="start">
-    <img [src]="clip.dataURI" />
-  </ion-thumbnail>
+  <ion-button
+    class="container start"
+    slot="start"
+    fill="clear"
+    [title]="index + 1"
+  >
+    <div class="doc">
+      <div class="badge">
+        <span>{{ index + 1 > 99 ? '...' : index + 1 }}</span>
+      </div>
+      <div *ngIf="clip.htmlText" class="logo-html5">
+        <ion-icon name="logo-html5"></ion-icon>
+      </div>
+      <ion-icon slot="icon-only" name="document"></ion-icon>
+    </div>
+  </ion-button>
   <ion-label>
-    <div class="container bottom pic">
-      <h3 [innerHTML]="clip.htmlText | sanitizeHtml"></h3>
-      <p>{{ clip.dateFromNow }}</p>
+    <h3><img [src]="clip.dataURI" /></h3>
+    <p>{{ clip.dateFromNow }}</p>
+    <div class="container bottom">
+      <div>
+        <ion-button fill="clear" shape="round" color="medium">
+          <ion-icon name="globe"></ion-icon>
+        </ion-button>
+        <ion-button
+          fill="clear"
+          shape="round"
+          [color]="clip.category === 'starred' ? 'primary' : 'medium'"
+          (click)="onAddToBookmarkClick($event)"
+        >
+          <ion-icon name="star"></ion-icon>
+        </ion-button>
+      </div>
+      <div *ngIf="hasMouseEntered">
+        <ion-button
+          class="remove"
+          fill="clear"
+          shape="round"
+          color="medium"
+          (click)="onRemoveClick($event)"
+        >
+          <ion-icon name="trash"></ion-icon>
+        </ion-button>
+      </div>
     </div>
   </ion-label>
 </ion-item>

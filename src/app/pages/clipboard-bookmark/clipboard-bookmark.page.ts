@@ -35,7 +35,7 @@ export class ClipboardBookmarkPage implements OnInit {
       delay(0),
       map(clips => {
         return clips.reduce((acc: Clip[], clip) => {
-          if (clip.category === 'starred' && clip.type === 'text') {
+          if (clip.category === 'starred') {
             clip.plainView = clip.plainText.substring(0, 255);
             clip.dateFromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);
@@ -49,8 +49,8 @@ export class ClipboardBookmarkPage implements OnInit {
   async loadMore(event): Promise<void> {
     this.clipboardService.loadNext({
       limit: 10,
-      index: 'type',
-      keyRange: IDBKeyRange.upperBound(['text', ''])
+      index: 'category',
+      keyRange: IDBKeyRange.upperBound(['starred', ''])
     });
     const isLoadingNext = await this.store
       .pipe(
