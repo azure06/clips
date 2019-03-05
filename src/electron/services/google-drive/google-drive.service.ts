@@ -5,86 +5,137 @@ import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
 import * as os from 'os';
 import * as path from 'path';
+import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
+import { bufferWhen, delay, filter, first, map, zip } from 'rxjs/operators';
+import { Clip } from './../../../app/models/models';
 
+import * as stream from 'stream';
 export default class GoogleDriveService extends EventEmitter {
   private drive: drive_v3.Drive;
+  private requestCompleteSubject = new BehaviorSubject({});
+  private nextSubject = new Subject<Clip>();
+
   constructor(private googleOAuth2Client: OAuth2Client) {
     super();
     this.drive = google.drive({ version: 'v3', auth: googleOAuth2Client });
-    this.init();
-    this.initErrorHandler();
+    this.initialize();
   }
 
-  private async watchClipboardFile() {}
+  private async listClipboardFiles() {
+    const result = await this.drive.files.list({
+      spaces: 'appDataFolder',
+      fields: 'nextPageToken, files(id, name)',
+      pageSize: 100
+    });
+    return result.data.files;
+  }
 
-  private async listClipboardFiles() {}
+  private async watchClipboardFile() {
+    const behaviourSubject = new BehaviorSubject(
+      (await this.drive.changes.getStartPageToken({})).data.startPageToken
+    );
 
-  public async addToFile() {}
+    behaviourSubject
+      .asObservable()
+      .pipe(delay(10000))
+      .subscribe(async pageToken => {
+        try {
+          console.error(pageToken);
+          const {
+            newStartPageToken,
+            nextPageToken,
+            changes
+          } = (await this.drive.changes.list({
+            spaces: 'appDataFolder',
+            pageToken,
+            fields: '*'
+          })).data;
 
-  private initErrorHandler() {}
+          changes.forEach(change => {
+            console.log('Change found for file:', change.fileId);
+          });
 
-  private async init() {
+          behaviourSubject.next(nextPageToken || newStartPageToken);
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    // this.createClipboardFile({ cia0: 'hello' });
+  }
+
+  private createStream(str: string) {
+    const readableStream = new stream.Readable();
+    readableStream.push(str);
+    readableStream.push(null);
+    return readableStream;
+  }
+
+  private async createClipboardFile<T>(obj: T) {
     const fileMetadata = {
       name: 'clips.json',
       parents: ['appDataFolder']
     };
     const media = {
       mimeType: 'application/json',
-      body: fs.createReadStream('./tsconfig.json')
+      body: this.createStream(JSON.stringify(obj))
     };
+    return this.drive.files.create(({
+      resource: fileMetadata,
+      media,
+      fields: 'id'
+    } as unknown) as any);
+  }
 
-    this.drive.files.create(
-      ({
-        resource: fileMetadata,
-        media,
-        fields: 'id'
-      } as unknown) as any,
-      (err, file) => {
-        if (err) {
-          // Handle error
-          console.error(err);
-        } else {
-          console.log('Folder Id:', file.data.id);
-          this.drive.files.list(
-            {
-              spaces: 'appDataFolder',
-              fields: 'nextPageToken, files(id, name)',
-              pageSize: 100
-            },
-            // tslint:disable-next-line: no-shadowed-variable
-            (err, res) => {
-              if (err) {
-                // Handle error
-                console.error(err);
-              } else {
-                console.error(res.data.files);
-                // tslint:disable-next-line: no-shadowed-variable
-                res.data.files.forEach(async file => {
-                  const dest = fs.createWriteStream(
-                    path.join(os.tmpdir(), `${file.id}.json`)
-                  );
-                  console.log('Found file:', file.name, file.id);
+  public async addToDrive(clip: Clip) {
+    this.nextSubject.next(clip);
+  }
 
-                  const res2 = await this.drive.files.get(
-                    { fileId: file.id, alt: 'media' },
-                    { responseType: 'stream' }
-                  );
+  public initialize() {
+    this.nextSubject
+      .asObservable()
+      .pipe(bufferWhen(() => this.requestCompleteSubject.asObservable()))
+      .subscribe(async clips => {
+        console.error(clips);
+        const clipMap = clips.reduce(
+          (acc: { [key: string]: Clip }, currentClip) => {
+            acc[currentClip.id] = currentClip;
+            return acc;
+          },
+          {}
+        );
 
-                  (res2.data as any)
-                    .on('end', () => {
-                      console.log('Done downloading file.');
-                    })
-                    .on('error', err => {
-                      console.error('Error downloading file.');
-                    })
-                    .on('data', d => {})
-                    .pipe(dest);
-                });
-              }
-            }
-          );
+        let [file] = await this.listClipboardFiles();
+        if (!file) {
+          file = (await this.createClipboardFile({})).data;
         }
-      }
-    );
+        await this.downloadFile(file.id);
+        this.requestCompleteSubject.next({});
+      });
+  }
+
+  private downloadFile(fileId: string) {
+    return new Promise(async (resolve, reject) => {
+      const dest = fs.createWriteStream(
+        path.join(os.tmpdir(), `${fileId}.json`)
+      );
+      console.log('Found file:', fileId);
+
+      const response = await this.drive.files.get(
+        { fileId, alt: 'media' },
+        { responseType: 'stream' }
+      );
+
+      (response.data as any)
+        .on('end', () => {
+          console.log('Done downloading file.');
+          resolve();
+        })
+        .on('error', err => {
+          console.error('Error downloading file.');
+          reject(err);
+        })
+        .on('data', d => {})
+        .pipe(dest);
+    });
   }
 }
