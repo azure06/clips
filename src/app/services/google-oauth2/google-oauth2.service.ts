@@ -16,9 +16,14 @@ export class GoogleOAuth2Service {
       );
       ipcRenderer.send('client-load');
 
-      ipcRenderer.on('oauth2tokens-refresh', (event, authTokens) =>
-        localStorage.setItem('cloud-clips-tokens', JSON.stringify(authTokens))
-      );
+      ipcRenderer.on('oauth2tokens-refresh', (event, authTokens) => {
+        const result =
+          JSON.parse(localStorage.getItem('cloud-clips-tokens') || null) || {};
+        localStorage.setItem(
+          'cloud-clips-tokens',
+          JSON.stringify({ ...result, ...authTokens })
+        );
+      });
       ipcRenderer.on(
         'oauth2-client',
         (event, oAuth2Client) => (this.oAuth2Client = oAuth2Client)
