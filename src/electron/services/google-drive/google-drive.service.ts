@@ -39,12 +39,14 @@ export default class GoogleDriveService extends EventEmitter {
               fields: 'nextPageToken, files(id, name)',
               pageSize: 100
             },
+            // tslint:disable-next-line: no-shadowed-variable
             (err, res) => {
               if (err) {
                 // Handle error
                 console.error(err);
               } else {
                 console.error(res.data.files);
+                // tslint:disable-next-line: no-shadowed-variable
                 res.data.files.forEach(file => {
                   console.log('Found file:', file.name, file.id);
                 });
