@@ -5,9 +5,18 @@ import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
 import * as os from 'os';
 import * as path from 'path';
-import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
-import { bufferWhen, delay, filter, first, map, zip } from 'rxjs/operators';
-import { Clip } from './../../../app/models/models';
+import { BehaviorSubject, combineLatest, from, Subject } from 'rxjs';
+import {
+  buffer,
+  bufferToggle,
+  bufferWhen,
+  delay,
+  filter,
+  first,
+  map,
+  zip
+} from 'rxjs/operators';
+import { Clip } from './../../models/models';
 
 import * as stream from 'stream';
 export default class GoogleDriveService extends EventEmitter {
@@ -93,9 +102,9 @@ export default class GoogleDriveService extends EventEmitter {
   public initialize() {
     this.nextSubject
       .asObservable()
-      .pipe(bufferWhen(() => this.requestCompleteSubject.asObservable()))
+      .pipe(buffer(this.requestCompleteSubject.asObservable()))
       .subscribe(async clips => {
-        console.error(clips);
+        console.error('here', clips);
         const clipMap = clips.reduce(
           (acc: { [key: string]: Clip }, currentClip) => {
             acc[currentClip.id] = currentClip;
@@ -104,12 +113,25 @@ export default class GoogleDriveService extends EventEmitter {
           {}
         );
 
-        let [file] = await this.listClipboardFiles();
-        if (!file) {
-          file = (await this.createClipboardFile({})).data;
-        }
-        await this.downloadFile(file.id);
+        this.addToDrive({
+          id: 'sdfsdfsdffft4345a',
+          updatedAt: 42343289,
+          createdAt: 738847923,
+          plainText: 'string',
+          htmlText: 'string',
+          dataURI: 'string',
+          category: 'none',
+          type: 'text',
+          formats: []
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
         this.requestCompleteSubject.next({});
+        // let [file] = await this.listClipboardFiles();
+        // if (!file) {
+        //   file = (await this.createClipboardFile({})).data;
+        // }
+        // await this.downloadFile(file.id);
       });
   }
 
