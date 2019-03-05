@@ -12,11 +12,20 @@ export default class GoogleDriveService extends EventEmitter {
     super();
     this.drive = google.drive({ version: 'v3', auth: googleOAuth2Client });
     this.init();
+    this.initErrorHandler();
   }
+
+  private async watchClipboardFile() {}
+
+  private async listClipboardFiles() {}
+
+  public async addToFile() {}
+
+  private initErrorHandler() {}
 
   private async init() {
     const fileMetadata = {
-      name: 'config.json',
+      name: 'clips.json',
       parents: ['appDataFolder']
     };
     const media = {
@@ -24,58 +33,58 @@ export default class GoogleDriveService extends EventEmitter {
       body: fs.createReadStream('./tsconfig.json')
     };
 
-    // this.drive.files.create(
-    //   ({
-    //     resource: fileMetadata,
-    //     media,
-    //     fields: 'id'
-    //   } as unknown) as any,
-    //   (err, file) => {
-    //     if (err) {
-    //       // Handle error
-    //       console.error(err);
-    //     } else {
-    //       console.log('Folder Id:', file.data.id);
-    //       this.drive.files.list(
-    //         {
-    //           spaces: 'appDataFolder',
-    //           fields: 'nextPageToken, files(id, name)',
-    //           pageSize: 100
-    //         },
-    //         // tslint:disable-next-line: no-shadowed-variable
-    //         (err, res) => {
-    //           if (err) {
-    //             // Handle error
-    //             console.error(err);
-    //           } else {
-    //             console.error(res.data.files);
-    //             const dest = fs.createWriteStream(
-    //               path.join(os.tmpdir(), 'hello23')
-    //             );
-    //             // tslint:disable-next-line: no-shadowed-variable
-    //             res.data.files.forEach(async file => {
-    //               console.log('Found file:', file.name, file.id);
+    this.drive.files.create(
+      ({
+        resource: fileMetadata,
+        media,
+        fields: 'id'
+      } as unknown) as any,
+      (err, file) => {
+        if (err) {
+          // Handle error
+          console.error(err);
+        } else {
+          console.log('Folder Id:', file.data.id);
+          this.drive.files.list(
+            {
+              spaces: 'appDataFolder',
+              fields: 'nextPageToken, files(id, name)',
+              pageSize: 100
+            },
+            // tslint:disable-next-line: no-shadowed-variable
+            (err, res) => {
+              if (err) {
+                // Handle error
+                console.error(err);
+              } else {
+                console.error(res.data.files);
+                // tslint:disable-next-line: no-shadowed-variable
+                res.data.files.forEach(async file => {
+                  const dest = fs.createWriteStream(
+                    path.join(os.tmpdir(), `${file.id}.json`)
+                  );
+                  console.log('Found file:', file.name, file.id);
 
-    //               const res2 = await this.drive.files.get(
-    //                 { fileId: file.id, alt: 'media' },
-    //                 { responseType: 'stream' }
-    //               );
+                  const res2 = await this.drive.files.get(
+                    { fileId: file.id, alt: 'media' },
+                    { responseType: 'stream' }
+                  );
 
-    //               (res2.data as any)
-    //                 .on('end', () => {
-    //                   console.log('Done downloading file.');
-    //                 })
-    //                 .on('error', err => {
-    //                   console.error('Error downloading file.');
-    //                 })
-    //                 .on('data', d => {})
-    //                 .pipe(dest);
-    //             });
-    //           }
-    //         }
-    //       );
-    //     }
-    //   }
-    // );
+                  (res2.data as any)
+                    .on('end', () => {
+                      console.log('Done downloading file.');
+                    })
+                    .on('error', err => {
+                      console.error('Error downloading file.');
+                    })
+                    .on('data', d => {})
+                    .pipe(dest);
+                });
+              }
+            }
+          );
+        }
+      }
+    );
   }
 }
