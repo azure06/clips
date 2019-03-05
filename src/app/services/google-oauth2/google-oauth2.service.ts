@@ -17,11 +17,12 @@ export class GoogleOAuth2Service {
       ipcRenderer.send('client-load');
 
       ipcRenderer.on('oauth2tokens-refresh', (event, authTokens) => {
-        const result =
+        const localTokens =
           JSON.parse(localStorage.getItem('cloud-clips-tokens') || null) || {};
+
         localStorage.setItem(
           'cloud-clips-tokens',
-          JSON.stringify({ ...result, ...authTokens })
+          JSON.stringify({ ...localTokens, ...authTokens })
         );
       });
       ipcRenderer.on(
