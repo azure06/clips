@@ -80,9 +80,10 @@ export class ClipboardFinderPage implements OnInit {
     const searchQuery = event.target.value;
     const clips =
       searchQuery && searchQuery.trim() !== ''
-        ? this.allClips.filter(clip => clip.htmlText.includes(searchQuery))
+        ? this.allClips.filter(clip => clip.plainText.includes(searchQuery))
         : [];
 
+    console.error(searchQuery, clips);
     this.ionicInfiniteScrollAmount = 10;
     this.infiniteScrollSubject.next(this.ionicInfiniteScrollAmount);
     this.clipsSubject.next(clips);

@@ -26,7 +26,12 @@ h4 {
   text-transform: uppercase;
   margin: 2px 4px 2px 4px;
   color: var(--ion-color-tertiary);
-  > span {
+  > img {
+    width: 35px;
+    text-align: center;
+    vertical-align: middle;
+    margin-right: 5px;
+    filter: opacity(50%);
   }
 }
 
