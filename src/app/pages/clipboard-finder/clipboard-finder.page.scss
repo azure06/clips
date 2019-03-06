@@ -20,3 +20,13 @@
   width: 21px;
   height: 21px;
 }
+
+ion-progress-bar {
+  --background: rgba(220, 220, 225, 1);
+  --buffer-background: rgba(248, 248, 248, 1);
+  --progress-background: rgba(220, 220, 225, 1);
+}
+
+ion-content {
+  height: calc(100% - 58px);
+}

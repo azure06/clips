@@ -1,5 +1,5 @@
 ion-item {
-  --padding-start: 0;
+  --padding-start: 8px;
   --padding-end: 8px;
   --inner-padding-end: 0;
 }
@@ -35,7 +35,7 @@ ion-button {
   margin-inline-end: 8px;
 }
 
-ion-button.container.start {
+ion-avatar.container.start {
   width: 36px;
   height: 36px;
   .doc {
@@ -59,8 +59,9 @@ ion-button.container.start {
       height: 16px;
       top: 20px;
       left: 18px;
-      color: var(--ion-color-secondary);
-      background-color: white;
+      color: var(--text-color--light);
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -85,6 +86,10 @@ ion-button.remove {
   }
 }
 
+ion-icon {
+  width: 21px;
+  height: 21px;
+}
 ion-icon[name='document'] {
   width: 2rem;
   height: 2rem;

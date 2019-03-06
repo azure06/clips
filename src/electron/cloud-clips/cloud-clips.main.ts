@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain, shell } from 'electron';
 import * as isDev from 'electron-is-dev';
+import { OAuth2Client } from 'google-auth-library';
 import * as path from 'path';
 import GoogleTranslate from '../services/google-translate/google-translate.service';
 import { electronConfig } from './../electron.config';
@@ -8,6 +9,13 @@ import GoogleDriveService from './../services/google-drive/google-drive.service'
 import GoogleOAuth2Service from './../services/oauth2/google-oauth2.service';
 
 let mainWindow: Electron.BrowserWindow = null;
+
+const initGoogleDriveService = (oAuth2Client: OAuth2Client) => {
+  const googleDriveService = new GoogleDriveService(oAuth2Client);
+  ipcMain.on('add-to-drive', async (event, clip) => {
+    googleDriveService.addToDrive(clip);
+  });
+};
 
 const signinWithGoogle = () => {
   const googleOAuth2Service = new GoogleOAuth2Service(
@@ -25,9 +33,7 @@ const signinWithGoogle = () => {
       ? googleOAuth2Service.setCredentials(authTokens)
       : await googleOAuth2Service.openAuthWindowAndSetCredentials();
 
-    const googleDriveService = new GoogleDriveService(
-      googleOAuth2Service.getOAuth2Client()
-    );
+    initGoogleDriveService(googleOAuth2Service.getOAuth2Client());
   });
 
   // This method will be called when Angular client has been loaded

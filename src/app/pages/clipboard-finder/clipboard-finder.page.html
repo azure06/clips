@@ -1,6 +1,32 @@
-<ion-header no-border>
+<ion-header *ngIf="!loading" no-border>
   <ion-toolbar>
-    <ion-searchbar animated search-icon="search" type="search"></ion-searchbar>
+    <ion-searchbar
+      animated
+      debounce="500"
+      search-icon="search"
+      type="search"
+      (ionChange)="onInput($event)"
+    ></ion-searchbar>
   </ion-toolbar>
 </ion-header>
-<ion-content padding> </ion-content>
+<ion-content>
+  <!-- Dots -->
+  <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
+
+  <app-clipboard-item-component
+    *ngFor="let clip of (clips$ | async); let i = index"
+    (modifyClip)="modifyClip($event)"
+    (removeClip)="removeClip($event)"
+    (translateText)="translateText($event)"
+    [clip]="clip"
+    [index]="i"
+  >
+  </app-clipboard-item-component>
+  <ion-infinite-scroll threshold="50px" (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more data..."
+    >
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

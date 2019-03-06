@@ -5,20 +5,8 @@ import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
 import * as os from 'os';
 import * as path from 'path';
-import { BehaviorSubject, combineLatest, from, Subject } from 'rxjs';
-import {
-  buffer,
-  bufferToggle,
-  bufferWhen,
-  delay,
-  filter,
-  first,
-  map,
-  mergeMap,
-  tap,
-  withLatestFrom,
-  zip
-} from 'rxjs/operators';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { buffer, delay, mergeMap, tap } from 'rxjs/operators';
 import { Clip } from './../../models/models';
 
 import * as stream from 'stream';
@@ -84,7 +72,7 @@ export default class GoogleDriveService extends EventEmitter {
     return readableStream;
   }
 
-  private async createClipboardFile<T>(obj: T) {
+  private async createFileAndAddToDrive<T>(obj: T) {
     const fileMetadata = {
       name: 'clips.json',
       parents: ['appDataFolder']
@@ -105,7 +93,7 @@ export default class GoogleDriveService extends EventEmitter {
   }
 
   public initialize() {
-    const doRequest = (clips: Clip[]): Promise<Clip[]> => {
+    const addFile = async (clips: Clip[]): Promise<any> => {
       const clipMap = clips.reduce(
         (acc: { [key: string]: Clip }, currentClip) => {
           acc[currentClip.id] = currentClip;
@@ -113,7 +101,8 @@ export default class GoogleDriveService extends EventEmitter {
         },
         {}
       );
-      return new Promise(resolve => setTimeout(() => resolve(clips), 5000));
+      const result = await this.createFileAndAddToDrive(clipMap);
+      return new Promise(resolve => setTimeout(() => resolve(result), 10000));
     };
 
     this.nextClipSubject
@@ -121,7 +110,7 @@ export default class GoogleDriveService extends EventEmitter {
       .pipe(
         buffer(this.completeSubject.asObservable()),
         mergeMap(clips =>
-          clips.length > 0 ? doRequest(clips) : Promise.resolve([])
+          clips.length > 0 ? addFile(clips) : Promise.resolve([])
         ),
         delay(1000),
         tap(result => this.completeSubject.next({ next: true }))
@@ -134,20 +123,6 @@ export default class GoogleDriveService extends EventEmitter {
         // }
         // await this.downloadFile(file.id);
       });
-
-    setTimeout(() => {
-      this.addToDrive({
-        id: 'sdfsdfsdffft4345a',
-        updatedAt: 42343289,
-        createdAt: 738847923,
-        plainText: 'string',
-        htmlText: 'string',
-        dataURI: 'string',
-        category: 'none',
-        type: 'text',
-        formats: []
-      });
-    }, 5000);
   }
 
   private downloadFile(fileId: string) {

@@ -13,6 +13,7 @@ import {
 } from '../../pages/clipboard/store/actions/clipboard.actions';
 import * as fromClips from '../../pages/clipboard/store/index';
 import { ElectronService } from '../electron/electron.service';
+import { GoogleDriveService } from '../google-drive/google-drive.service';
 import { IndexedDBService } from '../indexed-db/indexed-db.service';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class ClipboardService {
   constructor(
     private electronService: ElectronService,
     private indexDBService: IndexedDBService,
+    private googleDriveSerice: GoogleDriveService,
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {
@@ -70,6 +72,20 @@ export class ClipboardService {
     });
   }
 
+  public async getClipsFromIdb(
+    options: {
+      limit?: number;
+      index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
+      keyRange?: IDBKeyRange;
+    } = {}
+  ) {
+    return this.indexDBService.getClips({
+      upperBound: options.limit,
+      keyRange: options.keyRange,
+      index: options.index
+    });
+  }
+
   public getClipsFromState(): Promise<Clip[]> {
     return this.store
       .pipe(
@@ -100,6 +116,7 @@ export class ClipboardService {
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
     });
+    this.googleDriveSerice.addToDrive(clip);
   }
 
   public async modifyClip(clip: Clip, sort?: boolean) {

@@ -4,22 +4,17 @@
   (mouseenter)="onMouseEnter($event)"
   (mouseleave)="onMouseLeave($event)"
 >
-  <ion-button
-    class="container start"
-    slot="start"
-    fill="clear"
-    [title]="index + 1"
-  >
+  <ion-avatar class="container start" slot="start" [title]="index + 1">
     <div class="doc">
       <div class="badge">
-        <span>{{ index + 1 > 99 ? '...' : index + 1 }}</span>
+        <span>{{ index + 1 > 99 ? '99+' : index + 1 }}</span>
       </div>
-      <div *ngIf="clip.htmlText" class="logo-html5">
-        <ion-icon name="logo-html5"></ion-icon>
+      <div class="logo-html5">
+        <ion-icon name="image"></ion-icon>
       </div>
       <ion-icon slot="icon-only" name="document"></ion-icon>
     </div>
-  </ion-button>
+  </ion-avatar>
   <ion-label>
     <h3><img [src]="clip.dataURI" /></h3>
     <p>{{ clip.dateFromNow }}</p>
@@ -61,22 +56,17 @@
   (mouseenter)="onMouseEnter($event)"
   (mouseleave)="onMouseLeave($event)"
 >
-  <ion-button
-    class="container start"
-    slot="start"
-    fill="clear"
-    [title]="index + 1"
-  >
+  <ion-avatar class="container start" slot="start" [title]="index + 1">
     <div class="doc">
       <div class="badge">
-        <span>{{ index + 1 > 99 ? '...' : index + 1 }}</span>
+        <span>{{ index + 1 > 99 ? '99+' : index + 1 }}</span>
       </div>
       <div *ngIf="clip.htmlText" class="logo-html5">
-        <ion-icon name="logo-html5"></ion-icon>
+        <ion-icon slot="icon-only" name="logo-html5"></ion-icon>
       </div>
       <ion-icon slot="icon-only" name="document"></ion-icon>
     </div>
-  </ion-button>
+  </ion-avatar>
   <ion-label>
     <h3
       *ngIf="view === 'htmlView'"
