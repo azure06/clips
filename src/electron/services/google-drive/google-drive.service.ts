@@ -14,6 +14,9 @@ import {
   filter,
   first,
   map,
+  mergeMap,
+  tap,
+  withLatestFrom,
   zip
 } from 'rxjs/operators';
 import { Clip } from './../../models/models';
@@ -21,8 +24,10 @@ import { Clip } from './../../models/models';
 import * as stream from 'stream';
 export default class GoogleDriveService extends EventEmitter {
   private drive: drive_v3.Drive;
-  private requestCompleteSubject = new BehaviorSubject({});
-  private nextSubject = new Subject<Clip>();
+  private completeSubject = new BehaviorSubject<{ next: boolean }>({
+    next: true
+  });
+  private nextClipSubject = new Subject<Clip>();
 
   constructor(private googleOAuth2Client: OAuth2Client) {
     super();
@@ -96,43 +101,53 @@ export default class GoogleDriveService extends EventEmitter {
   }
 
   public async addToDrive(clip: Clip) {
-    this.nextSubject.next(clip);
+    this.nextClipSubject.next(clip);
   }
 
   public initialize() {
-    this.nextSubject
+    const doRequest = (clips: Clip[]): Promise<Clip[]> => {
+      const clipMap = clips.reduce(
+        (acc: { [key: string]: Clip }, currentClip) => {
+          acc[currentClip.id] = currentClip;
+          return acc;
+        },
+        {}
+      );
+      return new Promise(resolve => setTimeout(() => resolve(clips), 5000));
+    };
+
+    this.nextClipSubject
       .asObservable()
-      .pipe(buffer(this.requestCompleteSubject.asObservable()))
-      .subscribe(async clips => {
-        console.error('here', clips);
-        const clipMap = clips.reduce(
-          (acc: { [key: string]: Clip }, currentClip) => {
-            acc[currentClip.id] = currentClip;
-            return acc;
-          },
-          {}
-        );
-
-        this.addToDrive({
-          id: 'sdfsdfsdffft4345a',
-          updatedAt: 42343289,
-          createdAt: 738847923,
-          plainText: 'string',
-          htmlText: 'string',
-          dataURI: 'string',
-          category: 'none',
-          type: 'text',
-          formats: []
-        });
-
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        this.requestCompleteSubject.next({});
+      .pipe(
+        buffer(this.completeSubject.asObservable()),
+        mergeMap(clips =>
+          clips.length > 0 ? doRequest(clips) : Promise.resolve([])
+        ),
+        delay(1000),
+        tap(result => this.completeSubject.next({ next: true }))
+      )
+      .subscribe(async res => {
+        console.error('Subscription', res);
         // let [file] = await this.listClipboardFiles();
         // if (!file) {
         //   file = (await this.createClipboardFile({})).data;
         // }
         // await this.downloadFile(file.id);
       });
+
+    setTimeout(() => {
+      this.addToDrive({
+        id: 'sdfsdfsdffft4345a',
+        updatedAt: 42343289,
+        createdAt: 738847923,
+        plainText: 'string',
+        htmlText: 'string',
+        dataURI: 'string',
+        category: 'none',
+        type: 'text',
+        formats: []
+      });
+    }, 5000);
   }
 
   private downloadFile(fileId: string) {
