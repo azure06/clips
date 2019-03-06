@@ -62,7 +62,6 @@ export default class GoogleDriveService extends EventEmitter {
           console.error(error);
         }
       });
-    // this.createClipboardFile({ cia0: 'hello' });
   }
 
   private createStream(str: string) {
@@ -102,7 +101,7 @@ export default class GoogleDriveService extends EventEmitter {
         {}
       );
       const result = await this.createFileAndAddToDrive(clipMap);
-      return new Promise(resolve => setTimeout(() => resolve(result), 10000));
+      return new Promise(resolve => setTimeout(() => resolve(result), 15000));
     };
 
     this.nextClipSubject
