@@ -12,7 +12,7 @@
         fill="clear"
         shape="round"
         [color]="clip.category === 'starred' ? 'primary' : 'tertiary'"
-        (click)="onAddToBookmarkClick()"
+        (click)="onAddToBookmarkClick($event)"
       >
         <ion-icon slot="icon-only" name="star"></ion-icon>
       </ion-button>
@@ -21,7 +21,7 @@
         fill="clear"
         shape="round"
         [color]="'tertiary'"
-        (click)="onRemoveClick()"
+        (click)="onRemoveClick($event)"
       >
         <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
