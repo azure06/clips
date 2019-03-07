@@ -5,11 +5,7 @@
     </ion-title>
     <ion-buttons slot="secondary">
       <ion-button color="tertiary">
-        <ion-icon
-          *ngIf="!(isLoading | async)"
-          slot="icon-only"
-          name="refresh"
-        ></ion-icon>
+        <ion-icon *ngIf="!(isLoading | async)" name="refresh"></ion-icon>
         <ion-spinner
           *ngIf="(isLoading | async)"
           class="spinner"
@@ -18,15 +14,15 @@
         ></ion-spinner>
       </ion-button>
       <ion-button color="tertiary">
-        <ion-icon slot="icon-only" name="contact"></ion-icon>
+        <ion-icon name="contact"></ion-icon>
       </ion-button>
       <ion-button color="tertiary">
-        <ion-icon slot="icon-only" name="settings"></ion-icon>
+        <ion-icon name="settings"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-buttons slot="primary">
       <ion-button color="tertiary">
-        <ion-icon slot="icon-only" name="more"></ion-icon>
+        <ion-icon name="more"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

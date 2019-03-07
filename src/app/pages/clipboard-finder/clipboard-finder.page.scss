@@ -14,11 +14,13 @@
   height: 30px;
 }
 
-/deep/ ion-icon {
-  left: 16px;
-  top: 6px !important;
-  width: 21px;
-  height: 21px;
+ion-searchbar {
+  /deep/ ion-icon {
+    left: 16px;
+    top: 6px !important;
+    width: 21px;
+    height: 21px;
+  }
 }
 
 ion-progress-bar {
