@@ -74,7 +74,10 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    frame: isDevelopment ? true : false
+    frame: isDevelopment ? true : false,
+    icon: isDevelopment
+      ? 'http://localhost:4200/assets/icon/clip.png'
+      : path.join(`file://${__dirname}`, '../assets/icon/clip.png')
   });
 
   console.log('Directory', __dirname, isDev);
