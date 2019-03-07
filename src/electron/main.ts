@@ -1,4 +1,5 @@
-import { app } from 'electron';
+import { app, Menu, nativeImage, Tray } from 'electron';
+import * as path from 'path';
 import cloudClips, { isAvailable } from './cloud-clips/cloud-clips.main';
 
 // This method will be called when Electron has finished
@@ -26,4 +27,23 @@ app.on('activate', () => {
 // Disable window menu
 app.on('browser-window-created', (event, window) => {
   window.setMenu(null);
+});
+
+let tray = null;
+app.on('ready', () => {
+  // FIXME It doesn't works without building the app
+  const nativeImg = nativeImage.createFromPath(
+    path.join(`file://${__dirname}`, '../assets/icon/clip.png')
+  );
+  tray = new Tray(nativeImg);
+  const contextMenu = Menu.buildFromTemplate([
+    { label: '  Infiniti Clips              ' },
+    { type: 'separator' },
+    { label: '  Pause Sync' },
+    { label: '  Preferences' },
+    { type: 'separator' },
+    { label: '  Quit' }
+  ]);
+  tray.setToolTip('This is my application.');
+  tray.setContextMenu(contextMenu);
 });

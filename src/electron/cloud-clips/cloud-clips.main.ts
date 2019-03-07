@@ -66,6 +66,8 @@ const initGoogleTranslate = () => {
   });
 };
 
+const initTray = () => {};
+
 const createWindow = () => {
   const isDevelopment = (isDev as any).default;
   // Create the browser window.
