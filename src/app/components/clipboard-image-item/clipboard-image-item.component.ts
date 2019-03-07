@@ -15,4 +15,15 @@ export class ClipboardImageItemComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
+
+  onAddToBookmarkClick(event: Event): void {
+    this.modifyClip.emit({
+      ...this.clip,
+      category: this.clip.category === 'starred' ? 'none' : 'starred'
+    });
+  }
+
+  onRemoveClick(event: Event): void {
+    this.removeClip.emit(this.clip);
+  }
 }

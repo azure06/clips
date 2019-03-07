@@ -7,6 +7,7 @@ interface Base {
 interface ViewDetails {
   plainView: string;
   htmlView: string;
+  imagePreview: string;
   translationView: string;
   dateFromNow: string;
 }

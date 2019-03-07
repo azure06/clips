@@ -44,7 +44,8 @@ export default class ClipboardService extends EventEmitter {
       ) {
         this.previousDataURI = image.toDataURL();
         this.emit('clipboard-change', {
-          plainText,
+          plainText:
+            plainText || image.toDataURL({ scaleFactor: 0.2 }).slice(-25),
           htmlText,
           dataURI: image.toDataURL(),
           category: 'none',

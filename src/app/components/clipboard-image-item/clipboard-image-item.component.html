@@ -7,8 +7,23 @@
           {{ clip.dateFromNow }}
         </p>
       </ion-label>
-      <ion-button slot="end" fill="clear" shape="round">
-        <ion-icon color="tertiary" slot="icon-only" name="trash"></ion-icon>
+      <ion-button
+        slot="end"
+        fill="clear"
+        shape="round"
+        [color]="clip.category === 'starred' ? 'primary' : 'tertiary'"
+        (click)="onAddToBookmarkClick()"
+      >
+        <ion-icon slot="icon-only" name="star"></ion-icon>
+      </ion-button>
+      <ion-button
+        slot="end"
+        fill="clear"
+        shape="round"
+        [color]="'tertiary'"
+        (click)="onRemoveClick()"
+      >
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
     </ion-item>
   </ion-card-header>

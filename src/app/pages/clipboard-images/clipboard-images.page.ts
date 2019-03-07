@@ -65,4 +65,12 @@ export class ClipboardImagesPage implements OnInit {
     // event.target.disabled = true;
     // }
   }
+
+  modifyClip(clip: Clip) {
+    this.clipboardService.modifyClip(clip);
+  }
+
+  removeClip(clip: Clip) {
+    this.clipboardService.removeClip(clip);
+  }
 }

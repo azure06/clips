@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, shell } from 'electron';
+import { BrowserWindow, ipcMain, nativeImage, shell } from 'electron';
 import * as isDev from 'electron-is-dev';
 import { OAuth2Client } from 'google-auth-library';
 import * as path from 'path';
@@ -74,13 +74,12 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    frame: isDevelopment ? true : false,
-    icon: isDevelopment
-      ? 'http://localhost:4200/assets/icon/clip.png'
-      : path.join(`file://${__dirname}`, '../assets/icon/clip.png')
+    frame: isDevelopment ? true : false
   });
 
-  console.log('Directory', __dirname, isDev);
+  const icon = nativeImage.createFromPath(
+    path.join(`${__dirname}`, '../../assets/icon/clip.png')
+  );
 
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
   mainWindow.loadURL(
@@ -88,6 +87,9 @@ const createWindow = () => {
       ? 'http://localhost:4200'
       : path.join(`file://${__dirname}`, '../../index.html')
   );
+
+  // set icon
+  mainWindow.setIcon(icon);
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
