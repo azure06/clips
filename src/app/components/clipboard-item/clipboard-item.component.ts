@@ -10,6 +10,10 @@ import { Clip } from '../../models/models';
 export class ClipboardItemComponent {
   @Input() clip: Clip;
   @Input() index;
+  @Input() disabled: {
+    translate: boolean;
+    start: boolean;
+  } = { translate: false, start: false };
   @Output() removeClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();

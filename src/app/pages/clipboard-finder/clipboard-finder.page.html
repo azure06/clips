@@ -9,7 +9,7 @@
     ></ion-searchbar>
   </ion-toolbar>
 </ion-header>
-<ion-content> 
+<ion-content>
   <!-- Dots -->
   <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
 
@@ -20,6 +20,7 @@
     (translateText)="translateText($event)"
     [clip]="clip"
     [index]="i"
+    [disabled]="{ star: true, translate: true }"
   >
   </app-clipboard-item-component>
   <ion-infinite-scroll threshold="50px" (ionInfinite)="loadMore($event)">

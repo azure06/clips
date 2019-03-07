@@ -107,6 +107,7 @@
           fill="clear"
           shape="round"
           color="medium"
+          [disabled]="disabled.translate"
           [color]="
             clip.translationView && view !== 'htmlView' ? 'primary' : 'medium'
           "
@@ -117,6 +118,7 @@
         <ion-button
           fill="clear"
           shape="round"
+          [disabled]="disabled.star"
           [color]="clip.category === 'starred' ? 'primary' : 'medium'"
           (click)="onAddToBookmarkClick($event)"
         >
