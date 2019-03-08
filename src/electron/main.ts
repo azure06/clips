@@ -39,7 +39,7 @@ app.on('ready', () => {
   const contextMenu = Menu.buildFromTemplate([
     { label: '  Infiniti Clips              ', enabled: false },
     { type: 'separator' },
-    { label: '  Pause Sync' },
+    { label: '  Pause Syncing' },
     { label: '  Preferences' },
     { type: 'separator' },
     {

@@ -20,11 +20,6 @@
         <ion-icon name="settings"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-buttons slot="primary">
-      <ion-button color="tertiary">
-        <ion-icon name="more"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content class="light-theme">
@@ -46,17 +41,17 @@
       </ion-button>
       <ion-button
         fill="clear"
+        [color]="router.url === '/clipboard/finder' ? 'primary' : 'tertiary'"
+        (click)="navigate('clipboard/finder')"
+      >
+        <ion-icon slot="icon-only" name="browsers"></ion-icon>
+      </ion-button>
+      <ion-button
+        fill="clear"
         [color]="router.url === '/clipboard/bookmark' ? 'primary' : 'tertiary'"
         (click)="navigate('clipboard/bookmark')"
       >
         <ion-icon slot="icon-only" name="star"></ion-icon>
-      </ion-button>
-      <ion-button
-        fill="clear"
-        [color]="router.url === '/clipboard/finder' ? 'primary' : 'tertiary'"
-        (click)="navigate('clipboard/finder')"
-      >
-        <ion-icon slot="icon-only" name="search"></ion-icon>
       </ion-button>
     </div>
     <div class="sidenav-content">
