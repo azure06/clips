@@ -12,6 +12,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ClipboardPageModule } from './pages/clipboard/clipboard.module';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
+import { PreferencesPageModule } from './pages/preferences/preferences.module';
 import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
 import { GoogleDriveServiceModule } from './services/google-drive/google-drive.module';
 import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
@@ -31,7 +32,6 @@ import { GoogleTranslateServiceModule } from './services/google-translate/google
     GoogleTranslateServiceModule,
     ClipboardServiceModule,
     ClipboardStoreModule,
-    ClipboardPageModule
   ],
   providers: [
     StatusBar,

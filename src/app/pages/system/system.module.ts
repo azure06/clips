@@ -5,13 +5,12 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { PreferencesPage } from './preferences.page';
-import { PreferencesPageRoutingModule } from './preferences.router.module';
+import { SystemPage } from './system.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: PreferencesPage
+    component: SystemPage
   }
 ];
 
@@ -20,9 +19,8 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     IonicModule,
-    PreferencesPageRoutingModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [PreferencesPage]
+  declarations: [SystemPage]
 })
-export class PreferencesPageModule {}
+export class SystemPageModule {}

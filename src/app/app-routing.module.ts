@@ -7,7 +7,7 @@ const routes: Routes = [
     loadChildren: './pages/clipboard/clipboard.module#ClipboardPageModule'
   },
   {
-    path: 'preferences',
+    path: '',
     loadChildren: './pages/preferences/preferences.module#PreferencesPageModule'
   }
 ];
