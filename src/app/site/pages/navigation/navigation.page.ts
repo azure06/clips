@@ -9,6 +9,9 @@ import { NavController } from '@ionic/angular';
 })
 export class NavigationPage {
   constructor(public router: Router, public navCtrl: NavController) {}
+
+  onActivate(event) {}
+
   navigate(url: string) {
     this.navCtrl.navigateForward(url);
   }
