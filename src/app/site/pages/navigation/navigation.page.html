@@ -1,19 +1,26 @@
-<ion-content>
+<ion-content class="container">
+  <!-- Header -->
   <div class="light-theme">
     <mat-toolbar class="nav-bar">
       <img src="assets/icon/clip.svg" />
       <span> <h2>Infiniti Clips</h2></span>
-      <button mat-button>News</button>
+      <button mat-button disabled>News</button>
       <button mat-button color="primary">Features</button>
       <button mat-button disabled>About</button>
-      <!-- <a mat-button routerLink=".">About</a> -->
       <!-- This fills the remaining space of the current row -->
       <span class="spacer"></span>
 
-      <a mat-button routerLink="." class="github">GitHub</a>
+      <a
+        mat-button
+        target="_blank"
+        href="https://github.com/azure06/xClipboard"
+        class="github"
+        >GitHub</a
+      >
     </mat-toolbar>
   </div>
 
-  <!-- ion-router-outlet doesn't work correctly 2019-03-01 -->
+  <!-- Router Outlet -->
+
   <router-outlet> </router-outlet>
 </ion-content>

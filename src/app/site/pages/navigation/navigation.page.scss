@@ -11,15 +11,18 @@
   }
   img {
     width: 54px;
-    filter: brightness(0.65);
-  }
-
-  .spacer {
-    flex: 1 1 auto;
   }
 
   .github {
     color: var(--text-color--light);
     font-size: 0.8rem;
   }
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.container/deep/ion-content {
+  height: calc(100% - 64px);
 }
