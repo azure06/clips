@@ -9,13 +9,17 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: './pages/preferences/preferences.module#PreferencesPageModule'
+  },
+  {
+    path: '',
+    loadChildren:
+      './site/pages/navigation/navigation.module#NavigationPageModule'
   }
 ];
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      preloadingStrategy: PreloadAllModules,
-      useHash: true
+      preloadingStrategy: PreloadAllModules
     })
   ],
   exports: [RouterModule]

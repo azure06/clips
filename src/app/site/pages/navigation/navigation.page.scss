@@ -1,0 +1,25 @@
+.nav-bar {
+  color: var(--text-color--dark);
+  background-color: white;
+  box-shadow: 0 0 3px 0px rgba(0, 5, 25, 0.09);
+  h2 {
+    padding: 10px;
+    font-weight: 900;
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    margin-right: 15px;
+  }
+  img {
+    width: 54px;
+    filter: brightness(0.65);
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .github {
+    color: var(--text-color--light);
+    font-size: 0.8rem;
+  }
+}

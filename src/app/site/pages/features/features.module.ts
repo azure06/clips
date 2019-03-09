@@ -1,16 +1,15 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
-
-import { ClipboardFiderPage } from './clipboard-fider.page';
+import { FeaturesPage } from './features.page';
 
 const routes: Routes = [
   {
-    path: '',
-    component: ClipboardFiderPage
+    path: 'features',
+    component: FeaturesPage
   }
 ];
 
@@ -21,6 +20,6 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [ClipboardFiderPage]
+  declarations: [FeaturesPage]
 })
-export class ClipboardFiderPageModule {}
+export class FeaturesPageModule {}
