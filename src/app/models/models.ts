@@ -25,7 +25,8 @@ export interface Clip extends Partial<ViewDetails>, Base {
  * Translation result
  *
  */
-export interface GoogleTraslateResult {
+export interface GoogleTranslateResult {
+  originalText: string;
   text: string;
   from: {
     language: {
