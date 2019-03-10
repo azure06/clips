@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { GoogleTraslateResult } from '../../models/models';
+import { GoogleTranslateResult } from '../../models/models';
 import { ElectronService } from '../electron/electron.service';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class GoogleTranslateService {
       const ipcRenderer = this.electronService.electron.ipcRenderer;
       ipcRenderer.on(
         'google-translate-result',
-        (event, result: GoogleTraslateResult) => console.error(result)
+        (event, result: GoogleTranslateResult) => console.error(result)
       );
     }
   }
