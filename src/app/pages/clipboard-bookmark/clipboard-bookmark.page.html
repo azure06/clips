@@ -1,5 +1,7 @@
 <ion-header no-border></ion-header>
 <ion-content>
+  <!-- Dots -->
+  <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
   <!--  <ion-content padding> -->
   <app-clipboard-item-component
     *ngFor="let clip of (clips$ | async); let i = index"

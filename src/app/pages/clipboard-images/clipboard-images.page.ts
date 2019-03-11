@@ -17,6 +17,7 @@ import * as fromClips from '../clipboard/store/index';
 export class ClipboardImagesPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<Clip[]>;
+  loading: boolean;
 
   constructor(
     private clipboardService: ClipboardService,
@@ -25,6 +26,7 @@ export class ClipboardImagesPage implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.loading = true;
     await this.clipboardService.getClipsFromIdbAndSetInState({
       limit: 5,
       index: 'type',
@@ -41,6 +43,7 @@ export class ClipboardImagesPage implements OnInit {
             clip.dateFromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);
           }
+          this.loading = false;
           return acc;
         }, []);
       })

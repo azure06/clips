@@ -1,4 +1,5 @@
 <ion-content>
+  <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
   <app-clipboard-image-item
     *ngFor="let clip of (clips$ | async); let i = index"
     (modifyClip)="modifyClip($event)"

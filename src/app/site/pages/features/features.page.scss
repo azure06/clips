@@ -7,7 +7,7 @@
 }
 .container.header {
   background: rgba(248, 248, 252, 1);
-  padding: 4vw 8vw 4vw 8vw;
+  padding: 4vw 6vw 0vw 6vw;
   min-height: 560px;
 }
 
@@ -26,6 +26,12 @@
     height: auto;
     border-radius: 10px;
   }
+}
+
+.container.btn button {
+  margin: 50px 10px 15px 10px;
+  min-width: 240px;
+  min-height: 60px;
 }
 
 .footer {

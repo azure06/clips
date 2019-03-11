@@ -3,7 +3,7 @@ import { IonInfiniteScroll } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import moment from 'moment';
 import { Observable } from 'rxjs';
-import { delay, filter, first, map } from 'rxjs/operators';
+import { delay, filter, first, map, tap } from 'rxjs/operators';
 import { Clip } from '../../models/models';
 import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
 import * as fromClips from '../clipboard/store/index';
@@ -17,6 +17,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
 export class ClipboardBookmarkPage implements OnInit {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<Clip[]>;
+  loading: boolean;
 
   constructor(
     private clipboardService: ClipboardService,
@@ -25,6 +26,7 @@ export class ClipboardBookmarkPage implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    this.loading = true;
     await this.clipboardService.getClipsFromIdbAndSetInState({
       limit: 15,
       index: 'category',
@@ -42,7 +44,8 @@ export class ClipboardBookmarkPage implements OnInit {
           }
           return acc;
         }, []);
-      })
+      }),
+      tap(() => (this.loading = false))
     );
   }
 
