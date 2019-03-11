@@ -56,17 +56,20 @@ const handleClipboard = () => {
 const initGoogleTranslate = () => {
   const googleTranslate = new GoogleTranslate();
 
-  ipcMain.on('google-translate-query', async (event, { text, options }) => {
-    try {
-      const result = await googleTranslate.translate(text, options);
-      mainWindow.webContents.send('google-translate-result', result);
-    } catch (error) {
-      console.error('google translate error - ', error);
+  ipcMain.on(
+    'google-translate-query',
+    async (event, { eventId, text, options }) => {
+      try {
+        const result = await googleTranslate.translate(text, options);
+        mainWindow.webContents.send(eventId, result);
+      } catch (error) {
+        mainWindow.webContents.send(eventId, error);
+        console.error('google translate error - ', error);
+      }
     }
-  });
+  );
 };
 
-const initTray = () => {};
 
 const createWindow = () => {
   const isDevelopment = (isDev as any).default;

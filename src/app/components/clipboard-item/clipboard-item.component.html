@@ -32,7 +32,7 @@
           <ion-icon name="star"></ion-icon>
         </ion-button>
       </div>
-      <div *ngIf="hasMouseEntered">
+      <div *ngIf="hasMouseEntered && !disabled.remove">
         <ion-button
           class="remove"
           fill="clear"
@@ -113,7 +113,8 @@
           "
           (click)="onTranslate($event)"
         >
-          <i class="material-icons translate">translate</i>
+          <ion-spinner *ngIf="isTranslating" name="lines-small"></ion-spinner>
+          <i *ngIf="!isTranslating" class="material-icons translate">translate</i>
         </ion-button>
         <ion-button
           fill="clear"
@@ -125,7 +126,7 @@
           <ion-icon name="star"></ion-icon>
         </ion-button>
       </div>
-      <div *ngIf="hasMouseEntered">
+      <div *ngIf="hasMouseEntered && !disabled.remove">
         <ion-button
           class="remove"
           fill="clear"

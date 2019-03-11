@@ -12,13 +12,15 @@ export class ClipboardItemComponent {
   @Input() index;
   @Input() disabled: {
     translate: boolean;
-    start: boolean;
-  } = { translate: false, start: false };
+    star: boolean;
+    remove: boolean;
+  } = { translate: false, star: false, remove: false };
   @Output() removeClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
   public view: 'plainView' | 'htmlView' = 'plainView';
   public hasMouseEntered = false;
+  public isTranslating = false;
 
   constructor() {}
 
@@ -52,6 +54,7 @@ export class ClipboardItemComponent {
   }
 
   onTranslate(): void {
+    this.isTranslating = !this.clip.translationView;
     if (!this.clip.translationView) {
       this.translateText.emit(this.clip);
     } else {

@@ -20,7 +20,7 @@
     (translateText)="translateText($event)"
     [clip]="clip"
     [index]="i"
-    [disabled]="{ star: true, translate: true }"
+    [disabled]="{ star: true, translate: true, remove: true }"
   >
   </app-clipboard-item-component>
   <ion-infinite-scroll threshold="50px" (ionInfinite)="loadMore($event)">
