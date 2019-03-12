@@ -5,8 +5,8 @@ import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
 import * as os from 'os';
 import * as path from 'path';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { buffer, delay, mergeMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, from, of, Subject } from 'rxjs';
+import { buffer, catchError, delay, mergeMap, tap } from 'rxjs/operators';
 import { Clip } from './../../models/models';
 
 import * as stream from 'stream';
@@ -39,7 +39,7 @@ export default class GoogleDriveService extends EventEmitter {
 
     behaviourSubject
       .asObservable()
-      .pipe(delay(10000))
+      .pipe(delay(60000))
       .subscribe(async pageToken => {
         try {
           console.error(pageToken);
@@ -101,7 +101,9 @@ export default class GoogleDriveService extends EventEmitter {
         {}
       );
       const result = await this.createFileAndAddToDrive(clipMap);
-      return new Promise(resolve => setTimeout(() => resolve(result), 60000));
+      return new Promise(resolve =>
+        setTimeout(() => resolve(result), 60000 * 10)
+      );
     };
 
     this.nextClipSubject
@@ -109,10 +111,11 @@ export default class GoogleDriveService extends EventEmitter {
       .pipe(
         buffer(this.completeSubject.asObservable()),
         mergeMap(clips =>
-          clips.length > 0 ? addFile(clips) : Promise.resolve([])
+          from(clips.length > 0 ? addFile(clips) : Promise.resolve([]))
         ),
-        delay(1000),
-        tap(result => this.completeSubject.next({ next: true }))
+        delay(0),
+        tap(res => this.completeSubject.next({ next: true })),
+        catchError(error => of(`Bad Response: ${error}`))
       )
       .subscribe(async res => {
         console.error('Subscription', res);

@@ -37,13 +37,13 @@ export class ClipboardImagesPage implements OnInit {
       delay(0),
       map(clips => {
         // We need to filter the clipboard item added manually to the state (since they are not filtered by category)
+        this.loading = false;
         return clips.reduce((acc: Clip[], clip) => {
           if (clip.type === 'image') {
             clip.plainView = clip.plainText.substring(0, 255);
             clip.dateFromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);
           }
-          this.loading = false;
           return acc;
         }, []);
       })
