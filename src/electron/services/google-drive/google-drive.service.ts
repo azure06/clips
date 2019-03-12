@@ -5,11 +5,11 @@ import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
 import * as os from 'os';
 import * as path from 'path';
-import { BehaviorSubject, from, of, Subject } from 'rxjs';
+import { BehaviorSubject, from, ObservableInput, of, Subject } from 'rxjs';
 import { buffer, catchError, delay, mergeMap, tap } from 'rxjs/operators';
+import * as stream from 'stream';
 import { Clip } from './../../models/models';
 
-import * as stream from 'stream';
 export default class GoogleDriveService extends EventEmitter {
   private drive: drive_v3.Drive;
   private completeSubject = new BehaviorSubject<{ next: boolean }>({
@@ -92,7 +92,9 @@ export default class GoogleDriveService extends EventEmitter {
   }
 
   public initialize() {
-    const addFile = async (clips: Clip[]): Promise<any> => {
+    const addFile = async (
+      clips: Clip[]
+    ): Promise<{ content?: any; error?: any }> => {
       const clipMap = clips.reduce(
         (acc: { [key: string]: Clip }, currentClip) => {
           acc[currentClip.id] = currentClip;
@@ -101,8 +103,9 @@ export default class GoogleDriveService extends EventEmitter {
         {}
       );
       const result = await this.createFileAndAddToDrive(clipMap);
+      console.log(result);
       return new Promise(resolve =>
-        setTimeout(() => resolve(result), 60000 * 10)
+        setTimeout(() => resolve({ content: result }), 60000)
       );
     };
 
@@ -111,14 +114,24 @@ export default class GoogleDriveService extends EventEmitter {
       .pipe(
         buffer(this.completeSubject.asObservable()),
         mergeMap(clips =>
-          from(clips.length > 0 ? addFile(clips) : Promise.resolve([]))
+          from(
+            clips.length > 0 ? addFile(clips) : Promise.resolve({ content: [] })
+          )
         ),
         delay(0),
         tap(res => this.completeSubject.next({ next: true })),
-        catchError(error => of(`Bad Response: ${error}`))
+        catchError(
+          (error): ObservableInput<{ content?: any; error: any }> =>
+            of({ error })
+        )
       )
       .subscribe(async res => {
-        console.error('Subscription', res);
+        if (res.content && res.content.length > 0) {
+          console.log(res.content);
+        }
+        if (res.error) {
+          console.log(res.error);
+        }
         // let [file] = await this.listClipboardFiles();
         // if (!file) {
         //   file = (await this.createClipboardFile({})).data;
