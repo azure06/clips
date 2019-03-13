@@ -12,16 +12,16 @@ export class GoogleOAuth2Service {
 
       ipcRenderer.send(
         'oauth2tokens',
-        JSON.parse(localStorage.getItem('cloud-clips-tokens') || null)
+        JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null)
       );
       ipcRenderer.send('client-load');
 
       ipcRenderer.on('oauth2tokens-refresh', (event, authTokens) => {
         const localTokens =
-          JSON.parse(localStorage.getItem('cloud-clips-tokens') || null) || {};
+          JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null) || {};
 
         localStorage.setItem(
-          'cloud-clips-tokens',
+          'infiniti-clips-tokens',
           JSON.stringify({ ...localTokens, ...authTokens })
         );
       });

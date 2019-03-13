@@ -1,20 +1,31 @@
 <div class="light-theme">
   <!-- Home IM SEARCH SYSTEM -->
+  <mat-toolbar class="header">Header</mat-toolbar>
   <ng-container>
-    <mat-toolbar class="example-header">Header</mat-toolbar>
-    <mat-sidenav-container class="example-container">
+    <mat-sidenav-container class="container">
       <mat-sidenav
         #sidenav
         mode="side"
         opened
-        class="example-sidenav"
+        class="sidenav"
         [fixedInViewport]="options.value.fixed"
         [fixedTopGap]="options.value.top"
         [fixedBottomGap]="options.value.bottom"
       >
-        {{ options.value.fixed ? 'Fixed' : 'Non-fixed' }} Sidenav
+        <mat-nav-list>
+          <h3 mat-subheader>IAM</h3>
+          <mat-list-item class="selected" *ngFor="let section of iam">
+            <mat-icon matListIcon>{{ section.icon }}</mat-icon>
+            <a matLine routerLink=".">{{ section.name }}</a>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          <h3 mat-subheader>System</h3>
+          <mat-list-item *ngFor="let section of system">
+            <mat-icon mat-list-icon>{{ section.icon }}</mat-icon>
+            <a matLine routerLink=".">{{ section.name }}</a>
+          </mat-list-item>
+        </mat-nav-list>
       </mat-sidenav>
-
       <mat-sidenav-content [formGroup]="options">
         <router-outlet></router-outlet>
       </mat-sidenav-content>

@@ -8,6 +8,15 @@ const routes: Routes = [
     component: PreferencesPage,
     children: [
       {
+        path: 'iam',
+        children: [
+          {
+            path: '',
+            loadChildren: '../iam/iam.module#IamPageModule'
+          }
+        ]
+      },
+      {
         path: 'system',
         children: [
           {
@@ -18,7 +27,7 @@ const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: '/preferences/system',
+        redirectTo: '/preferences/iam',
         pathMatch: 'full'
       }
     ]

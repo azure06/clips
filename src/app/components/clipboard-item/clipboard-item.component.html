@@ -1,56 +1,4 @@
 <ion-item
-  *ngIf="clip.type === 'image'"
-  button="true"
-  (mouseenter)="onMouseEnter($event)"
-  (mouseleave)="onMouseLeave($event)"
->
-  <ion-avatar class="container start" slot="start" [title]="index + 1">
-    <div class="doc">
-      <div class="badge">
-        <span>{{ index + 1 > 99 ? '99+' : index + 1 }}</span>
-      </div>
-      <div class="logo-html5">
-        <ion-icon name="image"></ion-icon>
-      </div>
-      <ion-icon slot="icon-only" name="document"></ion-icon>
-    </div>
-  </ion-avatar>
-  <ion-label>
-    <h3><img [src]="clip.dataURI" /></h3>
-    <p>{{ clip.dateFromNow }}</p>
-    <div class="container bottom">
-      <div>
-        <ion-button fill="clear" shape="round" color="medium">
-          <ion-icon name="globe"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          shape="round"
-          [color]="clip.category === 'starred' ? 'primary' : 'medium'"
-          (click)="onAddToBookmarkClick($event)"
-        >
-          <ion-icon name="star"></ion-icon>
-        </ion-button>
-      </div>
-      <div *ngIf="hasMouseEntered && !disabled.remove">
-        <ion-button
-          class="remove"
-          fill="clear"
-          shape="round"
-          color="medium"
-          (click)="onRemoveClick($event)"
-        >
-          <ion-icon name="trash"></ion-icon>
-        </ion-button>
-      </div>
-    </div>
-  </ion-label>
-</ion-item>
-
-<!-- Text  -->
-
-<ion-item
-  *ngIf="clip.type === 'text'"
   (click)="onClick($event)"
   button="true"
   (mouseenter)="onMouseEnter($event)"
@@ -61,36 +9,41 @@
       <div class="badge">
         <span>{{ index + 1 > 99 ? '99+' : index + 1 }}</span>
       </div>
-      <div *ngIf="clip.htmlText" class="logo-html5">
-        <ion-icon slot="icon-only" name="logo-html5"></ion-icon>
+      <div class="globe">
+        <ion-icon *ngIf="clip.type === 'text'" name="globe"></ion-icon>
+        <ion-icon *ngIf="clip.type === 'image'" name="image"></ion-icon>
       </div>
       <ion-icon slot="icon-only" name="document"></ion-icon>
     </div>
   </ion-avatar>
   <ion-label>
-    <h3
-      *ngIf="view === 'htmlView'"
-      [innerHTML]="clip.htmlText | sanitizeHtml"
-      [title]="clip.htmlText"
-    ></h3>
-    <h3
-      *ngIf="view === 'plainView' && !clip.translationView"
-      [title]="clip.plainText"
-    >
-      {{ clip.plainView }}
-    </h3>
-    <h3
-      *ngIf="view !== 'htmlView' && clip.translationView"
-      [title]="clip.translationView"
-    >
-      {{ clip.translationView }}
-    </h3>
-    <p>{{ clip.dateFromNow }}</p>
+    <div class="content">
+      <div *ngIf="clip.type === 'image'" class="image">
+        <img [src]="clip.dataURI" />
+      </div>
+      <div *ngIf="clip.type === 'text'" class="text">
+        <div
+          *ngIf="view === 'htmlView'"
+          [innerHTML]="clip.htmlText | sanitizeHtml"
+          [title]="clip.htmlText"
+        ></div>
+        <h3
+          *ngIf="view === 'plainView' && !clip.translationView"
+          [title]="clip.plainText"
+        >
+          {{ clip.plainView }}
+        </h3>
+        <h3
+          *ngIf="view !== 'htmlView' && clip.translationView"
+          [title]="clip.translationView"
+        >
+          {{ clip.translationView }}
+        </h3>
+      </div>
+      <p>{{ clip.dateFromNow }}</p>
+    </div>
     <div class="container bottom">
       <div>
-        <ion-button fill="clear" shape="round" color="medium">
-          <ion-icon name="globe"></ion-icon>
-        </ion-button>
         <ion-button *ngIf="false" fill="clear" shape="round" color="medium">
           <ion-icon name="share"></ion-icon>
         </ion-button>
@@ -98,7 +51,7 @@
           fill="clear"
           shape="round"
           [color]="view === 'htmlView' ? 'primary' : 'medium'"
-          [disabled]="!hasHtmlView"
+          [disabled]="clip.type === 'image' || !hasHtmlView"
           (click)="switchView(view !== 'plainView' ? 'plainView' : 'htmlView')"
         >
           <i class="material-icons text-format">text_format</i>
@@ -107,14 +60,16 @@
           fill="clear"
           shape="round"
           color="medium"
-          [disabled]="disabled.translate"
+          [disabled]="clip.type === 'image' || disabled.translate"
           [color]="
             clip.translationView && view !== 'htmlView' ? 'primary' : 'medium'
           "
           (click)="onTranslate($event)"
         >
           <ion-spinner *ngIf="isTranslating" name="lines-small"></ion-spinner>
-          <i *ngIf="!isTranslating" class="material-icons translate">translate</i>
+          <i *ngIf="!isTranslating" class="material-icons translate"
+            >translate</i
+          >
         </ion-button>
         <ion-button
           fill="clear"

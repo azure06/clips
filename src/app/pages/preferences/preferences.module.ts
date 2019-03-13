@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { AngularMaterialModule } from '.././../site/components/angular-material/angular-material.module';
+import { AngularMaterialModule } from '../../components/angular-material/angular-material.module';
 import { PreferencesPage } from './preferences.page';
 import { PreferencesPageRoutingModule } from './preferences.router.module';
 

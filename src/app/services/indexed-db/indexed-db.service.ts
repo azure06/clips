@@ -3,7 +3,7 @@ import { Clip } from '../../models/models';
 
 @Injectable()
 export class IndexedDBService {
-  private dbName = 'cloud-clips';
+  private dbName = 'infiniti-clips';
   get idb() {
     return window.indexedDB;
   }

@@ -12,23 +12,34 @@ ion-item:hover {
   --background: rgba(248, 248, 252, 1);
 }
 
-h3,
-p {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-h3 {
-  font-weight: normal;
-  color: var(--text-color--light);
-  border-radius: 3px;
-  max-height: 60px;
-  font-size: 0.76rem;
-}
-p {
-  color: var(--text-color--extra-light);
-  font-size: 0.74rem;
+.content {
+  div {
+    display: flex;
+    max-height: 64px;
+    /deep/div,
+    img,
+    h3 {
+      border-radius: 5px;
+    }
+    img {
+      object-fit: none;
+    }
+  }
+  h3,
+  p {
+    color: var(--text-color--light);
+    font-weight: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  h3 {
+    font-size: 0.76rem;
+  }
+  p {
+    color: var(--text-color--extra-light);
+    font-size: 0.74rem;
+  }
 }
 
 ion-button {
@@ -53,7 +64,8 @@ ion-avatar.container.start {
       z-index: 1;
       font-size: 0.6rem;
     }
-    .logo-html5 {
+    .globe,
+    .image {
       position: absolute;
       width: 16px;
       height: 16px;
@@ -109,9 +121,4 @@ ion-icon[name='logo-html5'] {
     font-size: 24px;
     margin-top: 2px;
   }
-}
-
-// FIXME shoud use ion-img
-img {
-  margin-top: -20%;
 }

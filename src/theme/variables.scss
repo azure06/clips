@@ -5,7 +5,7 @@
 :root {
   --ion-color-primary: rgba(0, 115, 245, 1);
   --ion-color-primary-rgb: 0, 125, 255;
-  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast: rgba(0, 115, 245, 0.1);
   --ion-color-primary-contrast-rgb: 255, 255, 255;
   --ion-color-primary-shade: rgb(15, 100, 200);
   --ion-color-primary-tint: rgba(0, 127, 255, 1);
@@ -82,7 +82,11 @@
   --ion-color-light-tint: #f5f6f9;
 
   --ion-text-color: #020814; // Default(?)
-  --text-color--dark: rgb(16, 32, 64); // Maybe overriding some style -- 2019/03/10
+  --text-color--dark: rgb(
+    16,
+    32,
+    64
+  ); // Maybe overriding some style -- 2019/03/10
   --text-color--light: #73849a;
   --text-color--extra-light: hsl(214, 16%, 67%);
   --text-color--light-blue: #448aff;
