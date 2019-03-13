@@ -53,6 +53,11 @@ const routes: Routes = [
         pathMatch: 'full'
       }
     ]
+  },
+  {
+    path: '',
+    redirectTo: '/clipboard/history',
+    pathMatch: 'full'
   }
 ];
 

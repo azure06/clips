@@ -1,22 +1,23 @@
-<ion-content>
-  <h4><img src="assets/icon/clip.svg" /> Infiniti CLIPS</h4>
-  <ion-tabs>
-    <ion-tab-bar slot="top">
-      <ion-tab-button tab="system">
-        <ion-label position="">HOME</ion-label>
-      </ion-tab-button>
+<div class="light-theme">
+  <!-- Home IM SEARCH SYSTEM -->
+  <ng-container>
+    <mat-toolbar class="example-header">Header</mat-toolbar>
+    <mat-sidenav-container class="example-container">
+      <mat-sidenav
+        #sidenav
+        mode="side"
+        opened
+        class="example-sidenav"
+        [fixedInViewport]="options.value.fixed"
+        [fixedTopGap]="options.value.top"
+        [fixedBottomGap]="options.value.bottom"
+      >
+        {{ options.value.fixed ? 'Fixed' : 'Non-fixed' }} Sidenav
+      </mat-sidenav>
 
-      <ion-tab-button tab="system">
-        <ion-label>IAM</ion-label>
-      </ion-tab-button>
-
-      <ion-tab-button tab="system">
-        <ion-label>SEARCH</ion-label>
-      </ion-tab-button>
-
-      <ion-tab-button tab="system">
-        <ion-label>SYSTEM</ion-label>
-      </ion-tab-button>
-    </ion-tab-bar>
-  </ion-tabs>
-</ion-content>
+      <mat-sidenav-content [formGroup]="options">
+        <router-outlet></router-outlet>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  </ng-container>
+</div>
