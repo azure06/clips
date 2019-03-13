@@ -4,16 +4,16 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
+    loadChildren:
+      './site/pages/navigation/navigation.module#NavigationPageModule'
+  },
+  {
+    path: '',
     loadChildren: './pages/clipboard/clipboard.module#ClipboardPageModule'
   },
   {
     path: '',
     loadChildren: './pages/preferences/preferences.module#PreferencesPageModule'
-  },
-  {
-    path: '',
-    loadChildren:
-      './site/pages/navigation/navigation.module#NavigationPageModule'
   }
 ];
 @NgModule({

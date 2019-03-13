@@ -18,6 +18,11 @@ const routes: Routes = [
         ]
       }
     ]
+  },
+  {
+    path: '',
+    redirectTo: '/navigation/features',
+    pathMatch: 'full'
   }
 ];
 
