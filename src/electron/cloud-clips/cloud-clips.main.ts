@@ -81,7 +81,7 @@ const createWindow = () => {
   });
 
   const icon = nativeImage.createFromPath(
-    path.join(`${__dirname}`, '../../assets/icon/clip.png')
+    path.join(`${__dirname}`, '../../assets/icon/clip-favicon.png')
   );
 
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)

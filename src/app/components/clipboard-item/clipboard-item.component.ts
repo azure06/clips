@@ -53,7 +53,7 @@ export class ClipboardItemComponent {
     this.removeClip.emit(this.clip);
   }
 
-  onTranslate(): void {
+  onTranslate(event: Event): void {
     this.isTranslating = !this.clip.translationView;
     if (!this.clip.translationView) {
       this.translateText.emit(this.clip);
