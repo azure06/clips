@@ -21,6 +21,15 @@
   align-items: center;
 }
 
+.draggable {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+
+  button {
+    -webkit-app-region: no-drag;
+  }
+}
+
 .header {
   background-color: white;
   position: fixed;

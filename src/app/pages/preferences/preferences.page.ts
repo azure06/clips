@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { NavController } from '@ionic/angular';
 
 interface Section {
   name: string;
@@ -41,12 +43,19 @@ export class PreferencesPage implements OnInit {
     }
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     this.options = this.fb.group({
       bottom: 0,
       top: 0
     });
+  }
+
+  navigateRoot(url: string) {
+    this.router.navigateByUrl(url);
   }
 }

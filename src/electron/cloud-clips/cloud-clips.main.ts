@@ -92,18 +92,27 @@ const createWindow = () => {
       : path.join(`file://${__dirname}`, '../../index.html')
   );
 
-  // set icon
+  // Set icon.
   mainWindow.setIcon(icon);
-
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+  // On resize.
+  ipcMain.on('resize', (event, { width, height, animate }) => {
+    mainWindow.setSize(width, height, animate);
+  });
+  // Center
+  ipcMain.on('center', event => {
+    mainWindow.center();
+  });
+  // On reposition.
+  ipcMain.on('change-position', (event, { x, y, animate }) => {
+    mainWindow.setPosition(x, y, animate);
+  });
 
   mainWindow.webContents.once('did-finish-load', () => {
     handleClipboard();
   });
-
   signinWithGoogle();
-
   initGoogleTranslate();
 
   mainWindow.webContents.on('new-window', (event, url) => {

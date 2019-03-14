@@ -1,10 +1,12 @@
 <div class="light-theme">
-  <mat-toolbar class="header">
+  <mat-toolbar class="header draggable">
     <mat-toolbar-row>
       <img src="assets/icon/clip.svg" />
       <h4>Infiniti CLIPS</h4>
       <span class="spacer"></span>
-      <mat-icon class="icon">close</mat-icon>
+      <button mat-icon-button (click)="navigateRoot('clipboard/history')">
+        <mat-icon class="icon">close</mat-icon>
+      </button>
     </mat-toolbar-row>
   </mat-toolbar>
   <ng-container>

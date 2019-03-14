@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
-import { Platform } from '@ionic/angular';
+import { NavController, Platform } from '@ionic/angular';
 import { ClipboardService } from './services/clipboard/clipboard.service';
 import { GoogleOAuth2Service } from './services/google-oauth2/google-oauth2.service';
 import { GoogleTranslateService } from './services/google-translate/google-translate.service';
@@ -17,7 +17,8 @@ export class AppComponent {
     private statusBar: StatusBar,
     private googleTranslateService: GoogleTranslateService,
     private googleOAuth2Service: GoogleOAuth2Service,
-    private clipboardService: ClipboardService
+    private clipboardService: ClipboardService,
+    private navCtrl: NavController
   ) {
     this.initializeApp();
   }
@@ -26,5 +27,6 @@ export class AppComponent {
     await this.platform.ready();
     this.statusBar.styleDefault();
     this.splashScreen.hide();
+    this.navCtrl.navigateRoot('clipboard/history');
   }
 }
