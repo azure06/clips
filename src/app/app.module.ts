@@ -12,6 +12,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterGuard } from './guards/router.guard';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
 import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
 import { GoogleDriveServiceModule } from './services/google-drive/google-drive.module';
@@ -26,16 +27,17 @@ import { GoogleTranslateServiceModule } from './services/google-translate/google
     IonicModule.forRoot(),
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
-    AppRoutingModule,
     GoogleOAuth2ServiceModule,
     GoogleDriveServiceModule,
     GoogleTranslateServiceModule,
+    AppRoutingModule,
     ClipboardServiceModule,
-    ClipboardStoreModule,
+    ClipboardStoreModule
   ],
   providers: [
     StatusBar,
     SplashScreen,
+    RouterGuard,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

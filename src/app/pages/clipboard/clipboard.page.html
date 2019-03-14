@@ -1,5 +1,30 @@
+<ion-header class="header draggable" no-border>
+  <ion-toolbar>
+    <ion-title>
+      <img src="assets/icon/clip.svg" />
+      <span>Infiniti CLIPS</span>
+    </ion-title>
+    <ion-buttons slot="secondary">
+      <ion-button color="tertiary">
+        <ion-icon *ngIf="!(isLoading | async)" name="refresh"></ion-icon>
+        <ion-spinner
+          *ngIf="(isLoading | async)"
+          class="spinner"
+          name="lines-small"
+          color="tertiary"
+        ></ion-spinner>
+      </ion-button>
+      <ion-button color="tertiary">
+        <ion-icon name="contact"></ion-icon>
+      </ion-button>
+      <ion-button color="tertiary">
+        <ion-icon name="settings"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 <ion-content class="light-theme">
-  <div class="container main">
+  <div class="container main header-active">
     <!-- Sidenav -->
     <div class="container sidenav column space-between">
       <!-- Pages -->

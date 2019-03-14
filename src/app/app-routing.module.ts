@@ -1,15 +1,17 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { RouterGuard } from './guards/router.guard';
 
 const routes: Routes = [
   {
     path: '',
-    loadChildren: './pages/clipboard/clipboard.module#ClipboardPageModule'
+    loadChildren:
+      './site/pages/navigation/navigation.module#NavigationPageModule'
   },
   {
     path: '',
-    loadChildren:
-      './site/pages/navigation/navigation.module#NavigationPageModule'
+    loadChildren: './pages/clipboard/clipboard.module#ClipboardPageModule',
+    canActivate: [RouterGuard]
   },
   {
     path: '',

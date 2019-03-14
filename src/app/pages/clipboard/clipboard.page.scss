@@ -9,8 +9,43 @@
   flex-direction: column;
 }
 
+.draggable {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+
+  ion-button {
+    -webkit-app-region: no-drag;
+  }
+}
+
+.header {
+  &.header-md {
+    border: 1px solid var(--line-rule-color);
+  }
+  ion-title {
+    padding-inline-start: 0px;
+  }
+  img {
+    width: 35px;
+    text-align: center;
+    vertical-align: middle;
+    margin-right: 5px;
+  }
+  span {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 2px 4px 2px 4px;
+    color: var(--ion-color-tertiary);
+  }
+}
+
 .main {
   height: 100vh;
+  &.header-active {
+    height: calc(100vh - 58px);
+  }
+
   // Sidenav
   .sidenav {
     width: 56px;
@@ -27,7 +62,3 @@
     width: calc(100vw - 48px);
   }
 }
-
-// .header.header-md {
-//   border: 1px solid var(--line-rule-color);
-// }

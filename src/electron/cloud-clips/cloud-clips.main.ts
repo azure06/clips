@@ -76,8 +76,10 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    frame: isDevelopment ? true : false
+    frame: false
   });
+  mainWindow.setResizable(true);
+  mainWindow.focus();
 
   const icon = nativeImage.createFromPath(
     path.join(`${__dirname}`, '../../assets/icon/clip.png')
