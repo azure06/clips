@@ -1,59 +1,62 @@
-<ion-header no-border>
-  <ion-toolbar>
-    <ion-title>
-      <h4><img src="assets/icon/clip.svg" /> Infiniti CLIPS</h4>
-    </ion-title>
-    <ion-buttons slot="secondary">
-      <ion-button color="tertiary">
-        <ion-icon *ngIf="!(isLoading | async)" name="refresh"></ion-icon>
-        <ion-spinner
-          *ngIf="(isLoading | async)"
-          class="spinner"
-          name="lines-small"
-          color="tertiary"
-        ></ion-spinner>
-      </ion-button>
-      <ion-button color="tertiary">
-        <ion-icon name="contact"></ion-icon>
-      </ion-button>
-      <ion-button color="tertiary">
-        <ion-icon name="settings"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
 <ion-content class="light-theme">
-  <div class="sidenav-container">
-    <div class="sidenav">
-      <ion-button
-        fill="clear"
-        [color]="router.url === '/clipboard/history' ? 'primary' : 'tertiary'"
-        (click)="navigate('clipboard/history')"
-      >
-        <ion-icon slot="icon-only" name="laptop"></ion-icon>
-      </ion-button>
-      <ion-button
-        fill="clear"
-        [color]="router.url === '/clipboard/images' ? 'primary' : 'tertiary'"
-        (click)="navigate('clipboard/images')"
-      >
-        <ion-icon slot="icon-only" name="image"></ion-icon>
-      </ion-button>
-      <ion-button
-        fill="clear"
-        [color]="router.url === '/clipboard/finder' ? 'primary' : 'tertiary'"
-        (click)="navigate('clipboard/finder')"
-      >
-        <ion-icon slot="icon-only" name="browsers"></ion-icon>
-      </ion-button>
-      <ion-button
-        fill="clear"
-        [color]="router.url === '/clipboard/bookmark' ? 'primary' : 'tertiary'"
-        (click)="navigate('clipboard/bookmark')"
-      >
-        <ion-icon slot="icon-only" name="star"></ion-icon>
-      </ion-button>
+  <div class="container main">
+    <!-- Sidenav -->
+    <div class="container sidenav column space-between">
+      <!-- Pages -->
+      <div class="container column pages">
+        <ion-button
+          fill="clear"
+          [color]="router.url === '/clipboard/history' ? 'primary' : 'tertiary'"
+          (click)="navigate('clipboard/history')"
+        >
+          <ion-icon slot="icon-only" name="laptop"></ion-icon>
+        </ion-button>
+        <ion-button
+          fill="clear"
+          [color]="router.url === '/clipboard/images' ? 'primary' : 'tertiary'"
+          (click)="navigate('clipboard/images')"
+        >
+          <ion-icon slot="icon-only" name="image"></ion-icon>
+        </ion-button>
+        <ion-button
+          fill="clear"
+          [color]="router.url === '/clipboard/finder' ? 'primary' : 'tertiary'"
+          (click)="navigate('clipboard/finder')"
+        >
+          <ion-icon slot="icon-only" name="browsers"></ion-icon>
+        </ion-button>
+        <ion-button
+          fill="clear"
+          [color]="
+            router.url === '/clipboard/bookmark' ? 'primary' : 'tertiary'
+          "
+          (click)="navigate('clipboard/bookmark')"
+        >
+          <ion-icon slot="icon-only" name="star"></ion-icon>
+        </ion-button>
+      </div>
+
+      <!-- Settings -->
+      <div class="container column settings">
+        <ion-button fill="clear" color="tertiary">
+          <ion-spinner
+            *ngIf="(isLoading | async)"
+            class="spinner"
+            name="lines"
+            color="tertiary"
+          ></ion-spinner>
+        </ion-button>
+        <ion-button
+          fill="clear"
+          [color]="router.url === '/preferences/iam' ? 'primary' : 'tertiary'"
+          (click)="navigate('/preferences/iam')"
+        >
+          <ion-icon slot="icon-only" name="settings"></ion-icon>
+        </ion-button>
+      </div>
     </div>
+
+    <!-- Content -->
     <div class="sidenav-content">
       <!-- ion-router-outlet doesn't work correctly 2019-03-01 -->
       <router-outlet> </router-outlet>
