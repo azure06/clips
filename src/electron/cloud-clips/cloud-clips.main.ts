@@ -70,7 +70,6 @@ const initGoogleTranslate = () => {
   );
 };
 
-
 const createWindow = () => {
   const isDevelopment = (isDev as any).default;
   // Create the browser window.
@@ -81,7 +80,7 @@ const createWindow = () => {
   });
 
   const icon = nativeImage.createFromPath(
-    path.join(`${__dirname}`, '../../assets/icon/clip-favicon.png')
+    path.join(`${__dirname}`, '../../assets/icon/clip.png')
   );
 
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
