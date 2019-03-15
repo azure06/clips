@@ -24,17 +24,17 @@
           <h3 mat-subheader>IAM</h3>
           <mat-list-item class="selected" *ngFor="let section of iam">
             <mat-icon matListIcon>{{ section.icon }}</mat-icon>
-            <a matLine routerLink=".">{{ section.name }}</a>
+            <a matLine routerLink="/preferences/iam">{{ section.name }}</a>
           </mat-list-item>
           <mat-divider></mat-divider>
           <h3 mat-subheader>System</h3>
           <mat-list-item *ngFor="let section of system">
             <mat-icon mat-list-icon>{{ section.icon }}</mat-icon>
-            <a matLine routerLink=".">{{ section.name }}</a>
+            <a matLine routerLink="/preferences/system">{{ section.name }}</a>
           </mat-list-item>
         </mat-nav-list>
       </mat-sidenav>
-      <mat-sidenav-content [formGroup]="options">
+      <mat-sidenav-content [formGroup]="options" class="content">
         <ion-router-outlet></ion-router-outlet>
       </mat-sidenav-content>
     </mat-sidenav-container>

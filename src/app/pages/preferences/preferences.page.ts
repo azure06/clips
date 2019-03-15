@@ -47,7 +47,9 @@ export class PreferencesPage implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private navCtrl: NavController
-  ) {}
+  ) {
+    window.router = router;
+  }
 
   ngOnInit() {
     this.options = this.fb.group({

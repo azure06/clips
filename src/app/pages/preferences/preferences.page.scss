@@ -2,25 +2,6 @@
   position: relative;
   display: flex;
 }
-.space-evenly {
-  justify-content: space-evenly;
-}
-.flex-start {
-  align-items: flex-start;
-}
-.flex-wrap {
-  flex-wrap: wrap;
-}
-.column {
-  flex-direction: column;
-}
-.justify-content.center {
-  justify-content: center;
-}
-.align-items.center {
-  align-items: center;
-}
-
 .draggable {
   -webkit-user-select: none;
   -webkit-app-region: drag;
@@ -58,6 +39,10 @@
   .icon {
     margin: 0 8px;
   }
+}
+
+.content {
+  width: 100%;
 }
 
 .container.content {
