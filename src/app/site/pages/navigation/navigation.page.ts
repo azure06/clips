@@ -8,11 +8,11 @@ import { NavController } from '@ionic/angular';
   styleUrls: ['./navigation.page.scss']
 })
 export class NavigationPage {
-  constructor(public router: Router, public navCtrl: NavController) {}
+  constructor(public navCtrl: NavController) {}
 
   onActivate(event) {}
 
   navigate(url: string) {
-    this.navCtrl.navigateForward(url);
+    this.navCtrl.navigateRoot(url);
   }
 }

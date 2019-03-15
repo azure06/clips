@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 
 interface Section {
@@ -46,6 +46,7 @@ export class PreferencesPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private navCtrl: NavController
   ) {}
 
   ngOnInit() {
@@ -56,6 +57,6 @@ export class PreferencesPage implements OnInit {
   }
 
   navigateRoot(url: string) {
-    this.router.navigateByUrl(url);
+    this.navCtrl.navigateRoot(url);
   }
 }

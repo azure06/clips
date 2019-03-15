@@ -27,6 +27,6 @@ export class AppComponent {
     await this.platform.ready();
     this.statusBar.styleDefault();
     this.splashScreen.hide();
-    this.navCtrl.navigateRoot('clipboard/history');
+    this.navCtrl.navigateRoot(['clipboard/history']);
   }
 }

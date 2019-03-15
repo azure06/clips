@@ -17,7 +17,7 @@ export class RouterGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean> | Promise<boolean> | boolean {
     if (!((window as any).require && (window as any).require('electron'))) {
-      this.navCtrl.navigateForward('');
+      this.navCtrl.navigateRoot('');
       return false;
     }
     return true;
