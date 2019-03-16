@@ -14,7 +14,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
   templateUrl: './clipboard-history.page.html',
   styleUrls: ['./clipboard-history.page.scss']
 })
-export class ClipboardHistoryPage implements OnInit {
+export class ClipboardHistoryPage {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<Clip[]>;
   loading = false;
@@ -25,7 +25,7 @@ export class ClipboardHistoryPage implements OnInit {
     private store: Store<fromClips.State>
   ) {}
 
-  async ngOnInit(): Promise<void> {
+  async ionViewWillEnter(): Promise<void> {
     this.loading = true;
     // Set clips from indexedDB into the state
     await this.clipboardService.getClipsFromIdbAndSetInState({ limit: 15 });

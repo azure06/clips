@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import moment from 'moment';
@@ -14,7 +14,7 @@ import * as fromClips from '../clipboard/store/index';
   templateUrl: './clipboard-images.page.html',
   styleUrls: ['./clipboard-images.page.scss']
 })
-export class ClipboardImagesPage implements OnInit {
+export class ClipboardImagesPage {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<Clip[]>;
   loading: boolean;
@@ -25,7 +25,7 @@ export class ClipboardImagesPage implements OnInit {
     private store: Store<fromClips.State>
   ) {}
 
-  async ngOnInit() {
+  async ionViewWillEnter() {
     this.loading = true;
     await this.clipboardService.getClipsFromIdbAndSetInState({
       limit: 5,

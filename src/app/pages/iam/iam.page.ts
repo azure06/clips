@@ -1,15 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-iam',
   templateUrl: './iam.page.html',
-  styleUrls: ['./iam.page.scss'],
+  styleUrls: ['./iam.page.scss']
 })
-export class IamPage implements OnInit {
+export class IamPage {
+  constructor() {}
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  ionViewWillEnter() {}
 }

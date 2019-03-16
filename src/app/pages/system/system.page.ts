@@ -1,15 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-system',
   templateUrl: './system.page.html',
-  styleUrls: ['./system.page.scss'],
+  styleUrls: ['./system.page.scss']
 })
-export class SystemPage implements OnInit {
+export class SystemPage {
+  sections: 'General' | 'Notifications' | 'Hotkeys' | 'Language';
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  constructor(private router: Router) {}
 }

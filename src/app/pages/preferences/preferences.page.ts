@@ -7,6 +7,7 @@ interface Section {
   name: string;
   icon: string;
   subtitle?: string;
+  path: string;
 }
 
 @Component({
@@ -21,25 +22,30 @@ export class PreferencesPage implements OnInit {
     {
       name: 'Account',
       icon: 'face',
-      subtitle: 'Goole Drive Sync'
+      subtitle: 'Google Drive Sync',
+      path: '/preferences/iam'
     }
   ];
   system: Section[] = [
     {
       name: 'General',
-      icon: 'settings_ethernet'
+      icon: 'settings_ethernet',
+      path: '/preferences/system?section=general'
     },
     {
       name: 'Notifications',
-      icon: 'notifications'
+      icon: 'notifications',
+      path: '/preferences/system?section=notifications'
     },
     {
       name: 'Hotkeys',
-      icon: 'keyboard'
+      icon: 'keyboard',
+      path: '/preferences/system?section=hotkeys'
     },
     {
       name: 'Language',
-      icon: 'language'
+      icon: 'language',
+      path: '/preferences/system?section=language'
     }
   ];
 
@@ -48,7 +54,7 @@ export class PreferencesPage implements OnInit {
     private router: Router,
     private navCtrl: NavController
   ) {
-    window.router = router;
+    // window.router = router;
   }
 
   ngOnInit() {
@@ -58,7 +64,8 @@ export class PreferencesPage implements OnInit {
     });
   }
 
-  navigateRoot(url: string) {
-    this.navCtrl.navigateRoot(url);
+  async navigate(url: string) {
+    console.error(this.router.url);
+    await this.navCtrl.navigateRoot(url);
   }
 }

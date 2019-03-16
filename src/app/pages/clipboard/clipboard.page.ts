@@ -20,9 +20,7 @@ export class ClipboardPage {
     private router: Router
   ) {}
   navigate(url: string) {
-    // FIXME ion-router doesn't trigger ngOnDestroy so we replaced it with angular router-outlet for now.
-    // It requires angular Router to navigate
-    this.router.navigate([url]);
+    this.navCtrl.navigateForward(url);
   }
 
   navigateRoot(url: string) {

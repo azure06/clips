@@ -1,3 +1,143 @@
 <ion-content>
-  System
+  <div *ngIf="router.url === '/preferences/system?section=general'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>System</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Toggles in a List -->
+        <ion-list>
+          <ion-item>
+            <ion-label
+              ><p>
+                Start on system startup
+              </p>
+            </ion-label>
+            <ion-toggle color="primary"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label
+              ><p>
+                Detach from navigation bar
+              </p>
+            </ion-label>
+            <ion-toggle color="primary"></ion-toggle>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Clear Data</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Toggles in a List -->
+        <ion-list>
+          <ion-item>
+            <ion-label
+              ><h4>
+                Clear local storage
+              </h4></ion-label
+            >
+            <ion-button color="primary" slot="end">
+              <span>Clear</span>
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label
+              ><h4>
+                Clear Google Drive data
+              </h4></ion-label
+            >
+            <ion-button color="primary" fill="outline" slot="end">
+              <span>Clear</span>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div *ngIf="router.url === '/preferences/system?section=notifications'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Notifications</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Toggles in a List -->
+        <ion-list>
+          <ion-item>
+            <ion-label
+              ><p>
+                Notify new updates
+              </p>
+            </ion-label>
+            <ion-toggle color="primary" disabled></ion-toggle>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div *ngIf="router.url === '/preferences/system?section=hotkeys'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Keyboard shortcut</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Toggles in a List -->
+        <ion-list>
+          <ion-item>
+            <ion-label><p>Ctrl + Alt +</p></ion-label>
+            <ion-select value="V" okText="OK" cancelText="Dismiss">
+              <ion-select-option value="A">A</ion-select-option>
+              <ion-select-option value="B">B</ion-select-option>
+              <ion-select-option value="C">C</ion-select-option>
+              <ion-select-option value="D">D</ion-select-option>
+              <ion-select-option value="E">E</ion-select-option>
+              <ion-select-option value="F">F</ion-select-option>
+              <ion-select-option value="G">G</ion-select-option>
+              <ion-select-option value="H">H</ion-select-option>
+              <ion-select-option value="I">I</ion-select-option>
+              <ion-select-option value="J">J</ion-select-option>
+              <ion-select-option value="K">K</ion-select-option>
+              <ion-select-option value="L">L</ion-select-option>
+              <ion-select-option value="M">M</ion-select-option>
+              <ion-select-option value="N">N</ion-select-option>
+              <ion-select-option value="O">O</ion-select-option>
+              <ion-select-option value="P">P</ion-select-option>
+              <ion-select-option value="Q">Q</ion-select-option>
+              <ion-select-option value="R">R</ion-select-option>
+              <ion-select-option value="S">S</ion-select-option>
+              <ion-select-option value="T">T</ion-select-option>
+              <ion-select-option value="U">U</ion-select-option>
+              <ion-select-option value="V">V</ion-select-option>
+              <ion-select-option value="W">W</ion-select-option>
+              <ion-select-option value="X">X</ion-select-option>
+              <ion-select-option value="Y">Y</ion-select-option>
+              <ion-select-option value="Z">Z</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div *ngIf="router.url === '/preferences/system?section=language'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Language</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-label><p>Default language</p></ion-label>
+            <ion-select disabled value="en-US" okText="OK" cancelText="Dismiss">
+              <ion-select-option value="en-US">English</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>

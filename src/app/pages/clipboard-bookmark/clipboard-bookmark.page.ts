@@ -14,7 +14,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
   templateUrl: './clipboard-bookmark.page.html',
   styleUrls: ['./clipboard-bookmark.page.scss']
 })
-export class ClipboardBookmarkPage implements OnInit {
+export class ClipboardBookmarkPage {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<Clip[]>;
   loading: boolean;
@@ -25,7 +25,7 @@ export class ClipboardBookmarkPage implements OnInit {
     private store: Store<fromClips.State>
   ) {}
 
-  async ngOnInit(): Promise<void> {
+  async ionViewWillEnter(): Promise<void> {
     this.loading = true;
     await this.clipboardService.getClipsFromIdbAndSetInState({
       limit: 15,

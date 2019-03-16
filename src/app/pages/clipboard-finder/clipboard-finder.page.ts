@@ -1,9 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { IonInfiniteScroll } from '@ionic/angular';
-import { select, Store } from '@ngrx/store';
 import moment from 'moment';
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
-import { delay, filter, first, map } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { Clip } from '../../models/models';
 import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
 import * as fromClips from '../clipboard/store/index';
@@ -14,7 +13,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
   templateUrl: './clipboard-finder.page.html',
   styleUrls: ['./clipboard-finder.page.scss']
 })
-export class ClipboardFinderPage implements OnInit {
+export class ClipboardFinderPage {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   ionicInfiniteScrollAmount = 0;
   infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollAmount);
@@ -28,7 +27,7 @@ export class ClipboardFinderPage implements OnInit {
     private googleTranslateService: GoogleTranslateService
   ) {}
 
-  async ngOnInit(): Promise<void> {
+  async ionViewWillEnter(): Promise<void> {
     // Set clips from indexedDB into the state
     this.allClips = await this.clipboardService.getClipsFromIdb();
     this.loading = false;

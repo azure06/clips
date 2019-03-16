@@ -1,0 +1,16 @@
+ion-label {
+  h4 {
+    color: var(--ion-color-tertiary);
+    font-size: 0.9rem;
+  }
+  p {
+    font-size: 0.9rem;
+    color: var(--text-color--light);
+  }
+}
+
+ion-card-subtitle {
+  color: var(--ion-color-tertiary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}

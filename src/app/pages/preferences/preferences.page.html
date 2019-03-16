@@ -2,9 +2,9 @@
   <mat-toolbar class="header draggable">
     <mat-toolbar-row>
       <img src="assets/icon/clip.svg" />
-      <h4>Infiniti CLIPS</h4>
+      <h4>Preferences</h4>
       <span class="spacer"></span>
-      <button mat-icon-button (click)="navigateRoot('clipboard/history')">
+      <button mat-icon-button (click)="navigate('clipboard/history')">
         <mat-icon class="icon">close</mat-icon>
       </button>
     </mat-toolbar-row>
@@ -21,16 +21,24 @@
         [fixedBottomGap]="options.value.bottom"
       >
         <mat-nav-list>
-          <h3 mat-subheader>IAM</h3>
-          <mat-list-item class="selected" *ngFor="let section of iam">
+          <h4 mat-subheader>IAM</h4>
+          <mat-list-item
+            *ngFor="let section of iam"
+            [ngClass]="section.path === router.url ? 'selected' : ''"
+            (click)="navigate(section.path)"
+          >
             <mat-icon matListIcon>{{ section.icon }}</mat-icon>
-            <a matLine routerLink="/preferences/iam">{{ section.name }}</a>
+            <a matLine>{{ section.name }}</a>
           </mat-list-item>
           <mat-divider></mat-divider>
-          <h3 mat-subheader>System</h3>
-          <mat-list-item *ngFor="let section of system">
+          <h4 mat-subheader>System</h4>
+          <mat-list-item
+            *ngFor="let section of system"
+            [ngClass]="section.path === router.url ? 'selected' : ''"
+            (click)="navigate(section.path)"
+          >
             <mat-icon mat-list-icon>{{ section.icon }}</mat-icon>
-            <a matLine routerLink="/preferences/system">{{ section.name }}</a>
+            <a matLine>{{ section.name }}</a>
           </mat-list-item>
         </mat-nav-list>
       </mat-sidenav>

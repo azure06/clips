@@ -1,0 +1,32 @@
+ion-label {
+  h4 {
+    color: var(--ion-color-tertiary);
+    font-size: 0.9rem;
+  }
+  p {
+    font-size: 0.9rem;
+    color: var(--text-color--light);
+  }
+}
+
+ion-button {
+  min-width: 70px;
+  min-height: 35px;
+}
+
+ion-card-subtitle {
+  color: var(--ion-color-tertiary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+ion-select {
+  color: var(--ion-color-tertiary);
+  font-size: 0.9rem;
+}
+
+// Select dialog
+/deep/.alert-title.sc-ion-alert-md {
+  color: var(--ion-color-tertiary) !important;
+  font-size: 1rem !important;
+}

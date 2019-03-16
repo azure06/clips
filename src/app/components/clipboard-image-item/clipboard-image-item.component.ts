@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Clip } from '../../models/models';
 
 @Component({
@@ -6,15 +6,13 @@ import { Clip } from '../../models/models';
   templateUrl: './clipboard-image-item.component.html',
   styleUrls: ['./clipboard-image-item.component.scss']
 })
-export class ClipboardImageItemComponent implements OnInit {
+export class ClipboardImageItemComponent {
   @Input() clip: Clip;
   @Input() index;
   @Output() removeClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
   constructor() {}
-
-  ngOnInit() {}
 
   onAddToBookmarkClick(event: Event): void {
     this.modifyClip.emit({
