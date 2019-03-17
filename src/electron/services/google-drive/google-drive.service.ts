@@ -25,6 +25,8 @@ import {
 import * as stream from 'stream';
 import { Clip } from './../../models/models';
 
+const BUFFER_TIME = 30000;
+
 const createStream = (str: string) => {
   const readableStream = new stream.Readable();
   readableStream.push(str);
@@ -81,7 +83,7 @@ class DriveHandler {
             this.driveHandler.pageTokenBehaviorSubject.next(
               nextPageToken || newStartPageToken
             ),
-          10000
+          BUFFER_TIME
         );
         return { changes, pageToken: nextPageToken || newStartPageToken };
       }),
@@ -127,7 +129,7 @@ export default class GoogleDriveService {
     };
 
     return this.clipSubject.asObservable().pipe(
-      buffer(interval(10000)),
+      buffer(interval(BUFFER_TIME)),
       filter(clip => clip.length > 0),
       mergeMap(clips => from(addFileToDrive(clips))),
       scan(
