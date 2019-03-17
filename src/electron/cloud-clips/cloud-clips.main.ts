@@ -10,10 +10,20 @@ import GoogleOAuth2Service from './../services/oauth2/google-oauth2.service';
 
 let mainWindow: Electron.BrowserWindow = null;
 
-const initGoogleDriveService = (oAuth2Client: OAuth2Client) => {
+const initGoogleDriveService = async (oAuth2Client: OAuth2Client) => {
   const googleDriveService = new GoogleDriveService(oAuth2Client);
+  const pageToken = await googleDriveService.getStartPageToken();
+
+  googleDriveService
+    .listenForChanges(pageToken)
+    .subscribe(
+      data => mainWindow.webContents.send('google-drive-change', data),
+      err => console.log('ERROR: ', err),
+      () => console.log('complete')
+    );
+
   ipcMain.on('add-to-drive', async (event, clip) => {
-    googleDriveService.addToDrive(clip);
+    googleDriveService.addClipToDrive(clip);
   });
 };
 

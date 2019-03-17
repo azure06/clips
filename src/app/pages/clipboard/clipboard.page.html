@@ -5,10 +5,8 @@
       <span>Infiniti CLIPS</span>
     </ion-title>
     <ion-buttons slot="secondary">
-      <ion-button color="tertiary">
-        <ion-icon *ngIf="!(isLoading | async)" name="refresh"></ion-icon>
+      <ion-button *ngIf="(isLoading | async)" color="tertiary">
         <ion-spinner
-          *ngIf="(isLoading | async)"
           class="spinner"
           name="lines-small"
           color="tertiary"
