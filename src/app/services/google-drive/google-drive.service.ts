@@ -6,7 +6,7 @@ import { ElectronService } from '../electron/electron.service';
 export class GoogleDriveService {
   constructor(private electronService: ElectronService) {
     const { ipcRenderer } = this.electronService.electron;
-    ipcRenderer.on('google-drive-change', (event, data) => {
+    ipcRenderer.on('google-drive-change', (event, data: Clip[]) => {
       console.error(data);
     });
   }

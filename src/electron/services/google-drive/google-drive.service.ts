@@ -11,10 +11,8 @@ import {
   combineLatest,
   from,
   interval,
-  ObservableInput,
   of,
-  Subject,
-  throwError
+  Subject
 } from 'rxjs';
 import {
   buffer,
@@ -85,12 +83,6 @@ class DriveHandler {
             ),
           10000
         );
-
-        console.error('\n\n\n\n');
-        console.error('token-next', nextPageToken);
-        console.error('newStartPageToken', newStartPageToken);
-        console.error('changes', changes.length);
-        console.error('\n\n\n\n');
         return { changes, pageToken: nextPageToken || newStartPageToken };
       }),
       filter(({ changes }) => changes.length > 0)
@@ -142,7 +134,7 @@ export default class GoogleDriveService {
         (
           acc: { [id: string]: GaxiosResponse<drive_v3.Schema$File> },
           curr: GaxiosResponse<drive_v3.Schema$File>
-        ) => {
+        ): { [id: string]: GaxiosResponse<drive_v3.Schema$File> } => {
           acc[curr.data.id] = curr;
           return acc;
         },
@@ -212,7 +204,11 @@ export default class GoogleDriveService {
       mergeMap(async ([drive, addedFiles]) => {
         const filePaths = await Promise.all(
           drive.changes
-            .filter(change => !change.removed)
+            .filter(
+              change =>
+                !change.removed &&
+                !Object.keys(addedFiles).find(id => id === change.fileId)
+            )
             .map(change => this.downloadFile(change.fileId))
         );
 
@@ -243,6 +239,10 @@ export default class GoogleDriveService {
         });
         return clips;
       }),
+      tap(clips =>
+        console.log('If zero Clips no event will be emitted: ', clips.length)
+      ),
+      filter(clips => clips.length > 0),
       catchError(error => of({ error }))
     );
   }
