@@ -1,6 +1,6 @@
 <ion-content>
   <ion-card>
-    <ion-card-content>
+    <ion-card-content *ngIf="googleOAuth2Service.isAuthenticated">
       <ion-item lines="none">
         <ion-avatar slot="start">
           <img src="assets/icon/clip.svg" />
@@ -9,6 +9,31 @@
           <h4>Iam Google</h4>
           <p>iam@google.com</p>
         </ion-label>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-content>
+      <ion-item *ngIf="!googleOAuth2Service.isAuthenticated">
+        <ion-label
+          ><p>
+            Sign-in with Google
+          </p>
+        </ion-label>
+        <ion-button fill="clear" (click)="signIn()" slot="end">
+          <span>Sign-in</span>
+        </ion-button>
+      </ion-item>
+      <ion-item *ngIf="googleOAuth2Service.isAuthenticated">
+        <ion-label
+          ><p>
+            Sign-out from Google
+          </p>
+        </ion-label>
+        <ion-button fill="clear" (click)="signOut()" slot="end">
+          <span>Sign-out</span>
+        </ion-button>
       </ion-item>
     </ion-card-content>
   </ion-card>

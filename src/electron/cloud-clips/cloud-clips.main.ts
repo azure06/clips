@@ -10,62 +10,35 @@ import GoogleOAuth2Service from './../services/oauth2/google-oauth2.service';
 
 let mainWindow: Electron.BrowserWindow = null;
 
-const initGoogleDriveService = async (oAuth2Client: OAuth2Client) => {
+const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
   const googleDriveService = new GoogleDriveService(oAuth2Client);
-  const pageToken = await googleDriveService.getStartPageToken();
-
-  googleDriveService
-    .listenForChanges(pageToken)
-    .subscribe(
-      data => mainWindow.webContents.send('google-drive-change', data),
-      err => console.log('ERROR: ', err),
-      () => console.log('complete')
-    );
+  let subscription;
 
   ipcMain.on('add-to-drive', async (event, clip) => {
     googleDriveService.addClipToDrive(clip);
   });
-};
+  const subscribe = async () => {
+    const pageToken = await googleDriveService.getStartPageToken();
+    subscription = googleDriveService
+      .listenForChanges(pageToken)
+      .subscribe(
+        data => mainWindow.webContents.send('google-drive-change', data),
+        err => console.log('ERROR: ', err),
+        () => console.log('complete')
+      );
+  };
+  const unsubscribe = () => {
+    ipcMain.removeAllListeners('add-to-drive');
+    if (subscription) {
+      subscription.unsubscribe();
+    }
+  };
 
-const signinWithGoogle = () => {
-  const googleOAuth2Service = new GoogleOAuth2Service(
-    electronConfig.googleOAuth2
-  );
-
-  // This method will be called when oatuh-tokens have been refreshed
-  googleOAuth2Service.on('tokens', authTokens =>
-    mainWindow.webContents.send('oauth2tokens-refresh', authTokens)
-  );
-
-  // Initialize oatuh2 credentials
-  ipcMain.on('oauth2tokens', async (event, authTokens) => {
-    authTokens
-      ? googleOAuth2Service.setCredentials(authTokens)
-      : await googleOAuth2Service.openAuthWindowAndSetCredentials();
-
-    initGoogleDriveService(googleOAuth2Service.getOAuth2Client());
-  });
-
-  // This method will be called when Angular client has been loaded
-  ipcMain.on('client-load', () => {
-    mainWindow.webContents.send(
-      'oauth2-client',
-      googleOAuth2Service.getOAuth2Client()
-    );
-  });
-};
-
-const handleClipboard = () => {
-  const clipboardService = new ClipboardService();
-
-  clipboardService.on('clipboard-change', clipboard =>
-    mainWindow.webContents.send('clipboard-change', clipboard)
-  );
+  return { subscribe, unsubscribe };
 };
 
 const initGoogleTranslate = () => {
   const googleTranslate = new GoogleTranslate();
-
   ipcMain.on(
     'google-translate-query',
     async (event, { eventId, text, options }) => {
@@ -77,6 +50,47 @@ const initGoogleTranslate = () => {
         console.error('google translate error - ', error);
       }
     }
+  );
+};
+
+const initGoogleServices = () => {
+  const googleOAuth2Service = new GoogleOAuth2Service(
+    electronConfig.googleOAuth2
+  );
+  const googleDrive = initGoogleDrive(googleOAuth2Service.getOAuth2Client());
+  initGoogleTranslate();
+
+  // This method will be called when oatuh-tokens have been refreshed
+  googleOAuth2Service.on('tokens', authTokens =>
+    mainWindow.webContents.send('oauth2tokens-refresh', authTokens)
+  );
+
+  // Set oatuh2 credentials, and initialize Google Drive Service
+  ipcMain.on('client-ready', async (event, authTokens) => {
+    if (authTokens) {
+      googleOAuth2Service.setCredentials(authTokens);
+    }
+  });
+
+  ipcMain.on('sign-in', async event => {
+    const signInResult = await googleOAuth2Service.openAuthWindowAndSetCredentials();
+    if (signInResult) {
+      googleDrive.subscribe();
+    }
+    mainWindow.webContents.send('sign-in-result', signInResult);
+  });
+
+  ipcMain.on('sign-out', async event => {
+    googleDrive.unsubscribe();
+    const revokeResult = await googleOAuth2Service.revokeCredentials();
+    mainWindow.webContents.send('sign-out-result', revokeResult.status === 200);
+  });
+};
+
+const handleClipboard = () => {
+  const clipboardService = new ClipboardService();
+  clipboardService.on('clipboard-change', clipboard =>
+    mainWindow.webContents.send('clipboard-change', clipboard)
   );
 };
 
@@ -122,8 +136,8 @@ const createWindow = () => {
   mainWindow.webContents.once('did-finish-load', () => {
     handleClipboard();
   });
-  signinWithGoogle();
-  initGoogleTranslate();
+
+  initGoogleServices();
 
   mainWindow.webContents.on('new-window', (event, url) => {
     event.preventDefault();

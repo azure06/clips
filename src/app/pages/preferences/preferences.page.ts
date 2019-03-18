@@ -38,6 +38,11 @@ export class PreferencesPage implements OnInit {
       path: '/preferences/system?section=notifications'
     },
     {
+      name: 'Goolgle Translate',
+      icon: 'translate',
+      path: '/preferences/system?section=translate'
+    },
+    {
       name: 'Hotkeys',
       icon: 'keyboard',
       path: '/preferences/system?section=hotkeys'

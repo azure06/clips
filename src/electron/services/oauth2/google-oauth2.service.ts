@@ -64,6 +64,14 @@ export default class GoogleOAuth2Service extends EventEmitter {
   }
 
   /**
+   * Revoke all credentials
+   *
+   */
+  public revokeCredentials() {
+    return this.oauth2Client.revokeCredentials();
+  }
+
+  /**
    * Set Google Credentials
    * An easy way to make sure you always store the most recent tokens is to use the tokens event:
    *
@@ -80,9 +88,15 @@ export default class GoogleOAuth2Service extends EventEmitter {
    * @returns {Promise<Credentials>}
    */
   public async openAuthWindowAndSetCredentials(addSession?: boolean) {
-    const authorizationCode = await this.getAuthorizationCode(addSession);
-    const { tokens } = await this.oauth2Client.getToken(authorizationCode);
-    this.setCredentials(tokens);
+    try {
+      const authorizationCode = await this.getAuthorizationCode(addSession);
+      const { tokens } = await this.oauth2Client.getToken(authorizationCode);
+      this.setCredentials(tokens);
+      return true;
+    } catch (error) {
+      console.error('Sign-in error: ', error);
+      return false;
+    }
   }
 
   /**

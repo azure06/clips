@@ -5,10 +5,12 @@ import { ElectronService } from '../electron/electron.service';
 @Injectable()
 export class GoogleDriveService {
   constructor(private electronService: ElectronService) {
-    const { ipcRenderer } = this.electronService.electron;
-    ipcRenderer.on('google-drive-change', (event, data: Clip[]) => {
-      console.error(data);
-    });
+    if (this.electronService.isAvailable) {
+      const { ipcRenderer } = this.electronService.electron;
+      ipcRenderer.on('google-drive-change', (event, data: Clip[]) => {
+        console.error(data);
+      });
+    }
   }
 
   public addToDrive(clip: Clip) {

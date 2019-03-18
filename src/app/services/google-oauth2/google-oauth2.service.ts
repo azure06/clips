@@ -4,39 +4,56 @@ import { ElectronService } from '../electron/electron.service';
 
 @Injectable()
 export class GoogleOAuth2Service {
-  private oAuth2Client?: OAuth2Client;
+  private ipcRenderer = this.electronService.electron.ipcRenderer;
+  private _isAuthenticated: boolean;
+
+  public get isAuthenticated() {
+    return this._isAuthenticated;
+  }
 
   constructor(private electronService: ElectronService) {
-    if (this.electronService.isAvailable) {
-      const ipcRenderer = this.electronService.electron.ipcRenderer;
+    this.init();
+  }
 
-      ipcRenderer.send(
-        'oauth2tokens',
-        JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null)
+  private init() {
+    const oauth2Tokens = JSON.parse(
+      localStorage.getItem('infiniti-auth-tokens') || null
+    );
+    const onTokensRefresh = (event, authTokens) => {
+      const localTokens =
+        JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null) || {};
+
+      this._isAuthenticated = !!localTokens;
+
+      localStorage.setItem(
+        'infiniti-auth-tokens',
+        JSON.stringify({ ...localTokens, ...authTokens })
       );
-      ipcRenderer.send('client-load');
+    };
+    this.ipcRenderer.send('client-ready', oauth2Tokens);
+    this.ipcRenderer.on('oauth2tokens-refresh', onTokensRefresh);
+  }
 
-      ipcRenderer.on('oauth2tokens-refresh', (event, authTokens) => {
-        const localTokens =
-          JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null) || {};
-
-        localStorage.setItem(
-          'infiniti-clips-tokens',
-          JSON.stringify({ ...localTokens, ...authTokens })
-        );
+  public async signIn(): Promise<boolean> {
+    return new Promise(resolve => {
+      this.ipcRenderer.send('sign-in');
+      this.ipcRenderer.once('sign-in-result', (event, authenticated) => {
+        this._isAuthenticated = authenticated;
+        resolve(authenticated);
       });
-      ipcRenderer.on(
-        'oauth2-client',
-        (event, oAuth2Client) => (this.oAuth2Client = oAuth2Client)
-      );
-    }
+    });
   }
 
-  get isAuthenticated() {
-    return !!this.oAuth2Client;
-  }
-
-  public getOAuth2Client() {
-    return this.oAuth2Client;
+  public async signOut(): Promise<boolean> {
+    return new Promise(resolve => {
+      this.ipcRenderer.send('sign-out');
+      this.ipcRenderer.once('sign-out-result', (event, revoked) => {
+        if (revoked) {
+          this._isAuthenticated = !revoked;
+          localStorage.removeItem('infiniti-auth-tokens');
+        }
+        resolve(revoked);
+      });
+    });
   }
 }

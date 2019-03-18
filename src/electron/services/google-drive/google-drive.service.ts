@@ -25,7 +25,7 @@ import {
 import * as stream from 'stream';
 import { Clip } from './../../models/models';
 
-const BUFFER_TIME = 30000;
+const BUFFER_TIME = 60000;
 
 const createStream = (str: string) => {
   const readableStream = new stream.Readable();
@@ -66,8 +66,10 @@ class DriveHandler {
    * @return Changes and new page token
    */
   public getDriveAsObservable() {
+    let changeCount = 0;
     return this.driveHandler.pageTokenBehaviorSubject.asObservable().pipe(
       mergeMap(async _pageToken => {
+        console.log('Watching for changes... ', (changeCount += 1));
         const {
           newStartPageToken,
           nextPageToken,
@@ -100,7 +102,7 @@ export default class GoogleDriveService {
     this.drive = google.drive({ version: 'v3', auth: googleOAuth2Client });
   }
 
-  private driveFileAdder() {
+  private observeFileAdder() {
     const addFileToDrive = async (
       clips: Clip[]
     ): Promise<GaxiosResponse<drive_v3.Schema$File>> => {
@@ -157,12 +159,12 @@ export default class GoogleDriveService {
         );
         (response.data as any)
           .on('end', () => {
-            console.log('Done downloading file.');
+            console.log('Done downloading file');
             // File needs some more time to be created
             setTimeout(() => resolve(filePath), 0);
           })
           .on('error', err => {
-            console.error('Error downloading file.');
+            console.error('Error downloading file');
             reject(err);
           })
           .on('data', d => {})
@@ -200,8 +202,8 @@ export default class GoogleDriveService {
 
   public listenForChanges(pageToken: string) {
     const driveObservable = this.observeDriveChanges(pageToken);
-    const fileAdderEffect = this.driveFileAdder();
-    return combineLatest(driveObservable, fileAdderEffect).pipe(
+    const fileAdderObservable = this.observeFileAdder();
+    return combineLatest(driveObservable, fileAdderObservable).pipe(
       filter(([drive, addedFiles]) => drive.changes.length > 0),
       mergeMap(async ([drive, addedFiles]) => {
         const filePaths = await Promise.all(
@@ -236,13 +238,17 @@ export default class GoogleDriveService {
             if (err) {
               throw err;
             }
-            console.log(`${_path} was deleted`);
+            console.log(`${_path} was deleted.`);
           });
         });
         return clips;
       }),
       tap(clips =>
-        console.log('If zero Clips no event will be emitted: ', clips.length)
+        console.log(
+          clips.length > 0
+            ? `New updates found: ${clips.length}.`
+            : '...Nothing new found'
+        )
       ),
       filter(clips => clips.length > 0),
       catchError(error => of({ error }))
