@@ -21,6 +21,15 @@ export interface Clip extends Partial<ViewDetails>, Base {
   formats: string[];
 }
 
+export interface UserInfo {
+  displayName: string;
+  emailAddress: string;
+  kind: string;
+  me: true;
+  permissionId: string;
+  photoLink: string;
+}
+
 /**
  * Translation result
  *

@@ -33,7 +33,9 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
     }
   };
 
-  return { subscribe, unsubscribe };
+  const getUserInfo = () => googleDriveService.getUserInfo();
+
+  return { subscribe, unsubscribe, getUserInfo };
 };
 
 const initGoogleTranslate = () => {
@@ -76,6 +78,10 @@ const initGoogleServices = () => {
     const signInResult = await googleOAuth2Service.openAuthWindowAndSetCredentials();
     if (signInResult) {
       googleDrive.subscribe();
+      googleDrive
+        .getUserInfo()
+        .then(userInfo => mainWindow.webContents.send('user-info', userInfo.data.user))
+        .catch(error => console.error(error));
     }
     mainWindow.webContents.send('sign-in-result', signInResult);
   });

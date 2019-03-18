@@ -12,11 +12,10 @@ export class IamPage {
   ionViewWillEnter() {}
 
   public async signIn() {
-    console.error(await this.googleOAuth2Service.signIn());
+    this.googleOAuth2Service.signIn();
   }
 
   public async signOut() {
-    const res = await this.googleOAuth2Service.signOut();
-    console.error(res);
+    this.googleOAuth2Service.signOut();
   }
 }

@@ -3,11 +3,11 @@
     <ion-card-content *ngIf="googleOAuth2Service.isAuthenticated">
       <ion-item lines="none">
         <ion-avatar slot="start">
-          <img src="assets/icon/clip.svg" />
+          <img [src]="googleOAuth2Service.userInfo?.photoLink" />
         </ion-avatar>
         <ion-label>
-          <h4>Iam Google</h4>
-          <p>iam@google.com</p>
+          <h4>{{ googleOAuth2Service.userInfo?.displayName }}</h4>
+          <p>{{ googleOAuth2Service.userInfo?.emailAddress }}</p>
         </ion-label>
       </ion-item>
     </ion-card-content>

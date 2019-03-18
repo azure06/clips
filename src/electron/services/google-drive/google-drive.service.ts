@@ -188,6 +188,10 @@ export default class GoogleDriveService {
     return driveHandler.getDriveAsObservable();
   }
 
+  public async getUserInfo() {
+    return this.drive.about.get({ fields: 'user' });
+  }
+
   /**
    * Add clip to drive
    *
