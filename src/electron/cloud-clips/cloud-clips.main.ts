@@ -28,7 +28,6 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
       );
   };
   const unsubscribe = () => {
-    ipcMain.removeAllListeners('add-to-drive');
     if (subscription) {
       subscription.unsubscribe();
     }

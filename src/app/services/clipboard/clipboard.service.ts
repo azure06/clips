@@ -25,13 +25,10 @@ export class ClipboardService {
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {
-    this.electronService.on(
-      'clipboard-change',
-      ({ event, clip }: { event: Event; clip: Clip }) => {
-        this.handleClipboardChangeEvent(clip);
-        console.error(clip);
-      }
-    );
+    this.electronService.on('clipboard-change', (event, clip) => {
+      this.handleClipboardChangeEvent(clip);
+      console.error(clip);
+    });
   }
 
   /**

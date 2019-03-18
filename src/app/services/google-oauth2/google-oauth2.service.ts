@@ -18,7 +18,7 @@ export class GoogleOAuth2Service {
     const oauth2Tokens = JSON.parse(
       localStorage.getItem('infiniti-auth-tokens') || null
     );
-    const onTokensRefresh = ({ event, authTokens }) => {
+    const onTokensRefresh = (event, authTokens) => {
       const localTokens =
         JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null) || {};
 
