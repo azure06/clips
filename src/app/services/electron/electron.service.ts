@@ -57,6 +57,8 @@ export class ElectronService {
    * listening for channel with ipcMain module.
    */
   public send(channel: string, ...args: any[]) {
-    this.ipcRenderer.send(channel, ...args);
+    this.available
+      ? this.ipcRenderer.send(channel, ...args)
+      : console.warn('Electron in not available');
   }
 }
