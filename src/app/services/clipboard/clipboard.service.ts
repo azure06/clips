@@ -25,13 +25,13 @@ export class ClipboardService {
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {
-    if (electronService.isAvailable) {
-      const ipcRenderer = this.electronService.electron.ipcRenderer;
-      ipcRenderer.on('clipboard-change', (event, clip: Clip) => {
+    this.electronService.on(
+      'clipboard-change',
+      ({ event, clip }: { event: Event; clip: Clip }) => {
         this.handleClipboardChangeEvent(clip);
         console.error(clip);
-      });
-    }
+      }
+    );
   }
 
   /**

@@ -4,7 +4,6 @@ import { ElectronService } from '../electron/electron.service';
 
 @Injectable()
 export class GoogleOAuth2Service {
-  private ipcRenderer = this.electronService.electron.ipcRenderer;
   private _isAuthenticated: boolean;
 
   public get isAuthenticated() {
@@ -19,41 +18,43 @@ export class GoogleOAuth2Service {
     const oauth2Tokens = JSON.parse(
       localStorage.getItem('infiniti-auth-tokens') || null
     );
-    const onTokensRefresh = (event, authTokens) => {
+    const onTokensRefresh = ({ event, authTokens }) => {
       const localTokens =
         JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null) || {};
 
-      this._isAuthenticated = !!localTokens;
+      this._isAuthenticated = !(
+        Object.entries(localTokens).length === 0 &&
+        localTokens.constructor === Object
+      );
 
       localStorage.setItem(
         'infiniti-auth-tokens',
         JSON.stringify({ ...localTokens, ...authTokens })
       );
     };
-    this.ipcRenderer.send('client-ready', oauth2Tokens);
-    this.ipcRenderer.on('oauth2tokens-refresh', onTokensRefresh);
+    this.electronService.send('client-ready', oauth2Tokens);
+    this.electronService.on('oauth2tokens-refresh', onTokensRefresh);
   }
 
   public async signIn(): Promise<boolean> {
-    return new Promise(resolve => {
-      this.ipcRenderer.send('sign-in');
-      this.ipcRenderer.once('sign-in-result', (event, authenticated) => {
-        this._isAuthenticated = authenticated;
-        resolve(authenticated);
-      });
+    return new Promise(async resolve => {
+      this.electronService.send('sign-in');
+      const authenticated = (await this.electronService.once('sign-in-result'))
+        .data;
+      this._isAuthenticated = authenticated;
+      resolve(authenticated);
     });
   }
 
   public async signOut(): Promise<boolean> {
-    return new Promise(resolve => {
-      this.ipcRenderer.send('sign-out');
-      this.ipcRenderer.once('sign-out-result', (event, revoked) => {
-        if (revoked) {
-          this._isAuthenticated = !revoked;
-          localStorage.removeItem('infiniti-auth-tokens');
-        }
-        resolve(revoked);
-      });
+    return new Promise(async resolve => {
+      this.electronService.send('sign-out');
+      const revoked = (await this.electronService.once('sign-out-result')).data;
+      if (revoked) {
+        this._isAuthenticated = !revoked;
+        localStorage.removeItem('infiniti-auth-tokens');
+      }
+      resolve(revoked);
     });
   }
 }

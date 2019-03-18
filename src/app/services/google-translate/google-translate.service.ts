@@ -11,17 +11,12 @@ export class GoogleTranslateService {
     text: string,
     options?: { from?: string; to: string; raw?: boolean }
   ): Promise<string> {
-    return this.electronService.isAvailable
-      ? ((): Promise<string> => {
-          const ipcRenderer = this.electronService.electron.ipcRenderer;
-          return new Promise((resolve, reject) => {
-            const eventId = `google-translate-${uuidv4()}`;
-            ipcRenderer.once(eventId, (event, translation) => {
-              resolve(translation.text);
-            });
-            ipcRenderer.send('google-translate-query', { eventId, text });
-          });
-        })()
-      : Promise.resolve('');
+    const eventId = `google-translate-${uuidv4()}`;
+    this.electronService.send('google-translate-query', {
+      eventId,
+      text
+    });
+    const { translation } = (await this.electronService.once(eventId)).data;
+    return translation.text;
   }
 }

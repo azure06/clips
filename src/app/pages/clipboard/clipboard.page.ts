@@ -24,10 +24,9 @@ export class ClipboardPage {
   }
 
   navigateRoot(url: string) {
-    if (url.includes('preferences') && this.electronService.isAvailable) {
-      const { ipcRenderer } = this.electronService.electron;
-      ipcRenderer.send('resize', { width: 800, height: 600 });
-      ipcRenderer.send('center');
+    if (url.includes('preferences')) {
+      this.electronService.send('resize', { width: 800, height: 600 });
+      this.electronService.send('center');
     }
     this.navCtrl.navigateRoot(url);
   }
