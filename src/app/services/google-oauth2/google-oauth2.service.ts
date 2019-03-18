@@ -16,19 +16,17 @@ export class GoogleOAuth2Service {
 
   private init() {
     const oauth2Tokens = JSON.parse(
-      localStorage.getItem('infiniti-auth-tokens') || null
+      localStorage.getItem('auth-tokens') || null
     );
+    
+    this._isAuthenticated = !!oauth2Tokens;
+
     const onTokensRefresh = (event, authTokens) => {
       const localTokens =
-        JSON.parse(localStorage.getItem('infiniti-clips-tokens') || null) || {};
-
-      this._isAuthenticated = !(
-        Object.entries(localTokens).length === 0 &&
-        localTokens.constructor === Object
-      );
+        JSON.parse(localStorage.getItem('auth-tokens') || null) || {};
 
       localStorage.setItem(
-        'infiniti-auth-tokens',
+        'auth-tokens',
         JSON.stringify({ ...localTokens, ...authTokens })
       );
     };
@@ -52,7 +50,7 @@ export class GoogleOAuth2Service {
       const revoked = (await this.electronService.once('sign-out-result')).data;
       if (revoked) {
         this._isAuthenticated = !revoked;
-        localStorage.removeItem('infiniti-auth-tokens');
+        localStorage.removeItem('auth-tokens');
       }
       resolve(revoked);
     });

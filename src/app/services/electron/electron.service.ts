@@ -57,6 +57,6 @@ export class ElectronService {
    * listening for channel with ipcMain module.
    */
   public send(channel: string, ...args: any[]) {
-    this.ipcRenderer.send(channel, args);
+    this.ipcRenderer.send(channel, ...args);
   }
 }

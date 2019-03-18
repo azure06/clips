@@ -68,6 +68,7 @@ const initGoogleServices = () => {
   ipcMain.on('client-ready', async (event, authTokens) => {
     if (authTokens) {
       googleOAuth2Service.setCredentials(authTokens);
+      googleDrive.subscribe();
     }
   });
 
