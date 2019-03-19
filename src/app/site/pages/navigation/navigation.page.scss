@@ -1,7 +1,8 @@
 .nav-bar {
   color: var(--ion-color-tertiary);
-  background-color: white;
-  box-shadow: 0 0 3px 0px rgba(0, 5, 25, 0.09);
+  background-color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2px;
+  box-shadow: 0 0 3px 0px rgba(0, 5, 35, 0.09);
   h2 {
     padding: 10px;
     font-weight: 900;
@@ -25,5 +26,5 @@
 }
 
 .container/deep/ion-content {
-  height: calc(100% - 64px);
+  height: calc(100% - 66px);
 }
