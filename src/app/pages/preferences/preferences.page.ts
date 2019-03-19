@@ -32,11 +32,11 @@ export class PreferencesPage implements OnInit {
       icon: 'settings_ethernet',
       path: '/preferences/system?section=general'
     },
-    {
-      name: 'Notifications',
-      icon: 'notifications',
-      path: '/preferences/system?section=notifications'
-    },
+    // {
+    //   name: 'Notifications',
+    //   icon: 'notifications',
+    //   path: '/preferences/system?section=notifications'
+    // },
     {
       name: 'Goolgle Translate',
       icon: 'translate',

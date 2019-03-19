@@ -19,12 +19,13 @@ export class ClipboardPage {
     private store: Store<fromClips.State>,
     private router: Router
   ) {}
-  navigate(url: string) {
+
+  navigateForward(url: string) {
     this.navCtrl.navigateForward(url);
   }
 
-  navigateRoot(url: string) {
-    if (url.includes('preferences')) {
+  navigateRoot(url: string, preferences?: {}) {
+    if (preferences) {
       this.electronService.send('resize', { width: 800, height: 600 });
       this.electronService.send('center');
     }

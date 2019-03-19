@@ -15,7 +15,10 @@
       <ion-button color="tertiary">
         <ion-icon name="contact"></ion-icon>
       </ion-button>
-      <ion-button color="tertiary">
+      <ion-button
+        (click)="navigateForward('/preferences/iam')"
+        color="tertiary"
+      >
         <ion-icon name="settings"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -30,21 +33,21 @@
         <ion-button
           fill="clear"
           [color]="router.url === '/clipboard/history' ? 'primary' : 'tertiary'"
-          (click)="navigate('clipboard/history')"
+          (click)="navigateForward('clipboard/history')"
         >
           <ion-icon slot="icon-only" name="laptop"></ion-icon>
         </ion-button>
         <ion-button
           fill="clear"
           [color]="router.url === '/clipboard/images' ? 'primary' : 'tertiary'"
-          (click)="navigate('clipboard/images')"
+          (click)="navigateForward('clipboard/images')"
         >
           <ion-icon slot="icon-only" name="image"></ion-icon>
         </ion-button>
         <ion-button
           fill="clear"
           [color]="router.url === '/clipboard/finder' ? 'primary' : 'tertiary'"
-          (click)="navigate('clipboard/finder')"
+          (click)="navigateForward('clipboard/finder')"
         >
           <ion-icon slot="icon-only" name="browsers"></ion-icon>
         </ion-button>
@@ -53,17 +56,16 @@
           [color]="
             router.url === '/clipboard/bookmark' ? 'primary' : 'tertiary'
           "
-          (click)="navigate('clipboard/bookmark')"
+          (click)="navigateForward('clipboard/bookmark')"
         >
           <ion-icon slot="icon-only" name="star"></ion-icon>
         </ion-button>
       </div>
 
       <!-- Settings -->
-      <div class="container column settings">
-        <ion-button fill="clear" color="tertiary">
+      <div *ngIf="false" class="container column settings">
+        <ion-button *ngIf="(isLoading | async)" fill="clear" color="tertiary">
           <ion-spinner
-            *ngIf="(isLoading | async)"
             class="spinner"
             name="lines"
             color="tertiary"

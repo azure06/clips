@@ -16,7 +16,7 @@ export class GoogleTranslateService {
       eventId,
       text
     });
-    const { translation } = (await this.electronService.once(eventId)).data;
+    const translation = (await this.electronService.once(eventId)).data;
     return translation.text;
   }
 }

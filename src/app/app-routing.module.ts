@@ -15,7 +15,9 @@ const routes: Routes = [
   },
   {
     path: '',
-    loadChildren: './pages/preferences/preferences.module#PreferencesPageModule'
+    loadChildren:
+      './pages/preferences/preferences.module#PreferencesPageModule',
+    canActivate: [RouterGuard]
   }
 ];
 @NgModule({
