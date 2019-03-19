@@ -70,22 +70,29 @@ const initGoogleServices = () => {
   ipcMain.on('client-ready', async (event, authTokens) => {
     if (authTokens) {
       googleOAuth2Service.setCredentials(authTokens);
-      googleDrive.subscribe();
     }
   });
 
+  // Perform sign-in and get userinfo
   ipcMain.on('sign-in', async event => {
     const signInResult = await googleOAuth2Service.openAuthWindowAndSetCredentials();
     if (signInResult) {
-      googleDrive.subscribe();
       googleDrive
         .getUserInfo()
-        .then(userInfo => mainWindow.webContents.send('user-info', userInfo.data.user))
+        .then(userInfo =>
+          mainWindow.webContents.send('user-info', userInfo.data.user)
+        )
         .catch(error => console.error(error));
     }
     mainWindow.webContents.send('sign-in-result', signInResult);
   });
 
+  // Enable・Disable Drive sync
+  ipcMain.on('drive-sync', async (event, driveSync) => {
+    driveSync ? googleDrive.subscribe() : googleDrive.unsubscribe();
+  });
+
+  // Perform sign-out
   ipcMain.on('sign-out', async event => {
     googleDrive.unsubscribe();
     const revokeResult = await googleOAuth2Service.revokeCredentials();

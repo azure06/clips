@@ -52,7 +52,10 @@
               Sync with Google Drive
             </p>
           </ion-label>
-          <ion-toggle></ion-toggle>
+          <ion-toggle
+            [(ngModel)]="googleOAuth2Service.driveSync"
+            [disabled]="!googleOAuth2Service.isAuthenticated"
+          ></ion-toggle>
         </ion-item>
       </ion-list>
     </ion-card-content>

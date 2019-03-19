@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { OAuth2Client } from 'google-auth-library';
 import { UserInfo } from '../../models/models';
 import { ElectronService } from '../electron/electron.service';
 
@@ -7,6 +6,7 @@ import { ElectronService } from '../electron/electron.service';
 export class GoogleOAuth2Service {
   private _isAuthenticated: boolean;
   private _userInfo: Partial<UserInfo>;
+  private _driveSync: boolean;
 
   public get isAuthenticated() {
     return this._isAuthenticated;
@@ -16,9 +16,20 @@ export class GoogleOAuth2Service {
     return this._userInfo;
   }
 
+  public get driveSync() {
+    return this._driveSync;
+  }
+
+  public set driveSync(driveSync) {
+    localStorage.setItem('drive-sync', JSON.stringify(driveSync));
+    this._driveSync = driveSync;
+    this.electronService.send('drive-sync', driveSync);
+  }
+
   constructor(private electronService: ElectronService) {
     this.initUserInfo();
     this.initTokenHandler();
+    this.initGoogleDrive();
   }
 
   private initUserInfo() {
@@ -63,6 +74,25 @@ export class GoogleOAuth2Service {
   }
 
   public async signOut(): Promise<boolean> {
+    return new Promise(async resolve => {
+      this.electronService.send('sign-out');
+      const revoked = (await this.electronService.once('sign-out-result')).data;
+      if (revoked) {
+        this._isAuthenticated = false;
+        this.driveSync = false;
+        localStorage.removeItem('auth-tokens');
+      }
+      resolve(revoked);
+    });
+  }
+
+  public initGoogleDrive() {
+    const driveSync =
+      JSON.parse(localStorage.getItem('drive-sync') || null) || false;
+    this.driveSync = driveSync;
+  }
+
+  public async syncWithGoogleDrive() {
     return new Promise(async resolve => {
       this.electronService.send('sign-out');
       const revoked = (await this.electronService.once('sign-out-result')).data;
