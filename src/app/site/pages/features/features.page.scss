@@ -17,8 +17,13 @@
 .justify-content.center {
   justify-content: center;
 }
-.align-items.center {
-  align-items: center;
+.align-items {
+  &.center {
+    align-items: center;
+  }
+  &.flex-start {
+    align-items: flex-start;
+  }
 }
 
 //  Header
@@ -38,7 +43,6 @@
     font-weight: 300;
     padding: 30px;
     color: var(--text-color--extra-light);
-    text-align: center;
   }
   p {
     font-weight: 300;
@@ -64,14 +68,13 @@
 // Content
 .content {
   .item {
-    width: 100%;
     padding: 4vw 6vw 4vw 6vw;
     @media (max-width: 1100px) {
+      align-items: center;
       flex-direction: column;
     }
     div {
       padding: 2vw;
-      text-align: center;
       flex: 1 1 0;
     }
   }
@@ -83,14 +86,12 @@
     font-size: 2.4rem;
     font-weight: 900;
     color: var(--text-color--light);
-    text-align: center;
   }
   p {
     font-weight: 300;
     color: var(--text-color--extra-light);
     line-height: 1.5;
     font-size: 1.2rem;
-    text-align: center;
   }
   img {
     box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.07);
