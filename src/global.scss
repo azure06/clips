@@ -12,6 +12,11 @@
 @import '~@ionic/angular/css/flex-utils.css';
 @import '~material-design-icons/iconfont/material-icons.css';
 
+// Share buttons
+@import '~@ngx-share/button/themes/circles/circles-light-theme';
+@import '~@ngx-share/button/themes/modern/modern-light-theme';
+@import '~@ngx-share/button/themes/default/default-theme';
+
 ion-item {
   --border-color: var(--line-rule-color);
 }

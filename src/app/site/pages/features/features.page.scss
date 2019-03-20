@@ -99,6 +99,23 @@
   }
 }
 
+.share {
+  div:first-child {
+    p {
+      padding: 5px;
+      border-top: 1px solid var(--line-rule-color);
+      width: 70%;
+      font-weight: 500;
+      color: var(--text-color--extra-light);
+      line-height: 1.2;
+      font-size: 0.8rem;
+      text-align: center;
+      user-select: none;
+    }
+  }
+  padding: 20px;
+}
+
 // Footer
 .footer {
   p {
