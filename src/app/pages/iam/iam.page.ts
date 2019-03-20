@@ -7,7 +7,7 @@ import { GoogleOAuth2Service } from '../../services/google-oauth2/google-oauth2.
   styleUrls: ['./iam.page.scss']
 })
 export class IamPage {
-  constructor(private googleOAuth2Service: GoogleOAuth2Service) {}
+  constructor(public googleOAuth2Service: GoogleOAuth2Service) {}
 
   ionViewWillEnter() {}
 

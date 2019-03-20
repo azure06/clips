@@ -27,6 +27,5 @@ export class AppComponent {
     await this.platform.ready();
     this.statusBar.styleDefault();
     this.splashScreen.hide();
-    this.navCtrl.navigateRoot('preferences/system?section=general');
   }
 }

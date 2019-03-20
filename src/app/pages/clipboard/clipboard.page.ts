@@ -15,9 +15,9 @@ export class ClipboardPage {
   constructor(
     public electronService: ElectronService,
     public clipboardService: ClipboardService,
+    public router: Router,
     private navCtrl: NavController,
-    private store: Store<fromClips.State>,
-    private router: Router
+    private store: Store<fromClips.State>
   ) {}
 
   navigateForward(url: string) {

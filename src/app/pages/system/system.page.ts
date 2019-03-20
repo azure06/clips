@@ -9,5 +9,5 @@ import { Router } from '@angular/router';
 export class SystemPage {
   sections: 'General' | 'Notifications' | 'Hotkeys' | 'Language';
 
-  constructor(private router: Router) {}
+  constructor(public router: Router) {}
 }
