@@ -33,7 +33,7 @@ let tray = null;
 app.on('ready', () => {
   // FIXME It doesn't works without building the app
   const nativeImg = nativeImage.createFromPath(
-    path.join(`${__dirname}`, '../assets/icon/clip-favicon.png')
+    path.join(`${__dirname}`, '../assets/icon/clip.png')
   );
   tray = new Tray(nativeImg);
   const contextMenu = Menu.buildFromTemplate([

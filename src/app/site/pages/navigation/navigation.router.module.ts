@@ -5,7 +5,7 @@ import { NavigationPage } from './navigation.page';
 
 const routes: Routes = [
   {
-    path: 'navigation',
+    path: '',
     component: NavigationPage,
     children: [
       {
@@ -16,12 +16,27 @@ const routes: Routes = [
             loadChildren: '../features/features.module#FeaturesPageModule'
           }
         ]
+      },
+      {
+        path: 'privacy',
+        children: [
+          {
+            path: '',
+            loadChildren:
+              '../privacy-policy/privacy-policy.module#PrivacyPolicyPageModule'
+          }
+        ]
+      },
+      {
+        path: '',
+        redirectTo: '/features',
+        pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/navigation/features',
+    redirectTo: '',
     pathMatch: 'full'
   }
 ];

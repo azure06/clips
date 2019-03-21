@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { AngularMaterialModule } from '../../components/angular-material/angular-material.module';
 import { FeaturesPageModule } from '../features/features.module';
+import { PrivacyPolicyPageModule } from './../privacy-policy/privacy-policy.module';
 import { NavigationPage } from './navigation.page';
 import { NavigationPageRoutingModule } from './navigation.router.module';
 
@@ -17,7 +18,8 @@ import { NavigationPageRoutingModule } from './navigation.router.module';
     FormsModule,
     AngularMaterialModule,
     NavigationPageRoutingModule,
-    FeaturesPageModule
+    FeaturesPageModule,
+    PrivacyPolicyPageModule
   ],
   exports: [],
   providers: [],

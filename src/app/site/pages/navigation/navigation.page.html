@@ -5,7 +5,14 @@
       <img src="assets/icon/clip.svg" />
       <span> <h2>Infiniti Clips</h2></span>
       <button mat-button disabled>News</button>
-      <button mat-button color="primary">Features</button>
+      <button
+        mat-button
+        [color]="router.url === '/features' ? 'primary' : ''"
+        (click)="navigate('features')"
+      >
+        Features
+      </button>
+      <button mat-button disabled>Contact</button>
       <button mat-button disabled>About</button>
       <!-- This fills the remaining space of the current row -->
       <span class="spacer"></span>

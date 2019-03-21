@@ -3,12 +3,12 @@ import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-navigation',
-  templateUrl: './navigation.page.html',
-  styleUrls: ['./navigation.page.scss']
+  selector: 'app-privacy-policy',
+  templateUrl: './privacy-policy.page.html',
+  styleUrls: ['./privacy-policy.page.scss']
 })
-export class NavigationPage {
-  constructor(public router: Router, public navCtrl: NavController) {}
+export class PrivacyPolicyPage {
+  constructor(public navCtrl: NavController) {}
 
   onActivate(event) {}
 
