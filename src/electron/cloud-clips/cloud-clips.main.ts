@@ -19,6 +19,7 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
   });
   const subscribe = async () => {
     const pageToken = await googleDriveService.getStartPageToken();
+
     subscription = googleDriveService
       .listenForChanges(pageToken)
       .subscribe(
@@ -74,7 +75,7 @@ const initGoogleServices = () => {
   });
 
   // Perform sign-in and get userinfo
-  ipcMain.on('sign-in', async event => {
+  const signIn = async (event?) => {
     const signInResult = await googleOAuth2Service.openAuthWindowAndSetCredentials();
     if (signInResult) {
       googleDrive
@@ -85,19 +86,33 @@ const initGoogleServices = () => {
         .catch(error => console.error(error));
     }
     mainWindow.webContents.send('sign-in-result', signInResult);
-  });
+  };
+  ipcMain.on('sign-in', signIn);
 
   // Enable・Disable Drive sync
   ipcMain.on('drive-sync', async (event, driveSync) => {
-    driveSync ? googleDrive.subscribe() : googleDrive.unsubscribe();
+    try {
+      driveSync ? await googleDrive.subscribe() : googleDrive.unsubscribe();
+    } catch (error) {
+      await signIn();
+      googleDrive.subscribe();
+    }
   });
 
-  // Perform sign-out
-  ipcMain.on('sign-out', async event => {
+  // Perform Sign-out
+  const signOut = async event => {
     googleDrive.unsubscribe();
-    const revokeResult = await googleOAuth2Service.revokeCredentials();
-    mainWindow.webContents.send('sign-out-result', revokeResult.status === 200);
-  });
+
+    googleOAuth2Service
+      .revokeCredentials()
+      .then(result => {
+        mainWindow.webContents.send('sign-out-result', result.status === 200);
+      })
+      .catch(error => {
+        mainWindow.webContents.send('sign-out-result', error);
+      });
+  };
+  ipcMain.on('sign-out', signOut);
 };
 
 const handleClipboard = () => {

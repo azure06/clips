@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { UserInfo } from '../../models/models';
 import { ElectronService } from '../electron/electron.service';
+import { GoogleAnalyticsService } from '../google-analytics/google-analytics.service';
 
 @Injectable()
 export class GoogleOAuth2Service {
   private _isAuthenticated: boolean;
-  private _userInfo: Partial<UserInfo>;
+  private _userInfo: UserInfo | null;
   private _driveSync: boolean;
 
   public get isAuthenticated() {
@@ -14,6 +15,15 @@ export class GoogleOAuth2Service {
 
   public get userInfo() {
     return this._userInfo;
+  }
+
+  public set userInfo(userInfo) {
+    // Set Google Analytics Uid Service
+    this._userInfo = userInfo;
+    if (userInfo) {
+      localStorage.setItem('user-info', JSON.stringify(userInfo));
+      this.googleAnalyticsService.setUserId(userInfo.permissionId);
+    }
   }
 
   public get driveSync() {
@@ -26,19 +36,19 @@ export class GoogleOAuth2Service {
     this.electronService.send('drive-sync', driveSync);
   }
 
-  constructor(private electronService: ElectronService) {
+  constructor(
+    private electronService: ElectronService,
+    private googleAnalyticsService: GoogleAnalyticsService
+  ) {
     this.initUserInfo();
     this.initTokenHandler();
     this.initGoogleDrive();
   }
 
   private initUserInfo() {
-    this._userInfo =
-      JSON.parse(localStorage.getItem('user-info') || null) || {};
-    const onUserInfo = (event, userInfo: UserInfo) => {
-      this._userInfo = userInfo;
-      localStorage.setItem('user-info', JSON.stringify(userInfo));
-    };
+    this.userInfo = JSON.parse(localStorage.getItem('user-info') || null);
+    const onUserInfo = (event, userInfo: UserInfo) =>
+      (this.userInfo = userInfo);
     this.electronService.on('user-info', onUserInfo);
   }
 
@@ -76,13 +86,13 @@ export class GoogleOAuth2Service {
   public async signOut(): Promise<boolean> {
     return new Promise(async resolve => {
       this.electronService.send('sign-out');
-      const revoked = (await this.electronService.once('sign-out-result')).data;
-      if (revoked) {
-        this._isAuthenticated = false;
-        this.driveSync = false;
-        localStorage.removeItem('auth-tokens');
-      }
-      resolve(revoked);
+      const result = (await this.electronService.once('sign-out-result')).data;
+      console.log('Sign-out result', result);
+      this._isAuthenticated = false;
+      this.driveSync = false;
+      localStorage.removeItem('auth-tokens');
+
+      resolve(result);
     });
   }
 

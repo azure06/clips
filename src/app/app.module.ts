@@ -15,6 +15,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterGuard } from './guards/router.guard';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
 import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
+import { GoogleAnalyticsServiceModule } from './services/google-analytics/google-analytics.module';
 import { GoogleDriveServiceModule } from './services/google-drive/google-drive.module';
 import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
 import { GoogleTranslateServiceModule } from './services/google-translate/google-translate.module';
@@ -30,6 +31,7 @@ import { GoogleTranslateServiceModule } from './services/google-translate/google
     GoogleOAuth2ServiceModule,
     GoogleDriveServiceModule,
     GoogleTranslateServiceModule,
+    GoogleAnalyticsServiceModule,
     AppRoutingModule,
     ClipboardServiceModule,
     ClipboardStoreModule

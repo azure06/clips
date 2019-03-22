@@ -70,7 +70,6 @@ export class PreferencesPage implements OnInit {
   }
 
   async navigate(url: string) {
-    console.error(this.router.url);
     await this.navCtrl.navigateRoot(url);
   }
 }
