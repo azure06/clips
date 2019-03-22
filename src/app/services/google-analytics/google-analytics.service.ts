@@ -9,7 +9,7 @@ export class GoogleAnalyticsService {
   constructor(private router: Router) {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        console.error('Event', event.urlAfterRedirects);
+        console.log('Event', event.urlAfterRedirects);
         ga('set', 'page', event.urlAfterRedirects);
         ga('send', 'pageview');
       }
@@ -17,7 +17,6 @@ export class GoogleAnalyticsService {
   }
 
   public setUserId(userId: string) {
-    console.error(userId);
     setTimeout(() => {
       ga('set', 'userId', userId); // Set the user ID using signed-in user_id.
     });

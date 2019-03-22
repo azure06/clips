@@ -92,10 +92,8 @@ export default class GoogleOAuth2Service extends EventEmitter {
       const authorizationCode = await this.getAuthorizationCode(addSession);
       const { tokens } = await this.oauth2Client.getToken(authorizationCode);
       this.setCredentials(tokens);
-      return true;
     } catch (error) {
-      console.error('Sign-in error: ', error);
-      return false;
+      return error;
     }
   }
 

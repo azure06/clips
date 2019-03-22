@@ -3,9 +3,13 @@ import { Observable } from 'rxjs';
 import uuidv4 from 'uuid/v4';
 import { GoogleTranslateResult } from '../../models/models';
 import { ElectronService } from '../electron/electron.service';
+import { PreferencesService } from '../preferences/preferences.service';
 @Injectable()
 export class GoogleTranslateService {
-  constructor(private electronService: ElectronService) {}
+  constructor(
+    private electronService: ElectronService,
+    private preferencesService: PreferencesService
+  ) {}
 
   public async translate(
     text: string,
@@ -14,7 +18,8 @@ export class GoogleTranslateService {
     const eventId = `google-translate-${uuidv4()}`;
     this.electronService.send('google-translate-query', {
       eventId,
-      text
+      text,
+      options: options || this.preferencesService.translateOptions
     });
     const translation = (await this.electronService.once(eventId)).data;
     return translation.text;

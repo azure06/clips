@@ -30,10 +30,15 @@ export class GoogleOAuth2Service {
     return this._driveSync;
   }
 
-  public set driveSync(driveSync) {
-    localStorage.setItem('drive-sync', JSON.stringify(driveSync));
-    this._driveSync = driveSync;
+  public set driveSync(driveSync: boolean) {
     this.electronService.send('drive-sync', driveSync);
+    this.electronService
+      .once('drive-sync-result')
+      .then(({ data }) => {
+        localStorage.setItem('drive-sync', JSON.stringify(driveSync));
+        this._driveSync = driveSync;
+      })
+      .catch(error => (this._driveSync = false));
   }
 
   constructor(
@@ -73,44 +78,29 @@ export class GoogleOAuth2Service {
     this.electronService.on('oauth2tokens-refresh', onTokensRefresh);
   }
 
-  public async signIn(): Promise<boolean> {
-    return new Promise(async resolve => {
-      this.electronService.send('sign-in');
-      const authenticated = (await this.electronService.once('sign-in-result'))
-        .data;
-      this._isAuthenticated = authenticated;
-      resolve(authenticated);
-    });
-  }
-
-  public async signOut(): Promise<boolean> {
-    return new Promise(async resolve => {
-      this.electronService.send('sign-out');
-      const result = (await this.electronService.once('sign-out-result')).data;
-      console.log('Sign-out result', result);
-      this._isAuthenticated = false;
-      this.driveSync = false;
-      localStorage.removeItem('auth-tokens');
-
-      resolve(result);
-    });
-  }
-
   public initGoogleDrive() {
     const driveSync =
       JSON.parse(localStorage.getItem('drive-sync') || null) || false;
     this.driveSync = driveSync;
   }
 
-  public async syncWithGoogleDrive() {
-    return new Promise(async resolve => {
-      this.electronService.send('sign-out');
-      const revoked = (await this.electronService.once('sign-out-result')).data;
-      if (revoked) {
-        this._isAuthenticated = !revoked;
-        localStorage.removeItem('auth-tokens');
-      }
-      resolve(revoked);
+  public async signIn() {
+    this.electronService.send('sign-in');
+    return this.electronService
+      .once('sign-in-result')
+      .then(() => (this._isAuthenticated = true))
+      .catch(error => console.error('Sign-in error ', error));
+  }
+
+  public async signOut() {
+    this.driveSync = false;
+    this.electronService.send('sign-out');
+    // return this.electronService
+    //   .once('sign-out-result')
+    //   .catch(error => console.error('Sign-out error ', error))
+    Promise.resolve().finally(() => {
+      localStorage.removeItem('auth-tokens');
+      this._isAuthenticated = false;
     });
   }
 }

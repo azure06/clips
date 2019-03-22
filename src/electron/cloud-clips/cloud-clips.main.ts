@@ -29,9 +29,10 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
       );
   };
   const unsubscribe = () => {
-    if (subscription) {
+    if (subscription && subscription.unsubscribe) {
       subscription.unsubscribe();
     }
+    return Promise.resolve();
   };
 
   const getUserInfo = () => googleDriveService.getUserInfo();
@@ -45,10 +46,10 @@ const initGoogleTranslate = () => {
     'google-translate-query',
     async (event, { eventId, text, options }) => {
       try {
-        const result = await googleTranslate.translate(text, options);
-        mainWindow.webContents.send(eventId, result);
+        const data = await googleTranslate.translate(text, options);
+        mainWindow.webContents.send(eventId, { data });
       } catch (error) {
-        mainWindow.webContents.send(eventId, error);
+        mainWindow.webContents.send(eventId, { error });
         console.error('google translate error - ', error);
       }
     }
@@ -76,40 +77,56 @@ const initGoogleServices = () => {
 
   // Perform sign-in and get userinfo
   const signIn = async (event?) => {
-    const signInResult = await googleOAuth2Service.openAuthWindowAndSetCredentials();
-    if (signInResult) {
-      googleDrive
-        .getUserInfo()
-        .then(userInfo =>
-          mainWindow.webContents.send('user-info', userInfo.data.user)
-        )
-        .catch(error => console.error(error));
-    }
-    mainWindow.webContents.send('sign-in-result', signInResult);
+    return googleOAuth2Service
+      .openAuthWindowAndSetCredentials()
+      .then(() =>
+        googleDrive
+          .getUserInfo()
+          .then(userInfo =>
+            mainWindow.webContents.send('user-info', userInfo.data.user)
+          )
+          .then(() => {
+            // Sign-in status OK
+            mainWindow.webContents.send('sign-in-result', { data: true });
+          })
+      )
+      .catch(error => {
+        mainWindow.webContents.send('sign-in-result', { error });
+      });
   };
   ipcMain.on('sign-in', signIn);
 
+  const onDriveSync = (event, driveSync) => {
+    driveSync
+      ? googleDrive
+          .subscribe()
+          .then(() =>
+            mainWindow.webContents.send('drive-sync-result', {
+              data: driveSync
+            })
+          )
+          .catch(async error =>
+            mainWindow.webContents.send('drive-sync-result', { error })
+          )
+      : googleDrive.unsubscribe().then(() =>
+          mainWindow.webContents.send('drive-sync-result', {
+            data: driveSync
+          })
+        );
+  };
+
   // Enable・Disable Drive sync
-  ipcMain.on('drive-sync', async (event, driveSync) => {
-    try {
-      driveSync ? await googleDrive.subscribe() : googleDrive.unsubscribe();
-    } catch (error) {
-      await signIn();
-      googleDrive.subscribe();
-    }
-  });
+  ipcMain.on('drive-sync', onDriveSync);
 
   // Perform Sign-out
   const signOut = async event => {
-    googleDrive.unsubscribe();
-
     googleOAuth2Service
       .revokeCredentials()
       .then(result => {
-        mainWindow.webContents.send('sign-out-result', result.status === 200);
+        mainWindow.webContents.send('sign-out-result', { data: true });
       })
       .catch(error => {
-        mainWindow.webContents.send('sign-out-result', error);
+        mainWindow.webContents.send('sign-out-result', { error });
       });
   };
   ipcMain.on('sign-out', signOut);

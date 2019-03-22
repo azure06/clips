@@ -13,15 +13,23 @@
                 Start on system startup
               </p>
             </ion-label>
-            <ion-toggle color="primary"></ion-toggle>
+            <ion-toggle
+              color="primary"
+              [(ngModel)]="general.startup"
+              (ngModelChange)="setGeneralSettings($event)"
+            ></ion-toggle>
           </ion-item>
           <ion-item>
             <ion-label
               ><p>
-                Detach from navigation bar
+                Hide title bar
               </p>
             </ion-label>
-            <ion-toggle color="primary"></ion-toggle>
+            <ion-toggle
+              color="primary"
+              [(ngModel)]="general.hideTitleBar"
+              (ngModelChange)="setGeneralSettings($event)"
+            ></ion-toggle>
           </ion-item>
         </ion-list>
       </ion-card-content>
@@ -58,6 +66,49 @@
     </ion-card>
   </div>
 
+  <div *ngIf="router.url === '/preferences/system?section=translate'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Google Translate</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Toggles in a List -->
+        <ion-list>
+          <ion-item>
+            <ion-label><p>Translate from</p></ion-label>
+            <ion-select
+              [(ngModel)]="translate.from"
+              (ngModelChange)="setGoogleTranslateOptions($event)"
+              okText="OK"
+              cancelText="Dismiss"
+            >
+              <ion-select-option
+                *ngFor="let language of languages"
+                [value]="language.physicalNm"
+                >{{ language.logicalNm }}</ion-select-option
+              >
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label><p>Translate to</p></ion-label>
+            <ion-select
+              [(ngModel)]="translate.to"
+              (ngModelChange)="setGoogleTranslateOptions($event)"
+              okText="OK"
+              cancelText="Dismiss"
+            >
+              <ion-select-option
+                *ngFor="let language of targetLanguages"
+                [value]="language.physicalNm"
+                >{{ language.logicalNm }}</ion-select-option
+              >
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
   <div *ngIf="router.url === '/preferences/system?section=hotkeys'">
     <ion-card>
       <ion-card-header>
@@ -68,7 +119,12 @@
         <ion-list>
           <ion-item>
             <ion-label><p>Ctrl + Alt +</p></ion-label>
-            <ion-select value="V" okText="OK" cancelText="Dismiss">
+            <ion-select
+              [(ngModel)]="hotkeys.open"
+              (ngModelChange)="setHotkeys($event)"
+              okText="OK"
+              cancelText="Dismiss"
+            >
               <ion-select-option value="A">A</ion-select-option>
               <ion-select-option value="B">B</ion-select-option>
               <ion-select-option value="C">C</ion-select-option>

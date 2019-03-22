@@ -19,6 +19,7 @@ import { GoogleAnalyticsServiceModule } from './services/google-analytics/google
 import { GoogleDriveServiceModule } from './services/google-drive/google-drive.module';
 import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
 import { GoogleTranslateServiceModule } from './services/google-translate/google-translate.module';
+import { PreferencesServiceModule } from './services/preferences/preferences.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,13 +29,14 @@ import { GoogleTranslateServiceModule } from './services/google-translate/google
     IonicModule.forRoot(),
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
+    PreferencesServiceModule,
     GoogleOAuth2ServiceModule,
     GoogleDriveServiceModule,
     GoogleTranslateServiceModule,
     GoogleAnalyticsServiceModule,
-    AppRoutingModule,
+    ClipboardStoreModule,
     ClipboardServiceModule,
-    ClipboardStoreModule
+    AppRoutingModule
   ],
   providers: [
     StatusBar,

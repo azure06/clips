@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+
+interface Result<T = any> {
+  event: Event;
+  error: T;
+  data: T;
+}
 
 @Injectable()
 export class ElectronService {
@@ -41,11 +46,13 @@ export class ElectronService {
    * Adds a one time listener function for the event. This listener is invoked only
    * the next time a message is sent to channel, after which it is removed.
    */
-  public once(channel: string): Promise<any> {
+  public once(channel: string): Promise<{ event: Event; data: any }> {
     return new Promise((resolve, reject) => {
       this.available
-        ? this.ipcRenderer.once(channel, (event, data) =>
-            resolve({ event, data })
+        ? this.ipcRenderer.once(channel, (event, result: Result) =>
+            result && result.error
+              ? reject({ event, error: result.error })
+              : resolve({ event, data: result ? result.data : undefined })
           )
         : reject('Electron is not available');
     });
