@@ -18,7 +18,7 @@ export class ClipboardPage {
   }> = {};
   public isLoading = this.store.pipe(select(fromClips.isLoading));
   constructor(
-    public electronService: ElectronService,
+    public es: ElectronService,
     public clipboardService: ClipboardService,
     public preferencesService: PreferencesService,
     public router: Router,
@@ -35,10 +35,6 @@ export class ClipboardPage {
   }
 
   navigateRoot(url: string, preferences?: {}) {
-    if (preferences) {
-      this.electronService.send('resize', { width: 800, height: 600 });
-      this.electronService.send('center');
-    }
     this.navCtrl.navigateRoot(url);
   }
 }

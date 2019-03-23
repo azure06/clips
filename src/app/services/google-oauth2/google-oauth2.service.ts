@@ -31,8 +31,8 @@ export class GoogleOAuth2Service {
   }
 
   public set driveSync(driveSync: boolean) {
-    this.electronService.send('drive-sync', driveSync);
-    this.electronService
+    this.es.ipcRenderer.send('drive-sync', driveSync);
+    this.es.ipcRenderer
       .once('drive-sync-result')
       .then(({ data }) => {
         localStorage.setItem('drive-sync', JSON.stringify(driveSync));
@@ -42,7 +42,7 @@ export class GoogleOAuth2Service {
   }
 
   constructor(
-    private electronService: ElectronService,
+    private es: ElectronService,
     private googleAnalyticsService: GoogleAnalyticsService
   ) {
     this.initUserInfo();
@@ -54,7 +54,7 @@ export class GoogleOAuth2Service {
     this.userInfo = JSON.parse(localStorage.getItem('user-info') || null);
     const onUserInfo = (event, userInfo: UserInfo) =>
       (this.userInfo = userInfo);
-    this.electronService.on('user-info', onUserInfo);
+    this.es.ipcRenderer.on('user-info', onUserInfo);
   }
 
   private initTokenHandler() {
@@ -74,8 +74,8 @@ export class GoogleOAuth2Service {
       );
     };
 
-    this.electronService.send('client-ready', oauth2Tokens);
-    this.electronService.on('oauth2tokens-refresh', onTokensRefresh);
+    this.es.ipcRenderer.send('client-ready', oauth2Tokens);
+    this.es.ipcRenderer.on('oauth2tokens-refresh', onTokensRefresh);
   }
 
   public initGoogleDrive() {
@@ -85,8 +85,8 @@ export class GoogleOAuth2Service {
   }
 
   public async signIn() {
-    this.electronService.send('sign-in');
-    return this.electronService
+    this.es.ipcRenderer.send('sign-in');
+    return this.es.ipcRenderer
       .once('sign-in-result')
       .then(() => (this._isAuthenticated = true))
       .catch(error => console.error('Sign-in error ', error));
@@ -94,7 +94,7 @@ export class GoogleOAuth2Service {
 
   public async signOut() {
     this.driveSync = false;
-    this.electronService.send('sign-out');
+    this.es.ipcRenderer.send('sign-out');
     // return this.electronService
     //   .once('sign-out-result')
     //   .catch(error => console.error('Sign-out error ', error))

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { ElectronService } from 'src/app/services/electron/electron.service';
+import { PreferencesService } from 'src/app/services/preferences/preferences.service';
 
 interface Section {
   name: string;
@@ -16,9 +18,8 @@ interface Section {
   styleUrls: ['./preferences.page.scss']
 })
 export class PreferencesPage implements OnInit {
-  options: FormGroup;
-
-  iam: Section[] = [
+  public options: FormGroup;
+  public iam: Section[] = [
     {
       name: 'Account',
       icon: 'face',
@@ -32,11 +33,6 @@ export class PreferencesPage implements OnInit {
       icon: 'settings_ethernet',
       path: '/preferences/system?section=general'
     },
-    // {
-    //   name: 'Notifications',
-    //   icon: 'notifications',
-    //   path: '/preferences/system?section=notifications'
-    // },
     {
       name: 'Goolgle Translate',
       icon: 'translate',
@@ -54,19 +50,37 @@ export class PreferencesPage implements OnInit {
     }
   ];
 
+  private bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+
   constructor(
     private fb: FormBuilder,
-    private router: Router,
-    private navCtrl: NavController
-  ) {
-    // window.router = router;
-  }
+    private navCtrl: NavController,
+    private es: ElectronService,
+    private preferenceService: PreferencesService,
+    public router: Router
+  ) {}
 
   ngOnInit() {
     this.options = this.fb.group({
       bottom: 0,
       top: 0
     });
+  }
+
+  ionViewWillEnter() {
+    this.bounds = this.preferenceService.getAppSettings().bounds;
+    this.es.mainWindow.center();
+    this.es.mainWindow.setSize(800, 540, true);
+  }
+
+  ionViewDidLeave() {
+    this.es.mainWindow.setPosition(this.bounds.x, this.bounds.y);
+    this.es.mainWindow.setSize(this.bounds.width, this.bounds.height);
   }
 
   async navigate(url: string) {

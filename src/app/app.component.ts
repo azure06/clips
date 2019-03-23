@@ -4,6 +4,7 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { NavController, Platform } from '@ionic/angular';
 import { ClipboardService } from './services/clipboard/clipboard.service';
+import { ElectronService } from './services/electron/electron.service';
 import { GoogleAnalyticsService } from './services/google-analytics/google-analytics.service';
 import { GoogleOAuth2Service } from './services/google-oauth2/google-oauth2.service';
 import { GoogleTranslateService } from './services/google-translate/google-translate.service';
@@ -23,6 +24,7 @@ export class AppComponent {
     private clipboardService: ClipboardService,
     private navCtrl: NavController,
     private googleAnalyticsService: GoogleAnalyticsService,
+    private electronService: ElectronService,
     private router: Router
   ) {
     this.initializeApp();
@@ -32,5 +34,9 @@ export class AppComponent {
     await this.platform.ready();
     this.statusBar.styleDefault();
     this.splashScreen.hide();
+
+    if (this.electronService.isAvailable) {
+      this.navCtrl.navigateRoot('clipboard/history', { replaceUrl: true });
+    }
   }
 }

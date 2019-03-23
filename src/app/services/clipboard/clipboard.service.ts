@@ -25,7 +25,7 @@ export class ClipboardService {
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {
-    this.electronService.on('clipboard-change', (event, clip) => {
+    this.electronService.ipcRenderer.on('clipboard-change', (event, clip) => {
       this.handleClipboardChangeEvent(clip);
       console.error(clip);
     });

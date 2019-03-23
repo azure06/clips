@@ -1,23 +1,37 @@
 import { Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
 
-interface Result<T = any> {
-  event: Event;
-  error: T;
-  data: T;
-}
-
+// tslint:disable: max-classes-per-file
 @Injectable()
 export class ElectronService {
-  private get available() {
+  private _mainWindow: MainWindow = new MainWindow();
+  private _ipcRenderer: IpcRenderer = new IpcRenderer();
+
+  public get isAvailable() {
     return !!((window as any).require && (window as any).require('electron'));
   }
-
-  private get ipcRenderer(): typeof Electron.ipcRenderer {
-    if (!this.available) {
-      return null;
+  constructor() {
+    if (this.isAvailable) {
+      const { ipcRenderer, remote } = (window as any).require('electron');
+      this._mainWindow.setMainWindow(remote.getCurrentWindow());
+      this._ipcRenderer.setIpcRenderer(ipcRenderer);
     }
-    const { ipcRenderer } = (window as any).require('electron');
-    return ipcRenderer;
+  }
+
+  get ipcRenderer() {
+    return this._ipcRenderer;
+  }
+
+  get mainWindow() {
+    return this._mainWindow;
+  }
+}
+
+class IpcRenderer {
+  private ipcRenderer: Electron.IpcRenderer;
+
+  public setIpcRenderer(ipcRenderer: Electron.IpcRenderer) {
+    this.ipcRenderer = ipcRenderer;
   }
 
   /**
@@ -30,7 +44,7 @@ export class ElectronService {
   ): {
     removeListener?: () => void;
   } {
-    return this.available
+    return this.ipcRenderer
       ? (() => {
           this.ipcRenderer.on(channel, listener);
           return {
@@ -48,8 +62,8 @@ export class ElectronService {
    */
   public once(channel: string): Promise<{ event: Event; data: any }> {
     return new Promise((resolve, reject) => {
-      this.available
-        ? this.ipcRenderer.once(channel, (event, result: Result) =>
+      this.ipcRenderer
+        ? this.ipcRenderer.once(channel, (event, result) =>
             result && result.error
               ? reject({ event, error: result.error })
               : resolve({ event, data: result ? result.data : undefined })
@@ -64,8 +78,47 @@ export class ElectronService {
    * listening for channel with ipcMain module.
    */
   public send(channel: string, ...args: any[]) {
-    this.available
+    this.ipcRenderer
       ? this.ipcRenderer.send(channel, ...args)
       : console.warn('Electron in not available');
+  }
+}
+
+class MainWindow {
+  private mainWindow?: Electron.BrowserWindow;
+  private moveSubject: Subject<{
+    preventDefault: () => void;
+    sender: any;
+  }> = new Subject();
+  constructor() {}
+
+  public setMainWindow(mainWindow: Electron.BrowserWindow) {
+    this.mainWindow = mainWindow;
+    this.moveSubject = new Subject();
+  }
+
+  public onMove() {
+    this.mainWindow.on('move', ({ preventDefault, sender }) => {
+      this.moveSubject.next({ preventDefault, sender });
+    });
+    return this.moveSubject.asObservable();
+  }
+
+  public setSize(width: number, height: number, animate?: boolean) {
+    this.mainWindow
+      ? this.mainWindow.setSize(width, height, animate)
+      : console.warn('Electron is not available');
+  }
+
+  public setPosition(x: number, y: number, animate?: boolean) {
+    this.mainWindow
+      ? this.mainWindow.setPosition(x, y, animate)
+      : console.warn('Electron is not available');
+  }
+
+  public center() {
+    this.mainWindow
+      ? this.mainWindow.center()
+      : console.warn('Electron is not available');
   }
 }

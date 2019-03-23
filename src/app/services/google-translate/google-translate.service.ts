@@ -7,7 +7,7 @@ import { PreferencesService } from '../preferences/preferences.service';
 @Injectable()
 export class GoogleTranslateService {
   constructor(
-    private electronService: ElectronService,
+    private es: ElectronService,
     private preferencesService: PreferencesService
   ) {}
 
@@ -16,12 +16,12 @@ export class GoogleTranslateService {
     options?: { from?: string; to: string; raw?: boolean }
   ): Promise<string> {
     const eventId = `google-translate-${uuidv4()}`;
-    this.electronService.send('google-translate-query', {
+    this.es.ipcRenderer.send('google-translate-query', {
       eventId,
       text,
       options: options || this.preferencesService.getAppSettings().translate
     });
-    const translation = (await this.electronService.once(eventId)).data;
+    const translation = (await this.es.ipcRenderer.once(eventId)).data;
     return translation.text;
   }
 }

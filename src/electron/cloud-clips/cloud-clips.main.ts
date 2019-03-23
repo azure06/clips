@@ -139,64 +139,62 @@ const handleClipboard = () => {
   );
 };
 
-const createWindow = () => {
+const createMainWindow = () => {
   const isDevelopment = (isDev as any).default;
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
-    frame: false
+    minWidth: 320,
+    minHeight: 320,
+    frame: false,
+    show: false
   });
   mainWindow.setResizable(true);
-  mainWindow.focus();
-
+  // mainWindow.focus();
   const icon = nativeImage.createFromPath(
     path.join(`${__dirname}`, '../../assets/icon/clip.png')
   );
-
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
   mainWindow.loadURL(
     isDevelopment
       ? 'http://localhost:4200'
       : path.join(`file://${__dirname}`, '../../index.html')
   );
-
   // Set icon.
   mainWindow.setIcon(icon);
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-  // On resize.
-  ipcMain.on('resize', (event, { width, height, animate }) => {
-    mainWindow.setSize(width, height, animate);
-  });
-  // Center
-  ipcMain.on('center', event => {
-    mainWindow.center();
-  });
-  // On reposition.
-  ipcMain.on('change-position', (event, { x, y, animate }) => {
-    mainWindow.setPosition(x, y, animate);
+  if (isDevelopment) {
+    // Open the DevTools.
+    mainWindow.webContents.openDevTools();
+  }
+  // On moved
+  mainWindow.on('moved', (event, data) => {
+    console.error(event, data);
   });
 
   mainWindow.webContents.once('did-finish-load', () => {
     handleClipboard();
   });
 
-  initGoogleServices();
-
+  // Handle new window event
   mainWindow.webContents.on('new-window', (event, url) => {
     event.preventDefault();
     shell.openExternal(url);
   });
 
   // Hide window when lose focus
-  // mainWindow.on('blur', () => {
-  //   mainWindow.hide();
-  // });
+  mainWindow.on('blur', () => {
+    if (mainWindow.isVisible()) {
+      mainWindow.hide();
+    }
+  });
 
   mainWindow.setSkipTaskbar(true);
   // Emitted when the window is closed.
   mainWindow.on('closed', () => (mainWindow = null));
+};
+
+const initMainWindow = () => {
+  createMainWindow();
+  initGoogleServices();
 };
 
 export const isAvailable = () => !!mainWindow;
@@ -204,5 +202,5 @@ export default {
   get mainWindow() {
     return mainWindow;
   },
-  createWindow
+  initMainWindow
 };
