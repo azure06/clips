@@ -1,10 +1,9 @@
 import { NgModule } from '@angular/core';
-import { ElectronServiceModule } from '../electron/electron.module';
 import { GoogleDriveService } from './google-drive.service';
 
 @NgModule({
   declarations: [],
-  imports: [ElectronServiceModule],
+  imports: [],
   exports: [],
   providers: [GoogleDriveService],
   bootstrap: []

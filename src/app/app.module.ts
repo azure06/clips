@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
@@ -15,6 +14,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterGuard } from './guards/router.guard';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
 import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
+import { ElectronServiceModule } from './services/electron/electron.module';
 import { GoogleAnalyticsServiceModule } from './services/google-analytics/google-analytics.module';
 import { GoogleDriveServiceModule } from './services/google-drive/google-drive.module';
 import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
@@ -30,6 +30,7 @@ import { PreferencesServiceModule } from './services/preferences/preferences.mod
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     PreferencesServiceModule,
+    ElectronServiceModule,
     GoogleOAuth2ServiceModule,
     GoogleDriveServiceModule,
     GoogleTranslateServiceModule,

@@ -1,4 +1,11 @@
-import { app, Menu, nativeImage, Tray } from 'electron';
+import {
+  app,
+  globalShortcut,
+  ipcMain,
+  Menu,
+  nativeImage,
+  Tray
+} from 'electron';
 import * as path from 'path';
 import cloudClips, { isAvailable } from './cloud-clips/cloud-clips.main';
 
@@ -35,11 +42,13 @@ app.on('ready', () => {
   const nativeImg = nativeImage.createFromPath(
     path.join(`${__dirname}`, '../assets/icon/clip.png')
   );
+
+  // Set tray
   tray = new Tray(nativeImg);
   const contextMenu = Menu.buildFromTemplate([
     { label: '  Infiniti Clips              ', enabled: false },
     { type: 'separator' },
-    { label: '  Pause Syncing' },
+    // { label: '  Pause Syncing' },
     { label: '  Preferences' },
     { type: 'separator' },
     {
@@ -53,4 +62,38 @@ app.on('ready', () => {
   tray.setToolTip('This is my application.');
   tray.setContextMenu(contextMenu);
   tray.setHighlightMode('selection');
+  tray.on('click', () => {
+    cloudClips.mainWindow.isVisible()
+      ? cloudClips.mainWindow.hide()
+      : cloudClips.mainWindow.show();
+  });
+
+  // Set Keyboard Shortcuts
+  ipcMain.on('app-settings', (event, { newSettings, oldSettings }) => {
+    if (oldSettings && oldSettings.hotkeys.open === newSettings.hotkeys.open) {
+      return;
+    }
+    if (oldSettings) {
+      globalShortcut.unregister(
+        process.platform === 'darwin'
+          ? `Shift+Command+${oldSettings.hotkeys.open}`
+          : `Ctrl+Alt+${oldSettings.hotkeys.open}`
+      );
+    }
+    globalShortcut.register(
+      process.platform === 'darwin'
+        ? `Shift+Command+${newSettings.hotkeys.open}`
+        : `Ctrl+Alt+${newSettings.hotkeys.open}`,
+      () => {
+        cloudClips.mainWindow.isVisible()
+          ? cloudClips.mainWindow.hide()
+          : cloudClips.mainWindow.show();
+      }
+    );
+  });
+});
+
+app.on('will-quit', () => {
+  // Unregister all shortcuts.
+  globalShortcut.unregisterAll();
 });

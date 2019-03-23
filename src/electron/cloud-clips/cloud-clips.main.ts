@@ -188,11 +188,21 @@ const createWindow = () => {
     event.preventDefault();
     shell.openExternal(url);
   });
+
+  // Hide window when lose focus
+  // mainWindow.on('blur', () => {
+  //   mainWindow.hide();
+  // });
+
+  mainWindow.setSkipTaskbar(true);
   // Emitted when the window is closed.
   mainWindow.on('closed', () => (mainWindow = null));
 };
 
 export const isAvailable = () => !!mainWindow;
 export default {
+  get mainWindow() {
+    return mainWindow;
+  },
   createWindow
 };

@@ -37,21 +37,21 @@ export class SystemPage {
     public router: Router,
     public preferencesService: PreferencesService
   ) {
-    this.general = preferencesService.getGeneralSettings();
-    this.translate = preferencesService.getTranslateOptions();
-    this.hotkeys = preferencesService.getHotkeys();
+    this.general = preferencesService.getAppSettings().general;
+    this.translate = preferencesService.getAppSettings().translate;
+    this.hotkeys = preferencesService.getAppSettings().hotkeys;
   }
 
   setGeneralSettings() {
-    this.preferencesService.setGeneralSettings(this.general);
+    this.preferencesService.setAppSettings({ general: this.general });
   }
 
   setGoogleTranslateOptions(value: string) {
-    this.preferencesService.setTranslateOptions(this.translate);
+    this.preferencesService.setAppSettings({ translate: this.translate });
   }
 
   setHotkeys() {
-    this.preferencesService.setHotkeys(this.hotkeys);
+    this.preferencesService.setAppSettings({ hotkeys: this.hotkeys });
   }
 }
 

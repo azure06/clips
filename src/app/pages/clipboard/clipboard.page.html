@@ -1,4 +1,8 @@
-<ion-header class="header draggable" no-border>
+<ion-header
+  *ngIf="!generalSettings.hideTitleBar"
+  class="header draggable"
+  no-border
+>
   <ion-toolbar>
     <ion-title>
       <img src="assets/icon/clip.svg" />
@@ -25,9 +29,15 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="light-theme">
-  <div class="container main header-active">
+  <div
+    class="container main"
+    [ngClass]="!generalSettings.hideTitleBar ? 'header-active' : ''"
+  >
     <!-- Sidenav -->
-    <div class="container sidenav column space-between">
+    <div
+      class="container sidenav column space-between"
+      [ngClass]="generalSettings.hideTitleBar ? 'draggable' : ''"
+    >
       <!-- Pages -->
       <div class="container column pages">
         <ion-button
@@ -63,7 +73,10 @@
       </div>
 
       <!-- Settings -->
-      <div *ngIf="false" class="container column settings">
+      <div
+        *ngIf="generalSettings.hideTitleBar"
+        class="container column settings"
+      >
         <ion-button *ngIf="(isLoading | async)" fill="clear" color="tertiary">
           <ion-spinner
             class="spinner"
@@ -83,7 +96,6 @@
 
     <!-- Content -->
     <div class="sidenav-content container">
-      <!-- ion-router-outlet doesn't work correctly 2019-03-01 -->
       <ion-router-outlet> </ion-router-outlet>
     </div>
   </div>

@@ -67,18 +67,20 @@ export class IndexedDBService {
         const request = objectStore.openCursor(keyRange, direction || 'prev');
 
         request.onerror = _reject;
-        request.onsuccess = ((count = 0) => event => {
+        request.onsuccess = ((cursorPosition = 0) => event => {
           const cursor = (event.target as IDBRequest)
             .result as IDBCursorWithValue;
 
           if (cursor) {
             if (
-              (lowerBound === undefined || count >= lowerBound) &&
-              (upperBound === undefined || count < upperBound)
+              (lowerBound === undefined || cursorPosition >= lowerBound) &&
+              (upperBound === undefined || cursorPosition < upperBound)
             ) {
               clips.push(cursor.value);
+            } else if (cursorPosition >= upperBound) {
+              resolve(clips);
             }
-            count++;
+            cursorPosition++;
             cursor.continue();
           } else {
             resolve(clips);

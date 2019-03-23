@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
+import { language } from 'googleapis/build/src/apis/language';
+import { Subject } from 'rxjs';
+import { ElectronService } from '../electron/electron.service';
 
-interface GeneralSettings {
+interface General {
   startup: boolean;
   hideTitleBar: boolean;
 }
@@ -14,44 +17,48 @@ interface Hotkeys {
 }
 interface Language {}
 
+interface AppSettings {
+  general: General;
+  translate: TranslateOptions;
+  hotkeys: Hotkeys;
+  language: Language;
+}
+
 @Injectable()
 export class PreferencesService {
-  public getGeneralSettings(): GeneralSettings {
-    return (
-      JSON.parse(localStorage.getItem('general-settings'), null) || {
+  constructor(private electronService: ElectronService) {
+    this.electronService.send('app-settings', {
+      newSettings: this.getAppSettings()
+    });
+  }
+
+  public getAppSettings(): AppSettings {
+    const settings: Partial<AppSettings> =
+      JSON.parse(localStorage.getItem('app-settings') || null) || {};
+
+    return {
+      general: settings.general || {
         startup: true,
         hideTitleBar: false
-      }
-    );
-  }
-  public setGeneralSettings(generalSettings: GeneralSettings) {
-    localStorage.setItem('general-settings', JSON.stringify(generalSettings));
-  }
-
-  public getTranslateOptions(): TranslateOptions {
-    return (
-      JSON.parse(localStorage.getItem('google-translate-options'), null) || {
+      },
+      translate: settings.translate || {
         from: 'auto',
         to: 'en'
-      }
-    );
-  }
-  public setTranslateOptions(translateOptions: TranslateOptions) {
-    localStorage.setItem(
-      'google-translate-options',
-      JSON.stringify(translateOptions)
-    );
-  }
-
-  public getHotkeys(): Hotkeys {
-    return (
-      JSON.parse(localStorage.getItem('hotkeys'), null) || {
+      },
+      hotkeys: settings.hotkeys || {
         open: 'V'
-      }
-    );
+      },
+      language: {}
+    };
   }
 
-  public setHotkeys(hotkeys: Hotkeys) {
-    localStorage.setItem('hotkeys', JSON.stringify(hotkeys));
+  public setAppSettings(partialSettings: Partial<AppSettings>) {
+    const oldSettings = this.getAppSettings();
+    const newSettings = { ...oldSettings, ...partialSettings };
+    localStorage.setItem('app-settings', JSON.stringify(newSettings));
+    this.electronService.send('app-settings', {
+      oldSettings,
+      newSettings
+    });
   }
 }
