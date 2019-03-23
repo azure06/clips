@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { UserInfo } from '../../models/models';
 import { ElectronService } from '../electron/electron.service';
 import { GoogleAnalyticsService } from '../google-analytics/google-analytics.service';
+import { PreferencesService } from '../preferences/preferences.service';
 
 @Injectable()
 export class GoogleOAuth2Service {
@@ -30,19 +31,27 @@ export class GoogleOAuth2Service {
     return this._driveSync;
   }
 
-  public set driveSync(driveSync: boolean) {
-    this.es.ipcRenderer.send('drive-sync', driveSync);
+  public set driveSync(sync: boolean) {
+    const currentDrive = this.preferencesService.getAppSettings().drive;
+    const drive = { ...currentDrive, sync };
+    this.es.ipcRenderer.send('drive-sync', drive);
     this.es.ipcRenderer
       .once('drive-sync-result')
       .then(({ data }) => {
-        localStorage.setItem('drive-sync', JSON.stringify(driveSync));
-        this._driveSync = driveSync;
+        this.preferencesService.setAppSettings({ drive });
+        this._driveSync = drive.sync;
       })
-      .catch(error => (this._driveSync = false));
+      .catch(error => () => {
+        this.preferencesService.setAppSettings({
+          drive: { ...currentDrive, sync: false }
+        });
+        this._driveSync = false;
+      });
   }
 
   constructor(
     private es: ElectronService,
+    private preferencesService: PreferencesService,
     private googleAnalyticsService: GoogleAnalyticsService
   ) {
     this.initUserInfo();
@@ -79,9 +88,14 @@ export class GoogleOAuth2Service {
   }
 
   public initGoogleDrive() {
-    const driveSync =
-      JSON.parse(localStorage.getItem('drive-sync') || null) || false;
-    this.driveSync = driveSync;
+    const { sync } = this.preferencesService.getAppSettings().drive;
+    this.driveSync = sync;
+
+    this.es.ipcRenderer.on('page-token', (event, { pageToken }) => {
+      this.preferencesService.setAppSettings({
+        drive: { sync: true, pageToken }
+      });
+    });
   }
 
   public async signIn() {

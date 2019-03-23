@@ -18,6 +18,7 @@ import {
   buffer,
   catchError,
   filter,
+  map,
   mergeMap,
   scan,
   tap
@@ -42,7 +43,7 @@ class DriveHandler {
   > = new BehaviorSubject<string>('');
   private drive: drive_v3.Drive;
 
-  get driveHandler() {
+  private get driveHandler() {
     return DriveHandler._driveHandler;
   }
   /**
@@ -58,6 +59,10 @@ class DriveHandler {
   }) {
     this.driveHandler.drive = drive;
     this.driveHandler.pageTokenBehaviorSubject.next(pageToken);
+  }
+
+  public pageTokenAsObservable() {
+    return this.driveHandler.pageTokenBehaviorSubject.asObservable();
   }
 
   /**
@@ -204,6 +209,10 @@ export default class GoogleDriveService {
     return (await this.drive.changes.getStartPageToken({})).data.startPageToken;
   }
 
+  public pageTokenAsObservable() {
+    return new DriveHandler().pageTokenAsObservable();
+  }
+
   public listenForChanges(pageToken: string) {
     const driveObservable = this.observeDriveChanges(pageToken);
     const fileAdderObservable = this.observeFileAdder();
@@ -254,8 +263,7 @@ export default class GoogleDriveService {
             : '...Nothing new found'
         )
       ),
-      filter(clips => clips.length > 0),
-      catchError(error => of({ error }))
+      filter(clips => clips.length > 0)
     );
   }
 }

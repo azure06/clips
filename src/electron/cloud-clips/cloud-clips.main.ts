@@ -2,6 +2,7 @@ import { BrowserWindow, ipcMain, nativeImage, shell } from 'electron';
 import * as isDev from 'electron-is-dev';
 import { OAuth2Client } from 'google-auth-library';
 import * as path from 'path';
+import { Subscription } from 'rxjs';
 import GoogleTranslate from '../services/google-translate/google-translate.service';
 import { electronConfig } from './../electron.config';
 import ClipboardService from './../services/clipboard/clipboard.service';
@@ -12,21 +13,34 @@ let mainWindow: Electron.BrowserWindow = null;
 
 const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
   const googleDriveService = new GoogleDriveService(oAuth2Client);
-  let subscription;
+  let subscription: Subscription;
 
   ipcMain.on('add-to-drive', async (event, clip) => {
     googleDriveService.addClipToDrive(clip);
   });
-  const subscribe = async () => {
-    const pageToken = await googleDriveService.getStartPageToken();
+  const subscribe = async (pageToken?: string) => {
+    const _pageToken =
+      pageToken || (await googleDriveService.getStartPageToken());
 
-    subscription = googleDriveService
-      .listenForChanges(pageToken)
-      .subscribe(
-        data => mainWindow.webContents.send('google-drive-change', data),
-        err => console.log('ERROR: ', err),
-        () => console.log('complete')
-      );
+    subscription = googleDriveService.listenForChanges(_pageToken).subscribe(
+      clips =>
+        mainWindow.webContents.send('google-drive-change', {
+          data: { clips }
+        }),
+      error =>
+        mainWindow.webContents.send('google-drive-change', {
+          error
+        }),
+      () => console.log('complete')
+    );
+
+    subscription.add(
+      googleDriveService
+        .pageTokenAsObservable()
+        .subscribe(pageToken =>
+          mainWindow.webContents.send('page-token', { pageToken })
+        )
+    );
   };
   const unsubscribe = () => {
     if (subscription && subscription.unsubscribe) {
@@ -96,13 +110,16 @@ const initGoogleServices = () => {
   };
   ipcMain.on('sign-in', signIn);
 
-  const onDriveSync = (event, driveSync) => {
-    driveSync
+  const onDriveSync = (
+    event,
+    { sync, pageToken }: { sync: boolean; pageToken: string }
+  ) => {
+    sync
       ? googleDrive
-          .subscribe()
+          .subscribe(pageToken)
           .then(() =>
             mainWindow.webContents.send('drive-sync-result', {
-              data: driveSync
+              data: { drive: { sync: true } }
             })
           )
           .catch(async error =>
@@ -110,7 +127,7 @@ const initGoogleServices = () => {
           )
       : googleDrive.unsubscribe().then(() =>
           mainWindow.webContents.send('drive-sync-result', {
-            data: driveSync
+            data: { drive: { sync: false } }
           })
         );
   };

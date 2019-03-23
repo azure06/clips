@@ -4,6 +4,7 @@ import { EMPTY, Subject } from 'rxjs';
 // tslint:disable: max-classes-per-file
 @Injectable()
 export class ElectronService {
+  // tslint:disable: no-use-before-declare
   private _mainWindow: MainWindow = new MainWindow();
   private _ipcRenderer: IpcRenderer = new IpcRenderer();
 
@@ -13,7 +14,7 @@ export class ElectronService {
   constructor() {
     if (this.isAvailable) {
       const { ipcRenderer, remote } = (window as any).require('electron');
-      this._mainWindow.setMainWindow(remote.getCurrentWindow());
+      this._mainWindow.setRemote(remote);
       this._ipcRenderer.setIpcRenderer(ipcRenderer);
     }
   }
@@ -85,16 +86,23 @@ class IpcRenderer {
 }
 
 class MainWindow {
-  private mainWindow?: Electron.BrowserWindow;
+  private remote?: Electron.Remote;
   private moveSubject: Subject<{
+    preventDefault: () => void;
+    sender: any;
+  }> = new Subject();
+  private resizeSubject: Subject<{
     preventDefault: () => void;
     sender: any;
   }> = new Subject();
   constructor() {}
 
-  public setMainWindow(mainWindow: Electron.BrowserWindow) {
-    this.mainWindow = mainWindow;
-    this.moveSubject = new Subject();
+  public setRemote(remote: Electron.Remote) {
+    this.remote = remote;
+  }
+
+  public get mainWindow() {
+    return this.remote ? this.remote.getCurrentWindow() : undefined;
   }
 
   public onMove() {
@@ -105,6 +113,16 @@ class MainWindow {
       this.moveSubject.next({ preventDefault, sender });
     });
     return this.moveSubject.asObservable();
+  }
+
+  public onResize() {
+    if (!this.mainWindow) {
+      return EMPTY;
+    }
+    this.mainWindow.on('resize', ({ preventDefault, sender }) => {
+      this.resizeSubject.next({ preventDefault, sender });
+    });
+    return this.resizeSubject.asObservable();
   }
 
   public setSize(width: number, height: number, animate?: boolean) {

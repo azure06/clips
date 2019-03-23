@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
-import { ElectronService } from 'src/app/services/electron/electron.service';
-import { PreferencesService } from 'src/app/services/preferences/preferences.service';
+import { ElectronService } from '../../services/electron/electron.service';
+import { PreferencesService } from '../../services/preferences/preferences.service';
 
 interface Section {
   name: string;
@@ -34,7 +34,7 @@ export class PreferencesPage implements OnInit {
       path: '/preferences/system?section=general'
     },
     {
-      name: 'Goolgle Translate',
+      name: 'Google Translate',
       icon: 'translate',
       path: '/preferences/system?section=translate'
     },

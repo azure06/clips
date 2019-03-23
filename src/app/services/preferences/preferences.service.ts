@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject, timer } from 'rxjs';
+import { merge, Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import { ElectronService } from '../electron/electron.service';
 
@@ -7,7 +7,7 @@ interface General {
   startup: boolean;
   hideTitleBar: boolean;
 }
-interface TranslateOptions {
+interface Translate {
   from: string;
   to: string;
   raw?: string;
@@ -24,12 +24,17 @@ interface Bounds {
   y: number;
 }
 
+interface Drive {
+  sync: boolean;
+  pageToken?: string;
+}
 interface AppSettings {
   general: General;
-  translate: TranslateOptions;
+  translate: Translate;
   hotkeys: Hotkeys;
   language: Language;
   bounds: Bounds;
+  drive: Drive;
 }
 
 @Injectable()
@@ -39,8 +44,7 @@ export class PreferencesService {
       newSettings: this.getAppSettings()
     });
 
-    es.mainWindow
-      .onMove()
+    merge(es.mainWindow.onResize(), es.mainWindow.onMove())
       .pipe(debounce(() => timer(1000)))
       .subscribe(obj => {
         const bounds: Bounds = obj.sender.getBounds();
@@ -51,7 +55,7 @@ export class PreferencesService {
     if (x > 0 && y > 0) {
       es.mainWindow.setPosition(x, y, true);
     }
-    es.mainWindow.setSize(height, width);
+    es.mainWindow.setSize(width, height);
   }
 
   public getAppSettings(): AppSettings {
@@ -76,6 +80,9 @@ export class PreferencesService {
         width: 540,
         x: -1,
         y: -1
+      },
+      drive: settings.drive || {
+        sync: false
       }
     };
   }
