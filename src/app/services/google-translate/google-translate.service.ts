@@ -19,7 +19,7 @@ export class GoogleTranslateService {
     this.electronService.send('google-translate-query', {
       eventId,
       text,
-      options: options || this.preferencesService.getTranslateOptions()
+      options: options || this.preferencesService.getAppSettings().translate
     });
     const translation = (await this.electronService.once(eventId)).data;
     return translation.text;

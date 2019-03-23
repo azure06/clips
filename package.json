@@ -3,6 +3,22 @@
   "version": "0.0.1",
   "author": "Gabriele Sato",
   "homepage": "https://infiniticlips.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azure06/infiniti-clips.git"
+  },
+  "keywords": [
+    "clipboard",
+    "electron",
+    "angular",
+    "ionic",
+    "universal",
+    "windows",
+    "mac"
+  ],
+  "bugs": {
+    "url": "https://github.com/azure06/infiniti-clips/issues"
+  },
   "main": "www/electron/main.js",
   "scripts": {
     "ng": "ng",
@@ -73,7 +89,7 @@
   },
   "devDependencies": {
     "@angular-devkit/architect": "~0.12.3",
-    "@angular-devkit/build-angular": "~0.12.3",
+    "@angular-devkit/build-angular": "^0.13.6",
     "@angular-devkit/core": "~7.2.3",
     "@angular-devkit/schematics": "~7.2.3",
     "@angular/cli": "~7.2.3",
@@ -90,7 +106,7 @@
     "codelyzer": "~4.5.0",
     "concurrently": "^4.1.0",
     "electron": "^4.0.4",
-    "electron-builder": "^20.38.5",
+    "electron-builder": "^20.39.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~3.1.4",

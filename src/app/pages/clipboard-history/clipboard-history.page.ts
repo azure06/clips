@@ -44,7 +44,7 @@ export class ClipboardHistoryPage {
   }
 
   async loadMore(event): Promise<void> {
-    this.clipboardService.loadNext({ limit: 10 });
+    this.clipboardService.loadNext({ limit: 20 });
     const isLoadingNext = await this.store
       .pipe(
         select(fromClips.isLoadingNext),
