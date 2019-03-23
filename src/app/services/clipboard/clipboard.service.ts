@@ -29,6 +29,10 @@ export class ClipboardService {
       this.handleClipboardChangeEvent(clip);
       console.error(clip);
     });
+
+    this.googleDriveSerice
+      .getDriveChangeAsObservable()
+      .subscribe(clips => clips.forEach(clip => this.addClip(clip)));
   }
 
   /**

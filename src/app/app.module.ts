@@ -31,12 +31,12 @@ import { PreferencesServiceModule } from './services/preferences/preferences.mod
     EffectsModule.forRoot([]),
     PreferencesServiceModule,
     ElectronServiceModule,
+    ClipboardServiceModule,
     GoogleOAuth2ServiceModule,
     GoogleDriveServiceModule,
     GoogleTranslateServiceModule,
     GoogleAnalyticsServiceModule,
     ClipboardStoreModule,
-    ClipboardServiceModule,
     AppRoutingModule
   ],
   providers: [

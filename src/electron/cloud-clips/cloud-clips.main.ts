@@ -18,9 +18,19 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
   ipcMain.on('add-to-drive', async (event, clip) => {
     googleDriveService.addClipToDrive(clip);
   });
+
+  const unsubscribe = () => {
+    if (subscription && subscription.unsubscribe) {
+      subscription.unsubscribe();
+    }
+    return Promise.resolve();
+  };
   const subscribe = async (pageToken?: string) => {
     const _pageToken =
       pageToken || (await googleDriveService.getStartPageToken());
+
+    // Unsubscribe if necessary
+    unsubscribe();
 
     subscription = googleDriveService.listenForChanges(_pageToken).subscribe(
       clips =>
@@ -42,15 +52,8 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
         )
     );
   };
-  const unsubscribe = () => {
-    if (subscription && subscription.unsubscribe) {
-      subscription.unsubscribe();
-    }
-    return Promise.resolve();
-  };
 
   const getUserInfo = () => googleDriveService.getUserInfo();
-
   return { subscribe, unsubscribe, getUserInfo };
 };
 
