@@ -48,11 +48,9 @@ export class PreferencesService {
       });
 
     const { x, y, height, width } = this.getAppSettings().bounds;
-
     if (x > 0 && y > 0) {
       es.mainWindow.setPosition(x, y, true);
     }
-    console.error(height, width);
     es.mainWindow.setSize(height, width);
   }
 

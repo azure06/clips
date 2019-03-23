@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { EMPTY, Subject } from 'rxjs';
 
 // tslint:disable: max-classes-per-file
 @Injectable()
@@ -98,6 +98,9 @@ class MainWindow {
   }
 
   public onMove() {
+    if (!this.mainWindow) {
+      return EMPTY;
+    }
     this.mainWindow.on('move', ({ preventDefault, sender }) => {
       this.moveSubject.next({ preventDefault, sender });
     });
