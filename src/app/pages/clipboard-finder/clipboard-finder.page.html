@@ -15,6 +15,7 @@
 
   <app-clipboard-item-component
     *ngFor="let clip of (clips$ | async); let i = index"
+    (copyToClipboard)="copyToClipboard($event)"
     (modifyClip)="modifyClip($event)"
     (removeClip)="removeClip($event)"
     (translateText)="translateText($event)"

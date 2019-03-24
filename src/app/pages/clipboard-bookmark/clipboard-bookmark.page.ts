@@ -68,6 +68,10 @@ export class ClipboardBookmarkPage {
     // }
   }
 
+  copyToClipboard(data) {
+    this.clipboardService.copyToClipboard(data);
+  }
+
   modifyClip(clip: Clip) {
     this.clipboardService.modifyClip(clip);
   }

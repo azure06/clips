@@ -24,7 +24,7 @@ export class GoogleTranslateService {
 
     return this.es.ipcRenderer
       .once(eventId)
-      .then(({ data }) => data.translation.text)
+      .then(({ data }) => data.text)
       .catch(({ error }) => 'Payload too large');
   }
 }
