@@ -3,13 +3,13 @@ import * as isDev from 'electron-is-dev';
 import { OAuth2Client } from 'google-auth-library';
 import * as path from 'path';
 import { Subscription } from 'rxjs';
-import GoogleTranslate from '../services/google-translate/google-translate.service';
-import { electronConfig } from './../electron.config';
-import ClipboardService from './../services/clipboard/clipboard.service';
+import { electronConfig } from '../electron.config';
+import ClipboardService from '../services/clipboard/clipboard.service';
 import GoogleDriveService, {
   DriveHandler
-} from './../services/google-drive/google-drive.service';
-import GoogleOAuth2Service from './../services/oauth2/google-oauth2.service';
+} from '../services/google-drive/google-drive.service';
+import GoogleTranslate from '../services/google-translate/google-translate.service';
+import GoogleOAuth2Service from '../services/oauth2/google-oauth2.service';
 
 let mainWindow: Electron.BrowserWindow = null;
 
@@ -25,7 +25,6 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
 
   const unsubscribe = () => {
     if (subscription && subscription.unsubscribe) {
-      console.log('unsubscribe');
       subscription.unsubscribe();
     }
     return Promise.resolve();
@@ -205,13 +204,6 @@ const createMainWindow = () => {
   mainWindow.webContents.on('new-window', (event, url) => {
     event.preventDefault();
     shell.openExternal(url);
-  });
-
-  // Hide window when lose focus
-  mainWindow.on('blur', () => {
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    }
   });
 
   mainWindow.setSkipTaskbar(true);

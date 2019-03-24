@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { merge, Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import { ElectronService } from '../electron/electron.service';
@@ -39,7 +40,8 @@ interface AppSettings {
 
 @Injectable()
 export class PreferencesService {
-  constructor(private es: ElectronService) {
+  public keepOpen: boolean;
+  constructor(private es: ElectronService, router: Router) {
     es.ipcRenderer.send('app-settings', {
       newSettings: this.getAppSettings()
     });
@@ -51,11 +53,18 @@ export class PreferencesService {
         this.setAppSettings({ bounds });
       });
 
+    es.mainWindow.onBlur().subscribe(event => {
+      if (this.es.mainWindow.isVisible() && !this.keepOpen) {
+        this.es.mainWindow.hide();
+      }
+    });
+
     const { x, y, height, width } = this.getAppSettings().bounds;
     if (x > 0 && y > 0) {
       es.mainWindow.setPosition(x, y, true);
     }
     es.mainWindow.setSize(width, height);
+    es.mainWindow.show();
   }
 
   public getAppSettings(): AppSettings {

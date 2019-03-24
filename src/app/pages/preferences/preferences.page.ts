@@ -76,11 +76,13 @@ export class PreferencesPage implements OnInit {
     this.bounds = this.preferenceService.getAppSettings().bounds;
     this.es.mainWindow.center();
     this.es.mainWindow.setSize(800, 540, true);
+    this.preferenceService.keepOpen = true;
   }
 
   ionViewDidLeave() {
     this.es.mainWindow.setPosition(this.bounds.x, this.bounds.y);
     this.es.mainWindow.setSize(this.bounds.width, this.bounds.height);
+    this.preferenceService.keepOpen = false;
   }
 
   async navigate(url: string) {

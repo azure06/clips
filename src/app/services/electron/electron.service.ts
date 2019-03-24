@@ -85,33 +85,41 @@ class IpcRenderer {
   }
 }
 
+interface ElectronEvent {
+  preventDefault: () => void;
+  sender: any;
+}
+
 class MainWindow {
   private remote?: Electron.Remote;
-  private moveSubject: Subject<{
-    preventDefault: () => void;
-    sender: any;
-  }> = new Subject();
-  private resizeSubject: Subject<{
-    preventDefault: () => void;
-    sender: any;
-  }> = new Subject();
+  private blurSubject: Subject<ElectronEvent> = new Subject();
+  private moveSubject: Subject<ElectronEvent> = new Subject();
+  private resizeSubject: Subject<ElectronEvent> = new Subject();
   constructor() {}
 
   public setRemote(remote: Electron.Remote) {
     this.remote = remote;
   }
 
-  public get mainWindow() {
+  private get mainWindow() {
     return this.remote ? this.remote.getCurrentWindow() : undefined;
+  }
+
+  public onBlur() {
+    if (!this.mainWindow) {
+      return EMPTY;
+    }
+    this.mainWindow.on('blur', event => this.blurSubject.next(event));
+    return this.blurSubject.asObservable();
   }
 
   public onMove() {
     if (!this.mainWindow) {
       return EMPTY;
     }
-    this.mainWindow.on('move', ({ preventDefault, sender }) => {
-      this.moveSubject.next({ preventDefault, sender });
-    });
+    this.mainWindow.on('move', ({ preventDefault, sender }) =>
+      this.moveSubject.next({ preventDefault, sender })
+    );
     return this.moveSubject.asObservable();
   }
 
@@ -119,9 +127,9 @@ class MainWindow {
     if (!this.mainWindow) {
       return EMPTY;
     }
-    this.mainWindow.on('resize', ({ preventDefault, sender }) => {
-      this.resizeSubject.next({ preventDefault, sender });
-    });
+    this.mainWindow.on('resize', ({ preventDefault, sender }) =>
+      this.resizeSubject.next({ preventDefault, sender })
+    );
     return this.resizeSubject.asObservable();
   }
 
@@ -140,6 +148,22 @@ class MainWindow {
   public center() {
     this.mainWindow
       ? this.mainWindow.center()
+      : console.warn('Electron is not available');
+  }
+
+  public isVisible() {
+    return this.mainWindow ? this.mainWindow.isVisible() : false;
+  }
+
+  public hide() {
+    this.mainWindow
+      ? this.mainWindow.hide()
+      : console.warn('Electron is not available');
+  }
+
+  public show() {
+    this.mainWindow
+      ? this.mainWindow.show()
       : console.warn('Electron is not available');
   }
 }
