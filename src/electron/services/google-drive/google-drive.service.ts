@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { app } from 'electron';
 import * as fs from 'fs';
 import { GaxiosResponse } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
@@ -154,8 +154,13 @@ export default class GoogleDriveService {
 
   private downloadFile(fileId: string): Promise<string> {
     return new Promise(async (resolve, reject) => {
-      const filePath = path.join(os.tmpdir(), `${fileId}.json`);
+      const userDataDir = path.join(app.getPath('userData'), 'temp');
+      const filePath = path.join(userDataDir, `${fileId}.json`);
       const dest = fs.createWriteStream(filePath);
+
+      if (!fs.existsSync(userDataDir)) {
+        fs.mkdirSync(userDataDir, { recursive: true });
+      }
 
       try {
         const response = await this.drive.files.get(

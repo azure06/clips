@@ -45,7 +45,7 @@ export class IndexedDBService {
   }
 
   public getClips(options?: {
-    index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
+    index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     lowerBound?: number;
     upperBound?: number;
     keyRange?: IDBKeyRange;
@@ -127,12 +127,12 @@ export class IndexedDBService {
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
         const objectStore = db
-          .transaction(['clips'], 'readwrite')
+          .transaction(['clips'], 'readonly')
           .objectStore('clips');
 
         const request = objectStore
-          .index('text')
-          .get(IDBKeyRange.only([clip.plainText, clip.htmlText]));
+          .index('plainText')
+          .get(IDBKeyRange.only(clip.plainText));
 
         request.onerror = _reject;
         request.onsuccess = () => resolve(request.result);
@@ -163,15 +163,9 @@ export class IndexedDBService {
       keyPath: 'id'
     });
 
-    objectStore.createIndex('text', ['plainText', 'htmlText'], {
-      unique: true
-    });
-    objectStore.createIndex('type', ['type', 'updatedAt'], {
-      unique: true
-    });
-    objectStore.createIndex('category', ['category', 'updatedAt'], {
-      unique: true
-    });
+    objectStore.createIndex('plainText', 'plainText', { unique: true });
+    objectStore.createIndex('type', ['type', 'updatedAt'], { unique: false });
+    objectStore.createIndex('category', ['category', 'updatedAt']);
     objectStore.createIndex('formats', 'formats', { multiEntry: true });
     objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
     objectStore.createIndex('createdAt', 'createdAt', { unique: false });

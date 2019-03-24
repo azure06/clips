@@ -8,8 +8,8 @@ enum Types {
 }
 
 export default class ClipboardService extends EventEmitter {
-  previousText: string;
-  previousDataURI: string;
+  private previousText: string;
+  private previousFile?: Buffer;
 
   constructor() {
     super();
@@ -26,6 +26,7 @@ export default class ClipboardService extends EventEmitter {
       if (
         formats.find(format => format.includes('text')) &&
         !formats.find(format => format.includes('image')) &&
+        plainText.trim() !== '' &&
         plainText !== this.previousText
       ) {
         this.previousText = plainText;
@@ -40,9 +41,9 @@ export default class ClipboardService extends EventEmitter {
         });
       } else if (
         formats.find(format => format.includes('image')) &&
-        image.toDataURL() !== this.previousDataURI
+        !image.getBitmap().equals(this.previousFile || new Uint8Array())
       ) {
-        this.previousDataURI = image.toDataURL();
+        this.previousFile = image.toBitmap();
         this.emit('clipboard-change', {
           plainText:
             plainText || image.toDataURL({ scaleFactor: 0.2 }).slice(-25),

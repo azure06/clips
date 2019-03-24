@@ -14,7 +14,7 @@ interface ViewDetails {
 
 export interface Clip extends Partial<ViewDetails>, Base {
   plainText: string;
-  htmlText: string;
+  htmlText?: string;
   dataURI?: string;
   category: 'none' | 'starred';
   type: 'text' | 'image';

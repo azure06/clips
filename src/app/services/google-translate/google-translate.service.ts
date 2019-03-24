@@ -21,7 +21,10 @@ export class GoogleTranslateService {
       text,
       options: options || this.preferencesService.getAppSettings().translate
     });
-    const translation = (await this.es.ipcRenderer.once(eventId)).data;
-    return translation.text;
+
+    return this.es.ipcRenderer
+      .once(eventId)
+      .then(({ data }) => data.translation.text)
+      .catch(({ error }) => 'Payload too large');
   }
 }

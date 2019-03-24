@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { first, scan } from 'rxjs/operators';
+import { first } from 'rxjs/operators';
 // tslint:disable-next-line: no-submodule-imports
 import uuidv4 from 'uuid/v4';
 import { Clip } from '../../models/models';
@@ -27,12 +27,13 @@ export class ClipboardService {
   ) {
     this.electronService.ipcRenderer.on('clipboard-change', (event, clip) => {
       this.handleClipboardChangeEvent(clip);
-      console.error(clip);
     });
 
     this.googleDriveSerice
       .getDriveChangeAsObservable()
-      .subscribe(clips => clips.forEach(clip => this.addClip(clip)));
+      .subscribe(clips =>
+        clips.forEach(clip => this.handleClipboardChangeEvent(clip, false))
+      );
   }
 
   /**
@@ -41,7 +42,7 @@ export class ClipboardService {
    *
    * @param clip Clipboard Item
    */
-  private async handleClipboardChangeEvent(clip: Clip) {
+  private async handleClipboardChangeEvent(clip: Clip, addToDrive?: boolean) {
     const result = await this.indexDBService.findClip(clip);
     result
       ? this.modifyClip(
@@ -52,6 +53,10 @@ export class ClipboardService {
           true
         )
       : this.addClip(clip);
+    // If comes from google drive just add to indexedDB
+    if (addToDrive) {
+      this.googleDriveSerice.addToDrive(clip);
+    }
   }
 
   public async getClipsFromIdbAndSetInState({
@@ -60,7 +65,7 @@ export class ClipboardService {
     keyRange
   }: {
     limit?: number;
-    index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
+    index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     keyRange?: IDBKeyRange;
   }) {
     const clips = await this.indexDBService.getClips({
@@ -76,7 +81,7 @@ export class ClipboardService {
   public async getClipsFromIdb(
     options: {
       limit?: number;
-      index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
+      index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
       keyRange?: IDBKeyRange;
     } = {}
   ) {
@@ -102,7 +107,7 @@ export class ClipboardService {
     keyRange
   }: {
     limit?: number;
-    index?: 'text' | 'type' | 'category' | 'updatedAt' | 'createdAt';
+    index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     keyRange?: IDBKeyRange;
   }) {
     this.ngZone.run(() => {
@@ -112,12 +117,11 @@ export class ClipboardService {
 
   public async addClip(clip: Clip) {
     // Add to IndexedDB
-    clip = { ...clip, id: uuidv4() };
+    clip = { ...clip, id: clip.id || uuidv4() };
     await this.indexDBService.addClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
     });
-    this.googleDriveSerice.addToDrive(clip);
   }
 
   public async modifyClip(clip: Clip, sort?: boolean) {
