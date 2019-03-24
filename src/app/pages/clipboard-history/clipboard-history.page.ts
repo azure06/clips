@@ -66,6 +66,10 @@ export class ClipboardHistoryPage {
     this.clipboardService.removeClip(clip);
   }
 
+  copyToClipboard(data) {
+    this.clipboardService.copyToClipboard(data);
+  }
+
   async translateText(clip: Clip): Promise<void> {
     this.modifyClip({
       ...clip,

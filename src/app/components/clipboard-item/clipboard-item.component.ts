@@ -18,6 +18,7 @@ export class ClipboardItemComponent {
   @Output() removeClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
+  @Output() copyToClipboard = new EventEmitter();
   public view: 'plainView' | 'htmlView' = 'plainView';
   public hasMouseEntered = false;
   public isTranslating = false;
@@ -32,7 +33,17 @@ export class ClipboardItemComponent {
     this.view = view;
   }
 
-  onClick(event: Event): void {}
+  onClick(event: Event): void {
+    this.copyToClipboard.emit({
+      type: this.clip.type,
+      content:
+        this.clip.type === 'text'
+          ? this.view === 'plainView'
+            ? this.clip.translationView || this.clip.plainText
+            : this.clip.htmlText
+          : this.clip.dataURI
+    });
+  }
 
   onMouseEnter(event: MouseEvent) {
     this.hasMouseEntered = true;

@@ -1,4 +1,4 @@
-import { clipboard } from 'electron';
+import { clipboard, nativeImage } from 'electron';
 import { EventEmitter } from 'events';
 
 enum Types {
@@ -60,5 +60,17 @@ export default class ClipboardService extends EventEmitter {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     this.watchClipboard();
+  }
+
+  copyToClipboard({
+    type,
+    content
+  }: {
+    type: 'text' | 'image';
+    content: string;
+  }) {
+    type === 'image'
+      ? clipboard.writeImage(nativeImage.createFromDataURL(content))
+      : clipboard.writeText(content);
   }
 }

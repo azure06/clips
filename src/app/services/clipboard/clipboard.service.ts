@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { first } from 'rxjs/operators';
+import { first, scan } from 'rxjs/operators';
 // tslint:disable-next-line: no-submodule-imports
 import uuidv4 from 'uuid/v4';
 import { Clip } from '../../models/models';
@@ -21,15 +21,15 @@ export class ClipboardService {
   constructor(
     private electronService: ElectronService,
     private indexDBService: IndexedDBService,
-    private googleDriveSerice: GoogleDriveService,
+    private googleDriveService: GoogleDriveService,
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {
     this.electronService.ipcRenderer.on('clipboard-change', (event, clip) => {
-      this.handleClipboardChangeEvent(clip);
+      this.handleClipboardChangeEvent(clip, true);
     });
 
-    this.googleDriveSerice
+    this.googleDriveService
       .getDriveChangeAsObservable()
       .subscribe(clips =>
         clips.forEach(clip => this.handleClipboardChangeEvent(clip, false))
@@ -42,7 +42,7 @@ export class ClipboardService {
    *
    * @param clip Clipboard Item
    */
-  private async handleClipboardChangeEvent(clip: Clip, addToDrive?: boolean) {
+  private async handleClipboardChangeEvent(clip: Clip, addToDrive: boolean) {
     const result = await this.indexDBService.findClip(clip);
     result
       ? this.modifyClip(
@@ -53,9 +53,10 @@ export class ClipboardService {
           true
         )
       : this.addClip(clip);
+
     // If comes from google drive just add to indexedDB
     if (addToDrive) {
-      this.googleDriveSerice.addToDrive(clip);
+      this.googleDriveService.addToDrive(clip);
     }
   }
 
@@ -136,5 +137,12 @@ export class ClipboardService {
     this.ngZone.run(() => {
       this.store.dispatch(new RemoveClip({ clip }));
     });
+  }
+
+  public async copyToClipboard(data: {
+    type: 'text' | 'image';
+    content: string;
+  }) {
+    this.electronService.ipcRenderer.send('copy-to-clipboard', data);
   }
 }

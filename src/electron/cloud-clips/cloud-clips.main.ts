@@ -157,6 +157,12 @@ const handleClipboard = () => {
   clipboardService.on('clipboard-change', clipboard =>
     mainWindow.webContents.send('clipboard-change', clipboard)
   );
+  ipcMain.on('copy-to-clipboard', (event, data) => {
+    clipboardService.copyToClipboard(data);
+    if (mainWindow.isVisible()) {
+      mainWindow.hide();
+    }
+  });
 };
 
 const createMainWindow = () => {
@@ -185,10 +191,6 @@ const createMainWindow = () => {
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
   }
-  // On moved
-  mainWindow.on('moved', (event, data) => {
-    console.error(event, data);
-  });
 
   mainWindow.webContents.once('did-finish-load', () => {
     handleClipboard();
