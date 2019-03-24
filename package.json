@@ -47,7 +47,8 @@
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "icon": "build/icon.ico"
     }
   },
   "private": true,
@@ -82,7 +83,6 @@
     "googleapis": "^37.2.0",
     "material-design-icons": "^3.0.1",
     "moment": "^2.24.0",
-    "npm": "^6.8.0",
     "rxjs": "~6.3.3",
     "uuid": "^3.3.2",
     "zone.js": "~0.8.29"

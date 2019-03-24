@@ -4,25 +4,9 @@ import { GaxiosResponse } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
 // tslint:disable-next-line: no-submodule-imports
 import { drive_v3, google } from 'googleapis';
-import * as os from 'os';
 import * as path from 'path';
-import {
-  BehaviorSubject,
-  combineLatest,
-  from,
-  interval,
-  of,
-  Subject
-} from 'rxjs';
-import {
-  buffer,
-  catchError,
-  filter,
-  map,
-  mergeMap,
-  scan,
-  tap
-} from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, from, interval, Subject } from 'rxjs';
+import { buffer, filter, mergeMap, scan, tap } from 'rxjs/operators';
 import * as stream from 'stream';
 import { Clip } from './../../models/models';
 
@@ -36,29 +20,35 @@ const createStream = (str: string) => {
 };
 
 // tslint:disable: max-classes-per-file
-class DriveHandler {
+export class DriveHandler {
   private static _driveHandler = new DriveHandler();
+  private static _drive: drive_v3.Drive;
   private pageTokenBehaviorSubject: BehaviorSubject<
     string
   > = new BehaviorSubject<string>('');
-  private drive: drive_v3.Drive;
 
   private get driveHandler() {
     return DriveHandler._driveHandler;
   }
-  /**
-   * Set drive options before start watching
-   *
-   */
-  public setDriveOptions({
-    drive,
-    pageToken
-  }: {
-    drive: drive_v3.Drive;
-    pageToken: string;
-  }) {
-    this.driveHandler.drive = drive;
+
+  public get drive() {
+    return DriveHandler._drive;
+  }
+
+  public setDrive(googleOAuth2Client: OAuth2Client) {
+    DriveHandler._drive = google.drive({
+      version: 'v3',
+      auth: googleOAuth2Client
+    });
+  }
+
+  public setPageToken(pageToken: string) {
     this.driveHandler.pageTokenBehaviorSubject.next(pageToken);
+  }
+
+  public async getStartPageToken() {
+    return (await this.driveHandler.drive.changes.getStartPageToken({})).data
+      .startPageToken;
   }
 
   public pageTokenAsObservable() {
@@ -100,12 +90,8 @@ class DriveHandler {
 }
 
 export default class GoogleDriveService {
-  private drive: drive_v3.Drive;
   private clipSubject = new Subject<Clip>();
-
-  constructor(private googleOAuth2Client: OAuth2Client) {
-    this.drive = google.drive({ version: 'v3', auth: googleOAuth2Client });
-  }
+  constructor(private driveHandler: DriveHandler) {}
 
   private observeFileAdder() {
     const addFileToDrive = async (
@@ -128,7 +114,7 @@ export default class GoogleDriveService {
       };
 
       console.log('Connecting... Adding file to Drive');
-      return this.drive.files.create(({
+      return this.driveHandler.drive.files.create(({
         resource: fileMetadata,
         media,
         fields: 'id'
@@ -163,7 +149,7 @@ export default class GoogleDriveService {
       }
 
       try {
-        const response = await this.drive.files.get(
+        const response = await this.driveHandler.drive.files.get(
           { fileId, alt: 'media' },
           { responseType: 'stream' }
         );
@@ -185,41 +171,16 @@ export default class GoogleDriveService {
     });
   }
 
-  /**
-   * Observe drive changes
-   *
-   */
-  private observeDriveChanges(pageToken: string) {
-    const driveHandler = new DriveHandler();
-    driveHandler.setDriveOptions({
-      drive: this.drive,
-      pageToken
-    });
-    return driveHandler.getDriveAsObservable();
-  }
-
-  public async getUserInfo() {
-    return this.drive.about.get({ fields: 'user' });
-  }
-
-  /**
-   * Add clip to drive
-   *
-   */
   public async addClipToDrive(clip: Clip) {
     this.clipSubject.next(clip);
   }
 
-  public async getStartPageToken() {
-    return (await this.drive.changes.getStartPageToken({})).data.startPageToken;
+  public async getUserInfo() {
+    return this.driveHandler.drive.about.get({ fields: 'user' });
   }
 
-  public pageTokenAsObservable() {
-    return new DriveHandler().pageTokenAsObservable();
-  }
-
-  public listenForChanges(pageToken: string) {
-    const driveObservable = this.observeDriveChanges(pageToken);
+  public listenForChanges() {
+    const driveObservable = this.driveHandler.getDriveAsObservable();
     const fileAdderObservable = this.observeFileAdder();
     return combineLatest(driveObservable, fileAdderObservable).pipe(
       filter(([drive, addedFiles]) => drive.changes.length > 0),

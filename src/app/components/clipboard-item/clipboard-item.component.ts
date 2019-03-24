@@ -54,6 +54,7 @@ export class ClipboardItemComponent {
   }
 
   onAddToBookmarkClick(event: Event): void {
+    event.stopPropagation();
     this.modifyClip.emit({
       ...this.clip,
       category: this.clip.category === 'starred' ? 'none' : 'starred'
@@ -61,10 +62,12 @@ export class ClipboardItemComponent {
   }
 
   onRemoveClick(event: Event): void {
+    event.stopPropagation();
     this.removeClip.emit(this.clip);
   }
 
   onTranslate(event: Event): void {
+    event.stopPropagation();
     this.isTranslating = !this.clip.translationView;
     if (!this.clip.translationView) {
       this.translateText.emit(this.clip);

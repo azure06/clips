@@ -6,13 +6,17 @@ import { Subscription } from 'rxjs';
 import GoogleTranslate from '../services/google-translate/google-translate.service';
 import { electronConfig } from './../electron.config';
 import ClipboardService from './../services/clipboard/clipboard.service';
-import GoogleDriveService from './../services/google-drive/google-drive.service';
+import GoogleDriveService, {
+  DriveHandler
+} from './../services/google-drive/google-drive.service';
 import GoogleOAuth2Service from './../services/oauth2/google-oauth2.service';
 
 let mainWindow: Electron.BrowserWindow = null;
 
 const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
-  const googleDriveService = new GoogleDriveService(oAuth2Client);
+  const driveHandler = new DriveHandler();
+  const googleDriveService = new GoogleDriveService(driveHandler);
+  driveHandler.setDrive(oAuth2Client);
   let subscription: Subscription;
 
   ipcMain.on('add-to-drive', async (event, clip) => {
@@ -21,18 +25,19 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
 
   const unsubscribe = () => {
     if (subscription && subscription.unsubscribe) {
+      console.log('unsubscribe');
       subscription.unsubscribe();
     }
     return Promise.resolve();
   };
   const subscribe = async (pageToken?: string) => {
-    const _pageToken =
-      pageToken || (await googleDriveService.getStartPageToken());
+    driveHandler.setPageToken(
+      pageToken || (await driveHandler.getStartPageToken())
+    );
 
     // Unsubscribe if necessary
     unsubscribe();
-
-    subscription = googleDriveService.listenForChanges(_pageToken).subscribe(
+    subscription = googleDriveService.listenForChanges().subscribe(
       clips =>
         mainWindow.webContents.send('google-drive-change', {
           data: { clips }
@@ -45,7 +50,7 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
     );
 
     subscription.add(
-      googleDriveService
+      driveHandler
         .pageTokenAsObservable()
         .subscribe(pageToken =>
           mainWindow.webContents.send('page-token', { pageToken })
