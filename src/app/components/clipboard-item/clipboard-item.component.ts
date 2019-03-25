@@ -30,6 +30,7 @@ export class ClipboardItemComponent {
   }
 
   switchView(view: 'plainView' | 'htmlView') {
+    event.stopPropagation();
     this.view = view;
   }
 

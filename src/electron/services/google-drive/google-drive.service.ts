@@ -183,6 +183,7 @@ export default class GoogleDriveService {
     const driveObservable = this.driveHandler.getDriveAsObservable();
     const fileAdderObservable = this.observeFileAdder();
     return combineLatest(driveObservable, fileAdderObservable).pipe(
+      tap(([drive, addedFiles]) => console.log(drive.changes, addedFiles)),
       filter(([drive, addedFiles]) => drive.changes.length > 0),
       mergeMap(async ([drive, addedFiles]) => {
         const filePaths = await Promise.all(
