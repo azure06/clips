@@ -5,8 +5,17 @@ import { OAuth2Client } from 'google-auth-library';
 // tslint:disable-next-line: no-submodule-imports
 import { drive_v3, google } from 'googleapis';
 import * as path from 'path';
-import { BehaviorSubject, combineLatest, from, interval, Subject } from 'rxjs';
-import { buffer, filter, mergeMap, scan, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, from, Subject } from 'rxjs';
+import {
+  bufferTime,
+  concatMap,
+  delay,
+  filter,
+  mergeMap,
+  scan,
+  startWith,
+  tap
+} from 'rxjs/operators';
 import * as stream from 'stream';
 import { Clip } from './../../models/models';
 
@@ -63,27 +72,27 @@ export class DriveHandler {
   public getDriveAsObservable() {
     let changeCount = 0;
     return this.driveHandler.pageTokenBehaviorSubject.asObservable().pipe(
-      mergeMap(async _pageToken => {
-        console.log('Watching for changes... ', (changeCount += 1));
-        const {
-          newStartPageToken,
-          nextPageToken,
-          changes
-        } = (await this.driveHandler.drive.changes.list({
-          spaces: 'appDataFolder',
-          pageToken: _pageToken,
-          fields: '*'
-        })).data;
-
-        setTimeout(
-          () =>
-            this.driveHandler.pageTokenBehaviorSubject.next(
-              nextPageToken || newStartPageToken
-            ),
-          BUFFER_TIME
-        );
-        return { changes, pageToken: nextPageToken || newStartPageToken };
-      }),
+      tap(() => console.log('Watching for changes...', (changeCount += 1))),
+      concatMap(pageToken =>
+        from(
+          (async () => {
+            const {
+              newStartPageToken,
+              nextPageToken,
+              changes
+            } = (await this.driveHandler.drive.changes.list({
+              spaces: 'appDataFolder',
+              pageToken,
+              fields: '*'
+            })).data;
+            return { changes, pageToken: nextPageToken || newStartPageToken };
+          })()
+        ).pipe(delay(BUFFER_TIME))
+      ),
+      tap(({ pageToken }) =>
+        this.driveHandler.pageTokenBehaviorSubject.next(pageToken)
+      ),
+      tap(({ changes }) => console.log('Changes: ', changes.length)),
       filter(({ changes }) => changes.length > 0)
     );
   }
@@ -113,7 +122,7 @@ export default class GoogleDriveService {
         body: createStream(JSON.stringify(clipMap))
       };
 
-      console.log('Connecting... Adding file to Drive');
+      console.log('Adding file to Drive');
       return this.driveHandler.drive.files.create(({
         resource: fileMetadata,
         media,
@@ -122,7 +131,7 @@ export default class GoogleDriveService {
     };
 
     return this.clipSubject.asObservable().pipe(
-      buffer(interval(BUFFER_TIME)),
+      bufferTime(BUFFER_TIME),
       filter(clip => clip.length > 0),
       mergeMap(clips => from(addFileToDrive(clips))),
       scan(
@@ -180,10 +189,13 @@ export default class GoogleDriveService {
   }
 
   public listenForChanges() {
-    const driveObservable = this.driveHandler.getDriveAsObservable();
-    const fileAdderObservable = this.observeFileAdder();
+    const driveObservable = this.driveHandler
+      .getDriveAsObservable()
+      .pipe(startWith({ changes: [], token: '' }));
+    const fileAdderObservable = this.observeFileAdder().pipe(startWith({}));
+
     return combineLatest(driveObservable, fileAdderObservable).pipe(
-      tap(([drive, addedFiles]) => console.log(drive.changes, addedFiles)),
+      tap(latest => console.log('Latest... ', latest)),
       filter(([drive, addedFiles]) => drive.changes.length > 0),
       mergeMap(async ([drive, addedFiles]) => {
         const filePaths = await Promise.all(
