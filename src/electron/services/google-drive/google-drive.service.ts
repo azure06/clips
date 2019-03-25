@@ -87,12 +87,13 @@ export class DriveHandler {
             })).data;
             return { changes, pageToken: nextPageToken || newStartPageToken };
           })()
-        ).pipe(delay(BUFFER_TIME))
+        ).pipe(delay(BUFFER_TIME / 2))
       ),
+      delay(BUFFER_TIME / 2), // Important in case changes detected before upload complete
       tap(({ pageToken }) =>
         this.driveHandler.pageTokenBehaviorSubject.next(pageToken)
       ),
-      tap(({ changes }) => console.log('Changes: ', changes.length)),
+      tap(({ changes }) => console.log('Emitted if > 0: ', changes.length)),
       filter(({ changes }) => changes.length > 0)
     );
   }
@@ -195,7 +196,14 @@ export default class GoogleDriveService {
     const fileAdderObservable = this.observeFileAdder().pipe(startWith({}));
 
     return combineLatest(driveObservable, fileAdderObservable).pipe(
-      tap(latest => console.log('Latest... ', latest)),
+      tap(([{ changes }, addedFiles]) =>
+        console.log(
+          'Drive: ',
+          changes.length,
+          'Added Files: ',
+          Object.keys(addedFiles)
+        )
+      ),
       filter(([drive, addedFiles]) => drive.changes.length > 0),
       mergeMap(async ([drive, addedFiles]) => {
         const filePaths = await Promise.all(
