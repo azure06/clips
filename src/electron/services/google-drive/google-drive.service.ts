@@ -198,9 +198,9 @@ export default class GoogleDriveService {
     return combineLatest(driveObservable, fileAdderObservable).pipe(
       tap(([{ changes }, addedFiles]) =>
         console.log(
-          'Drive: ',
+          'Drive changes: ',
           changes.length,
-          'Added Files: ',
+          ', Files from current device: ',
           Object.keys(addedFiles)
         )
       ),
