@@ -31,14 +31,13 @@
     text-transform: uppercase;
     font-size: 2rem;
     font-weight: 900;
-    color: var(--text-color--light);
+    color: var(--ion-color-tertiary);
     text-align: center;
   }
   h2 {
-    text-transform: uppercase;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+    color: var(--ion-color-primary);
     font-weight: 300;
-    color: var(--text-color--extra-light);
   }
   h4 {
     line-height: 1.2;

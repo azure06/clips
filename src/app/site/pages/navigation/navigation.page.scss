@@ -4,14 +4,14 @@
   margin-bottom: 2px;
   box-shadow: 0 0 3px 0px rgba(0, 5, 35, 0.09);
   h2 {
-    padding: 10px;
-    font-weight: 900;
-    margin-right: 15px;
-    font-size: 1.05rem;
+    font-weight: 700;
+    margin-right: 3rem;
+    font-size: 1rem;
     text-transform: uppercase;
-    color: var(--ion-color-tertiary);
+    color: var(--text-color--light);
   }
   img {
+    filter: brightness(2.5) hue-rotate(-10deg) saturate(0.5);
     width: 54px;
   }
 
