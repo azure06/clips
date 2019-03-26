@@ -88,8 +88,8 @@ export class PreferencesService {
       },
       language: {},
       bounds: settings.bounds || {
-        height: 800,
-        width: 540,
+        height: 540,
+        width: 800,
         x: -1,
         y: -1
       },

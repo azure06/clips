@@ -7,6 +7,7 @@ import {
   Tray
 } from 'electron';
 import * as path from 'path';
+import './auto-launcher';
 import clips, { isAvailable } from './clips/clips';
 
 const appLocked = app.requestSingleInstanceLock();

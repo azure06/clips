@@ -77,6 +77,7 @@
     "@ngx-share/buttons": "^7.1.2",
     "@ngx-share/core": "^7.1.2",
     "@vitalets/google-translate-api": "^2.7.0",
+    "auto-launch": "^5.0.5",
     "core-js": "^2.5.4",
     "electron-is-dev": "^1.0.1",
     "google-auth-library": "^3.1.0",

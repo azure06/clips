@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { PreferencesService } from 'src/app/services/preferences/preferences.service';
-import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
+import { PreferencesService } from '../../services/preferences/preferences.service';
 
 @Component({
   selector: 'app-system',
