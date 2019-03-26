@@ -4,7 +4,7 @@ A hybrid clipboard application
 
 Infiniti Clips is a free, open source hybrid clipboard application available for Windows and macOS.
 
-![alt text](src/assets/images/app-images.png "Infiniti Clips")
+![alt text](src/assets/images/app-git.png "Infiniti Clips")
 
 
 Download
