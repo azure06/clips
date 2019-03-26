@@ -30,6 +30,7 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
     return Promise.resolve();
   };
   const subscribe = async (pageToken?: string) => {
+    console.error('Page token: ', pageToken);
     driveHandler.setPageToken(
       pageToken || (await driveHandler.getStartPageToken())
     );
@@ -171,26 +172,27 @@ const handleClipboard = () => {
 
 const createMainWindow = () => {
   const isDevelopment = (isDev as any).default;
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    minWidth: 320,
-    minHeight: 320,
-    frame: false,
-    show: false
-  });
-  mainWindow.setResizable(true);
-  // mainWindow.focus();
   const icon = nativeImage.createFromPath(
     path.join(`${__dirname}`, '../../assets/icon/clip.png')
   );
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    minWidth: 480,
+    minHeight: 320,
+    frame: false,
+    show: false,
+    resizable: true,
+    skipTaskbar: true,
+    icon
+  });
+  // mainWindow.focus();
   // and load the index.html of the app. try -> loadURL(`file://${__dirname}/index.html`)
   mainWindow.loadURL(
     isDevelopment
       ? 'http://localhost:4200'
       : path.join(`file://${__dirname}`, '../../index.html')
   );
-  // Set icon.
-  mainWindow.setIcon(icon);
+
   if (isDevelopment) {
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
@@ -205,8 +207,6 @@ const createMainWindow = () => {
     event.preventDefault();
     shell.openExternal(url);
   });
-
-  mainWindow.setSkipTaskbar(true);
   // Emitted when the window is closed.
   mainWindow.on('closed', () => (mainWindow = null));
 };

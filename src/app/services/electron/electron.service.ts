@@ -145,6 +145,12 @@ class MainWindow {
       : console.warn('Electron is not available');
   }
 
+  public setSkipTaskbar(skip: boolean) {
+    this.mainWindow
+      ? this.mainWindow.setSkipTaskbar(skip)
+      : console.warn('Electron is not available');
+  }
+
   public center() {
     this.mainWindow
       ? this.mainWindow.center()

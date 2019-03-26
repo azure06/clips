@@ -61,6 +61,9 @@ export class PreferencesService {
       }
     });
 
+    const { closeOnBlur } = this.getAppSettings().general;
+    es.mainWindow.setSkipTaskbar(closeOnBlur);
+
     const { x, y, height, width } = this.getAppSettings().bounds;
     if (x > 0 && y > 0) {
       es.mainWindow.setPosition(x, y, true);
@@ -103,9 +106,11 @@ export class PreferencesService {
     const oldSettings = this.getAppSettings();
     const newSettings = { ...oldSettings, ...partialSettings };
     localStorage.setItem('app-settings', JSON.stringify(newSettings));
-    this.es.ipcRenderer.send('app-settings', {
-      oldSettings,
-      newSettings
-    });
+    if (partialSettings.general || partialSettings.hotkeys) {
+      this.es.ipcRenderer.send('app-settings', {
+        oldSettings,
+        newSettings
+      });
+    }
   }
 }

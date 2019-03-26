@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { ElectronService } from 'src/app/services/electron/electron.service';
 import { PreferencesService } from '../../services/preferences/preferences.service';
 
 @Component({
@@ -35,6 +36,7 @@ export class SystemPage {
 
   constructor(
     public router: Router,
+    public es: ElectronService,
     public preferencesService: PreferencesService
   ) {
     this.general = preferencesService.getAppSettings().general;
@@ -42,11 +44,14 @@ export class SystemPage {
     this.hotkeys = preferencesService.getAppSettings().hotkeys;
   }
 
-  setGeneralSettings() {
+  setGeneralSettings(value?: 'close-on-blur') {
+    if (value === 'close-on-blur') {
+      this.es.mainWindow.setSkipTaskbar(this.general.closeOnBlur);
+    }
     this.preferencesService.setAppSettings({ general: this.general });
   }
 
-  setGoogleTranslateOptions(value: string) {
+  setGoogleTranslateOptions() {
     this.preferencesService.setAppSettings({ translate: this.translate });
   }
 

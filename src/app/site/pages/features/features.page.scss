@@ -5,9 +5,6 @@
 .space-evenly {
   justify-content: space-evenly;
 }
-.flex-start {
-  align-items: flex-start;
-}
 .flex-wrap {
   flex-wrap: wrap;
 }
@@ -28,14 +25,20 @@
 
 //  Header
 .header {
-  padding: 3vw 6vw 0 6vw;
+  padding: 3vw 6vw;
   min-height: 540px;
   h1 {
     text-transform: uppercase;
     font-size: 2rem;
     font-weight: 900;
-    color: var(--ion-color-tertiary);
+    color: var(--text-color--light);
     text-align: center;
+  }
+  h2 {
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--text-color--extra-light);
   }
   h4 {
     line-height: 1.2;
@@ -53,15 +56,6 @@
     margin: 1vw;
     min-width: 240px;
     min-height: 60px;
-  }
-  div:last-child {
-    padding: 2vw;
-    img {
-      box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.07);
-      width: 380px;
-      height: auto;
-      border-radius: 10px;
-    }
   }
 }
 

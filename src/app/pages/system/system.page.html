@@ -22,13 +22,13 @@
           <ion-item>
             <ion-label
               ><p>
-                Close on focus-out
+                Hide on focus-out
               </p>
             </ion-label>
             <ion-toggle
               color="primary"
               [(ngModel)]="general.closeOnBlur"
-              (ngModelChange)="setGeneralSettings($event)"
+              (ngModelChange)="setGeneralSettings('close-on-blur')"
             ></ion-toggle>
           </ion-item>
           <ion-item>
