@@ -22,6 +22,18 @@
           <ion-item>
             <ion-label
               ><p>
+                Close on focus-out
+              </p>
+            </ion-label>
+            <ion-toggle
+              color="primary"
+              [(ngModel)]="general.closeOnBlur"
+              (ngModelChange)="setGeneralSettings($event)"
+            ></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label
+              ><p>
                 Hide title bar
               </p>
             </ion-label>

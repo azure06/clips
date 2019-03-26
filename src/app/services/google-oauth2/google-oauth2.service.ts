@@ -42,6 +42,7 @@ export class GoogleOAuth2Service {
         this._driveSync = drive.sync;
       })
       .catch(error => () => {
+        console.error('Sync error');
         this.preferencesService.setAppSettings({
           drive: { ...currentDrive, sync: false }
         });
@@ -102,7 +103,13 @@ export class GoogleOAuth2Service {
     this.es.ipcRenderer.send('sign-in');
     return this.es.ipcRenderer
       .once('sign-in-result')
-      .then(() => (this._isAuthenticated = true))
+      .then(() => {
+        // On sign-in reset page token
+        this.preferencesService.setAppSettings({
+          drive: { pageToken: undefined, sync: false }
+        });
+        this._isAuthenticated = true;
+      })
       .catch(error => console.error('Sign-in error ', error));
   }
 

@@ -21,6 +21,7 @@ export class SystemPage {
   public general: {
     startup: boolean;
     hideTitleBar: boolean;
+    closeOnBlur: boolean;
   };
 
   public translate: {

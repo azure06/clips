@@ -7,6 +7,7 @@ import { ElectronService } from '../electron/electron.service';
 interface General {
   startup: boolean;
   hideTitleBar: boolean;
+  closeOnBlur: boolean;
 }
 interface Translate {
   from: string;
@@ -54,7 +55,8 @@ export class PreferencesService {
       });
 
     es.mainWindow.onBlur().subscribe(event => {
-      if (this.es.mainWindow.isVisible() && !this.keepOpen) {
+      const { closeOnBlur } = this.getAppSettings().general;
+      if (this.es.mainWindow.isVisible() && !this.keepOpen && closeOnBlur) {
         this.es.mainWindow.hide();
       }
     });
@@ -74,6 +76,7 @@ export class PreferencesService {
     return {
       general: settings.general || {
         startup: true,
+        closeOnBlur: true,
         hideTitleBar: false
       },
       translate: settings.translate || {
