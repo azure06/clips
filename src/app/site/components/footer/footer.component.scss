@@ -1,0 +1,14 @@
+.footer {
+  a,
+  p {
+    color: var(--text-color--extra-light);
+    font-size: 0.7rem;
+  }
+  img {
+    width: 160px;
+  }
+}
+
+.spacer {
+  flex: 1 1 auto;
+}

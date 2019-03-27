@@ -1,6 +1,7 @@
 import { Component, Input, ViewChild } from '@angular/core';
 import {
   FormControl,
+  FormGroup,
   FormGroupDirective,
   NgForm,
   Validators
@@ -29,14 +30,33 @@ export class ContractErrorStateMatcher implements ErrorStateMatcher {
   styleUrls: ['./contact.page.scss']
 })
 export class ContactPage {
-  @Input()
-  matcher = new ContractErrorStateMatcher();
-  public nameFormControl = new FormControl('', [Validators.required]);
-  public emailFormControl = new FormControl('', [
-    Validators.required,
-    Validators.email
-  ]);
-  public contentFormControl = new FormControl('', [Validators.required]);
+  public matcher = new ContractErrorStateMatcher();
+  public form = new FormGroup({
+    nameFormControl: new FormControl('', [Validators.required]),
+    emailFormControl: new FormControl('', [
+      Validators.required,
+      Validators.email
+    ]),
+    contentFormControl: new FormControl('', [Validators.required])
+  });
+
+  get nameFormControl(): any {
+    return this.form.get('nameFormControl');
+  }
+
+  get emailFormControl(): any {
+    return this.form.get('emailFormControl');
+  }
+
+  get contentFormControl(): any {
+    return this.form.get('contentFormControl');
+  }
 
   constructor() {}
+
+  public send() {
+    if (this.form.valid) {
+      console.error('valid');
+    }
+  }
 }

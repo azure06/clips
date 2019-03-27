@@ -8,10 +8,10 @@
     margin-right: 3rem;
     font-size: 1rem;
     text-transform: uppercase;
-    color: var(--text-color--light);
+    color: var(--ion-color-tertiary);
   }
   img {
-    filter: brightness(2.5) hue-rotate(-10deg) saturate(0.5);
+    // filter: brightness(2.5) hue-rotate(-10deg) saturate(0.5);
     width: 54px;
   }
 
@@ -27,5 +27,11 @@
 
 .container.router {
   position: relative;
-  height: calc(100% - 66px);
+
+  @media only screen and (max-width: 599px) {
+    height: calc(100% - 56px);
+  }
+  @media only screen and (min-width: 600px) {
+    height: calc(100% - 66px);
+  }
 }

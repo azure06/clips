@@ -1,63 +1,68 @@
 <ion-content class="light-theme">
-  <div class="container form">
-    <mat-card class="card">
-      <mat-card-title class="title"> Contact us </mat-card-title>
-      <mat-card-subtitle class="subt">
-        For any kind of questions
-      </mat-card-subtitle>
-      <mat-card-content class="content">
-        <div class="inputs">
-          <mat-form-field class="field">
-            <input
-              matInput
-              placeholder="Full name"
-              [formControl]="nameFormControl"
-              [errorStateMatcher]="matcher"
-            />
-            <mat-error *ngIf="nameFormControl.hasError('required')">
-              Full name is <strong>required</strong>
-            </mat-error>
-          </mat-form-field>
-          <mat-form-field class="field">
-            <input
-              matInput
-              placeholder="Email Address"
-              [formControl]="emailFormControl"
-              [errorStateMatcher]="matcher"
-            />
-            <mat-error
-              *ngIf="
-                emailFormControl.hasError('email') &&
-                !emailFormControl.hasError('required')
-              "
-            >
-              Please enter a valid email address
-            </mat-error>
-            <mat-error *ngIf="emailFormControl.hasError('required')">
-              Email is <strong>required</strong>
-            </mat-error>
-          </mat-form-field>
-        </div>
+  <div class="wrapper">
+    <div class="container form">
+      <mat-card class="card">
+        <mat-card-title class="title"> Contact us </mat-card-title>
+        <mat-card-subtitle class="subt">
+          For any kind of questions
+        </mat-card-subtitle>
+        <form [formGroup]="form" (ngSubmit)="send()">
+          <mat-card-content class="content">
+            <div class="inputs">
+              <mat-form-field class="field">
+                <input
+                  matInput
+                  placeholder="Full name"
+                  [formControl]="nameFormControl"
+                  [errorStateMatcher]="matcher"
+                />
+                <mat-error *ngIf="nameFormControl.hasError('required')">
+                  Full name is <strong>required</strong>
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field class="field">
+                <input
+                  matInput
+                  placeholder="Email Address"
+                  [formControl]="emailFormControl"
+                  [errorStateMatcher]="matcher"
+                />
+                <mat-error
+                  *ngIf="
+                    emailFormControl.hasError('email') &&
+                    !emailFormControl.hasError('required')
+                  "
+                >
+                  Please enter a valid email address
+                </mat-error>
+                <mat-error *ngIf="emailFormControl.hasError('required')">
+                  Email is <strong>required</strong>
+                </mat-error>
+              </mat-form-field>
+            </div>
 
-        <div class="textarea">
-          <mat-form-field class="field">
-            <mat-label>Leave a comment</mat-label>
-            <textarea
-              matInput
-              rows="5"
-              [formControl]="contentFormControl"
-              [errorStateMatcher]="matcher"
-            ></textarea>
-            <mat-error *ngIf="contentFormControl.hasError('required')">
-              Comment is <strong>required</strong>
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </mat-card-content>
-      <mat-card-actions class="actions">
-        <button mat-flat-button color="primary">Send</button>
-      </mat-card-actions>
-      <mat-card-footer> </mat-card-footer>
-    </mat-card>
+            <div class="textarea">
+              <mat-form-field class="field">
+                <mat-label>Leave a comment</mat-label>
+                <textarea
+                  matInput
+                  rows="5"
+                  [formControl]="contentFormControl"
+                  [errorStateMatcher]="matcher"
+                ></textarea>
+                <mat-error *ngIf="contentFormControl.hasError('required')">
+                  Comment is <strong>required</strong>
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+          <mat-card-actions class="actions">
+            <button mat-flat-button color="primary" type="submit">Send</button>
+          </mat-card-actions>
+        </form>
+        <mat-card-footer> </mat-card-footer>
+      </mat-card>
+    </div>
   </div>
+  <app-footer-component></app-footer-component>
 </ion-content>

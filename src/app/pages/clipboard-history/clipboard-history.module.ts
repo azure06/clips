@@ -4,9 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ClipboardItemComponentModule } from '../../components/clipboard-item/clipboard-item.module';
-import { ClipboardBookmarkPageModule } from '../clipboard-bookmark/clipboard-bookmark.module';
-import { ClipboardFinderPageModule } from '../clipboard-finder/clipboard-finder.module';
-import { ClipboardImagesPageModule } from '../clipboard-images/clipboard-images.module';
 import { ClipboardHistoryPage } from './clipboard-history.page';
 
 @NgModule({

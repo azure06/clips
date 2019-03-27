@@ -1,3 +1,11 @@
+.wrapper {
+  @media only screen and (max-width: 599px) {
+    height: calc(100% - 112px);
+  }
+  @media only screen and (min-width: 600px) {
+    height: calc(100% - 128px);
+  }
+}
 .container.form {
   padding: 3rem 1.5rem;
   display: flex;
@@ -46,6 +54,7 @@
       }
     }
     .actions {
+      padding: 1.5rem;
       display: flex;
     }
   }

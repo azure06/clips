@@ -9,6 +9,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { IonicModule } from '@ionic/angular';
 import { ShareButtonModule } from '@ngx-share/button';
 import { AngularMaterialModule } from '../../components/angular-material/angular-material.module';
+import { FooterComponentModule } from '../../components/footer/footer.module';
 import { FeaturesPage } from './features.page';
 
 const routes: Routes = [
@@ -27,7 +28,8 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     FontAwesomeModule,
     HttpClientModule, // (Required) For share counts
-    ShareButtonModule
+    ShareButtonModule,
+    FooterComponentModule
   ],
   declarations: [FeaturesPage]
 })
