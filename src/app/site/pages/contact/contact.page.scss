@@ -1,0 +1,58 @@
+.container.form {
+  padding: 3rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  .card {
+    padding: 2rem 1.7rem;
+    @media only screen and (max-width: 479px) {
+      width: 479px;
+    }
+    @media only screen and (min-width: 480px) and (max-width: 767px) {
+      width: 700px;
+    }
+    @media only screen and (min-width: 768px) and (max-width: 991px) {
+      width: 768px;
+    }
+    // and (max-width: 1999px)
+    @media only screen and (min-width: 992px) {
+      width: 1000px;
+    }
+    .title {
+      font-weight: 900;
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      color: var(--text-color--light);
+    }
+    .subt {
+      font-size: 0.8rem;
+    }
+    .content {
+      padding-top: 2rem;
+      .inputs {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        .field {
+          padding: 1.5rem;
+          flex: 1 1 auto;
+        }
+      }
+      .textarea {
+        padding: 1.5rem;
+        flex: 1 1 auto;
+        .field {
+          width: 100%;
+        }
+      }
+    }
+    .actions {
+      display: flex;
+    }
+  }
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}

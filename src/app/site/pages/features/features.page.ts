@@ -9,8 +9,5 @@ import { faTwitterSquare } from '@fortawesome/free-brands-svg-icons/faTwitterSqu
   styleUrls: ['./features.page.scss']
 })
 export class FeaturesPage {
-  private fbIcon = faFacebookSquare;
-  private pinIcon = faPinterest;
-  private tweetIcon = faTwitterSquare;
   constructor() {}
 }

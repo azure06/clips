@@ -12,7 +12,13 @@
       >
         Features
       </button>
-      <button mat-button disabled>Contact</button>
+      <button
+        mat-button
+        [color]="router.url === '/contact' ? 'primary' : ''"
+        (click)="navigate('contact')"
+      >
+        Contact
+      </button>
       <button mat-button disabled>About</button>
       <!-- This fills the remaining space of the current row -->
       <span class="spacer"></span>
@@ -26,6 +32,7 @@
     </mat-toolbar>
   </div>
 
-  <!-- Router Outlet -->
-  <router-outlet (activate)="onActivate($event)"></router-outlet>
+  <div class="container router">
+    <ion-router-outlet (activate)="onActivate($event)"></ion-router-outlet>
+  </div>
 </ion-content>

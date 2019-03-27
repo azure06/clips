@@ -18,6 +18,15 @@ const routes: Routes = [
         ]
       },
       {
+        path: 'contact',
+        children: [
+          {
+            path: '',
+            loadChildren: '../contact/contact.module#ContactPageModule'
+          }
+        ]
+      },
+      {
         path: 'privacy',
         children: [
           {

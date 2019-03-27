@@ -18,8 +18,8 @@ export class GoogleAnalyticsService {
 
   public setUserId(userId: string) {
     setTimeout(() => {
-      ga('set', 'userId', userId); // Set the user ID using signed-in user_id.
-    });
+      ga('set', 'dimension1', userId);
+    }, 2000);
   }
 
   public emitEvent(

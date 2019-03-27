@@ -25,6 +25,7 @@
   flex: 1 1 auto;
 }
 
-.container/deep/ion-content {
+.container.router {
+  position: relative;
   height: calc(100% - 66px);
 }
