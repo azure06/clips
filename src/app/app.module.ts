@@ -10,7 +10,11 @@ import { StoreModule } from '@ngrx/store';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
+import { AngularFireModule } from '@angular/fire';
+// tslint:disable-next-line: no-submodule-imports
+import { AngularFireFunctionsModule } from '@angular/fire/functions';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { environment } from './environment.config';
 import { RouterGuard } from './guards/router.guard';
 import { ClipboardStoreModule } from './pages/clipboard/store/clipboard.module';
 import { ClipboardServiceModule } from './services/clipboard/clipboard.module';
@@ -29,6 +33,8 @@ import { PreferencesServiceModule } from './services/preferences/preferences.mod
     IonicModule.forRoot(),
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireFunctionsModule,
     PreferencesServiceModule,
     ElectronServiceModule,
     ClipboardServiceModule,

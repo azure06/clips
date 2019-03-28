@@ -19,13 +19,8 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private googleTranslateService: GoogleTranslateService,
-    private googleOAuth2Service: GoogleOAuth2Service,
-    private clipboardService: ClipboardService,
     private navCtrl: NavController,
-    private googleAnalyticsService: GoogleAnalyticsService,
-    private electronService: ElectronService,
-    private router: Router
+    private electronService: ElectronService
   ) {
     this.initializeApp();
   }

@@ -218,6 +218,11 @@ export default class GoogleDriveService {
 
         const reducedClips = filePaths.reduce(
           (acc: { [key: string]: Clip }, filePath) => {
+            if (!fs.existsSync(filePath)) {
+              console.error('File path not exists: ', filePath);
+              return acc;
+            }
+
             const _clips: { [key: string]: Clip } = JSON.parse(
               fs.readFileSync(filePath, 'utf8') || 'null'
             );

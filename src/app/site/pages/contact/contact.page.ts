@@ -1,4 +1,5 @@
 import { Component, Input, ViewChild } from '@angular/core';
+import { AngularFireFunctions } from '@angular/fire/functions';
 import {
   FormControl,
   FormGroup,
@@ -30,6 +31,7 @@ export class ContractErrorStateMatcher implements ErrorStateMatcher {
   styleUrls: ['./contact.page.scss']
 })
 export class ContactPage {
+  constructor(private fns: AngularFireFunctions) {}
   public matcher = new ContractErrorStateMatcher();
   public form = new FormGroup({
     nameFormControl: new FormControl('', [Validators.required]),
@@ -52,11 +54,19 @@ export class ContactPage {
     return this.form.get('contentFormControl');
   }
 
-  constructor() {}
-
   public send() {
     if (this.form.valid) {
-      console.error('valid');
+      const {
+        nameFormControl,
+        emailFormControl,
+        contentFormControl
+      } = this.form.value;
+      const callable = this.fns.httpsCallable('sendContactMail');
+      callable({
+        fullName: nameFormControl,
+        email: emailFormControl,
+        content: contentFormControl
+      });
     }
   }
 }
