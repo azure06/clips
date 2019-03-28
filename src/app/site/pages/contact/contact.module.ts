@@ -5,7 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { AngularMaterialModule } from '../../components/angular-material/angular-material.module';
 import { FooterComponentModule } from '../../components/footer/footer.module';
-import { ContactPage } from './contact.page';
+import { ContactPage, SnackBarComponent } from './contact.page';
 
 const routes: Routes = [
   {
@@ -24,6 +24,7 @@ const routes: Routes = [
     FooterComponentModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [ContactPage]
+  entryComponents: [SnackBarComponent],
+  declarations: [ContactPage, SnackBarComponent]
 })
 export class ContactPageModule {}

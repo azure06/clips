@@ -29,6 +29,24 @@
         >GitHub</a
       >
     </mat-toolbar>
+
+    <div class="nav-bar small">
+      <button
+        mat-button
+        [color]="router.url === '/features' ? 'primary' : ''"
+        (click)="navigate('features')"
+      >
+        Features
+      </button>
+      <button
+        mat-button
+        [color]="router.url === '/contact' ? 'primary' : ''"
+        (click)="navigate('contact')"
+      >
+        Contact
+      </button>
+      <button mat-button disabled>About</button>
+    </div>
   </div>
 
   <div class="container router">

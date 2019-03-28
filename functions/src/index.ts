@@ -11,11 +11,10 @@ export const sendContactMail = functions.https.onCall(
     const { fullName, email, content, to } = data;
     const msgbody = {
       to: to || 'info@infiniticlips.com',
-      from: email,
+      from: 'info@infiniticlips.com',
       subject: `Info - Contact us`,
       text: `${content}\n\nfrom ${fullName} - ${email}`,
-      html: `${content}
-      <strong>from ${fullName}</strong>`
+      html: `${content}<br><strong>from ${fullName} - ${email}</strong>`
     };
     return sendGrid
       .send(msgbody)
