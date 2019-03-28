@@ -25,7 +25,7 @@ export class ContractErrorStateMatcher implements ErrorStateMatcher {
   encapsulation: ViewEncapsulation.None,
   selector: 'snack-bar-component',
   template: `
-    <span class="content">
+    <span class="snackbar-content">
       Message successfully sent! 😀
     </span>
   `,
@@ -34,7 +34,7 @@ export class ContractErrorStateMatcher implements ErrorStateMatcher {
       .snackbar-container {
         background: var(--ion-color-primary);
       }
-      .content {
+      .snackbar-content {
         color: white;
       }
     `
@@ -54,6 +54,7 @@ export class ContactPage {
     private snackBar: MatSnackBar
   ) {}
 
+  public sending: boolean;
   public matcher = new ContractErrorStateMatcher();
   public form = new FormGroup({
     nameFormControl: new FormControl('', [Validators.required]),
@@ -86,6 +87,7 @@ export class ContactPage {
 
   public async send() {
     if (this.form.valid) {
+      this.sending = true;
       const {
         nameFormControl,
         emailFormControl,
@@ -93,7 +95,6 @@ export class ContactPage {
       } = this.form.value;
       const callable = this.fns.httpsCallable('sendContactMail');
       callable({
-        to: 'gabri06e@gmail.com',
         fullName: nameFormControl,
         email: emailFormControl,
         content: contentFormControl
@@ -103,7 +104,8 @@ export class ContactPage {
           this.form.reset();
           this.openSnackBar();
         })
-        .catch(error => console.error(error));
+        .catch(error => console.error(error))
+        .finally(() => (this.sending = false));
     }
   }
 }

@@ -57,7 +57,14 @@
             </div>
           </mat-card-content>
           <mat-card-actions class="actions">
-            <button mat-flat-button color="primary" type="submit">Send</button>
+            <button
+              mat-flat-button
+              color="primary"
+              [disabled]="sending"
+              type="submit"
+            >
+              Send
+            </button>
           </mat-card-actions>
         </form>
         <mat-card-footer> </mat-card-footer>

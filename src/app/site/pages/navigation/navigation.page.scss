@@ -8,13 +8,13 @@
   h2 {
     font-weight: 700;
     margin-right: 3rem;
-    font-size: 1rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
     color: #8a99b8;
   }
   img {
     filter: brightness(2.5) hue-rotate(-10deg) saturate(0.5);
-    width: 54px;
+    width: 48px;
   }
 
   .github {
@@ -49,12 +49,12 @@
   position: relative;
 
   @media only screen and (max-width: 599px) {
-    height: calc(100% - 92px);
+    height: calc(100% - 96px);
   }
-  @media only screen and (max-width: 720px) {
+  @media only screen and (min-width: 600px) and (max-width: 720px) {
     height: calc(100% - 104px);
   }
-  @media only screen and (min-width: 600px) {
+  @media only screen and (min-width: 721px) {
     height: calc(100% - 66px);
   }
 }
