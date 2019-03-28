@@ -9,13 +9,12 @@ sendGrid.setApiKey(environment.sendGridApiKey);
 export const sendContactMail = functions.https.onCall(
   async (data: any, context) => {
     const { fullName, email, content } = data;
-    console.log(fullName, email, content, data);
     const msgbody = {
-      to: 'gabri06e@gmail.com',
-      from: 'noreply@infiniticlips.com',
-      subject: `Contact-us email from ${fullName} - ${email}`,
-      text: content,
-      html: `<strong>${content}</strong>`
+      to: 'info@infiniticlips.com',
+      from: 'info@infiniticlips.com',
+      subject: `Info - Contact us`,
+      text: `${content}\n\nfrom ${fullName} - ${email}`,
+      html: `${content}<strong>from ${fullName} - ${email}</strong>`
     };
     return sendGrid
       .send(msgbody)
