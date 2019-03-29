@@ -19,7 +19,7 @@ import {
 import * as stream from 'stream';
 import { Clip } from './../../models/models';
 
-const BUFFER_TIME = 60000;
+const BUFFER_TIME = 10000;
 
 const createStream = (str: string) => {
   const readableStream = new stream.Readable();
@@ -30,12 +30,6 @@ const createStream = (str: string) => {
 
 // tslint:disable: max-classes-per-file
 export class DriveHandler {
-  private static _driveHandler = new DriveHandler();
-  private static _drive: drive_v3.Drive;
-  private pageTokenBehaviorSubject: BehaviorSubject<
-    string
-  > = new BehaviorSubject<string>('');
-
   private get driveHandler() {
     return DriveHandler._driveHandler;
   }
@@ -43,6 +37,11 @@ export class DriveHandler {
   public get drive() {
     return DriveHandler._drive;
   }
+  private static _driveHandler = new DriveHandler();
+  private static _drive: drive_v3.Drive;
+  private pageTokenBehaviorSubject: BehaviorSubject<
+    string
+  > = new BehaviorSubject<string>('');
 
   public setDrive(googleOAuth2Client: OAuth2Client) {
     DriveHandler._drive = google.drive({
@@ -52,9 +51,8 @@ export class DriveHandler {
   }
 
   public setPageToken(pageToken: string) {
-    this.driveHandler.pageTokenBehaviorSubject.next(pageToken);
+    this.driveHandler.pageTokenBehaviorSubject.next('842652' || pageToken);
   }
-
   public async getStartPageToken() {
     return (await this.driveHandler.drive.changes.getStartPageToken({})).data
       .startPageToken;
@@ -85,6 +83,13 @@ export class DriveHandler {
               pageToken,
               fields: '*'
             })).data;
+
+            console.error(
+              'next page token',
+              nextPageToken,
+              'new',
+              newStartPageToken
+            );
             return { changes, pageToken: nextPageToken || newStartPageToken };
           })()
         ).pipe(delay(BUFFER_TIME / 2))
@@ -93,7 +98,9 @@ export class DriveHandler {
       tap(({ pageToken }) =>
         this.driveHandler.pageTokenBehaviorSubject.next(pageToken)
       ),
-      tap(({ changes }) => console.log('Emitted if > 0: ', changes.length)),
+      tap(({ changes }) =>
+        console.log('Emitted if new files are more then 0: ', changes.length)
+      ),
       filter(({ changes }) => changes.length > 0)
     );
   }
@@ -208,13 +215,17 @@ export default class GoogleDriveService {
       mergeMap(async ([drive, addedFiles]) => {
         const filePaths = await Promise.all(
           drive.changes
-            .filter(
-              change =>
+            .filter(change => {
+              console.error(change);
+              return (
                 !change.removed &&
                 !Object.keys(addedFiles).find(id => id === change.fileId)
-            )
+              );
+            })
             .map(change => this.downloadFile(change.fileId))
         );
+
+        console.error(filePaths);
 
         const reducedClips = filePaths.reduce(
           (acc: { [key: string]: Clip }, filePath) => {
@@ -238,14 +249,14 @@ export default class GoogleDriveService {
           {}
         );
         const clips: Clip[] = Object.values(reducedClips);
-        filePaths.forEach(_path => {
-          fs.unlink(_path, err => {
-            if (err) {
-              throw err;
-            }
-            console.log(`${_path} was deleted.`);
-          });
-        });
+        // filePaths.forEach(_path => {
+        //   fs.unlink(_path, err => {
+        //     if (err) {
+        //       throw err;
+        //     }
+        //     console.log(`${_path} was deleted.`);
+        //   });
+        // });
         return clips;
       }),
       tap(clips =>

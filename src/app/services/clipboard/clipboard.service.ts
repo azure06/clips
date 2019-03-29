@@ -43,20 +43,20 @@ export class ClipboardService {
    * @param clip Clipboard Item
    */
   private async handleClipboardChangeEvent(clip: Clip, addToDrive: boolean) {
-    const result = await this.indexDBService.findClip(clip);
-    result
+    const _clip = { ...clip, id: clip.id || uuidv4() };
+    const targetClip = await this.indexDBService.findClip(clip);
+    targetClip
       ? this.modifyClip(
           {
-            ...result,
+            ...targetClip,
             updatedAt: new Date().getTime()
           },
           true
         )
-      : this.addClip(clip);
+      : this.addClip(_clip);
 
-    // If comes from google drive just add to indexedDB
     if (addToDrive) {
-      this.googleDriveService.addToDrive(clip);
+      this.googleDriveService.addToDrive(_clip);
     }
   }
 
@@ -117,8 +117,6 @@ export class ClipboardService {
   }
 
   public async addClip(clip: Clip) {
-    // Add to IndexedDB
-    clip = { ...clip, id: clip.id || uuidv4() };
     await this.indexDBService.addClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
