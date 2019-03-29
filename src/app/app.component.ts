@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { NavController, Platform } from '@ionic/angular';
@@ -8,6 +7,7 @@ import { ElectronService } from './services/electron/electron.service';
 import { GoogleAnalyticsService } from './services/google-analytics/google-analytics.service';
 import { GoogleOAuth2Service } from './services/google-oauth2/google-oauth2.service';
 import { GoogleTranslateService } from './services/google-translate/google-translate.service';
+import { PreferencesService } from './services/preferences/preferences.service';
 
 // tslint:disable-next-line: no-namespace
 @Component({
@@ -20,7 +20,9 @@ export class AppComponent {
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
     private navCtrl: NavController,
-    private electronService: ElectronService
+    private electronService: ElectronService,
+    private preferencesService: PreferencesService,
+    private googleOAuth2Service: GoogleOAuth2Service
   ) {
     this.initializeApp();
   }

@@ -21,7 +21,7 @@ import {
 import * as stream from 'stream';
 import { Clip } from './../../models/models';
 
-const BUFFER_TIME = 10000;
+const BUFFER_TIME = 60000;
 
 const createStream = (str: string) => {
   const readableStream = new stream.Readable();
@@ -86,13 +86,6 @@ export class DriveHandler {
               pageToken,
               fields: '*'
             })).data;
-
-            console.error(
-              'next page token',
-              nextPageToken,
-              'new',
-              newStartPageToken
-            );
             return { changes, pageToken: nextPageToken || newStartPageToken };
           })()
         ).pipe(delay(BUFFER_TIME / 2))
@@ -134,11 +127,11 @@ export default class GoogleDriveService {
       };
 
       console.log('Adding file to Drive');
-      return this.driveHandler.drive.files.create(({
+      return this.driveHandler.drive.files.create({
         resource: fileMetadata,
         media,
         fields: 'id'
-      } as unknown) as any);
+      } as any);
     };
 
     return this.clipSubject.asObservable().pipe(
@@ -244,11 +237,8 @@ export default class GoogleDriveService {
                     return acc;
                   }
                   const _clips: { [key: string]: Clip } = JSON.parse(
-                    fs.readFileSync(filePath, 'utf8') || 'null'
+                    fs.readFileSync(filePath, 'utf8') || '[]'
                   );
-
-                  console.error('clips: ', _clips);
-
                   Object.entries(_clips).forEach(([key, clip]) => {
                     acc[key] =
                       acc[key] && acc[key].updatedAt > clip.updatedAt
