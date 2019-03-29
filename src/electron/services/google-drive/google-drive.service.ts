@@ -5,12 +5,14 @@ import { OAuth2Client } from 'google-auth-library';
 // tslint:disable-next-line: no-submodule-imports
 import { drive_v3, google } from 'googleapis';
 import * as path from 'path';
-import { BehaviorSubject, combineLatest, from, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, of, Subject } from 'rxjs';
 import {
   bufferTime,
+  catchError,
   concatMap,
   delay,
   filter,
+  map,
   mergeMap,
   scan,
   startWith,
@@ -51,7 +53,8 @@ export class DriveHandler {
   }
 
   public setPageToken(pageToken: string) {
-    this.driveHandler.pageTokenBehaviorSubject.next('842652' || pageToken);
+    // 842652
+    this.driveHandler.pageTokenBehaviorSubject.next(pageToken);
   }
   public async getStartPageToken() {
     return (await this.driveHandler.drive.changes.getStartPageToken({})).data
@@ -212,53 +215,64 @@ export default class GoogleDriveService {
         )
       ),
       filter(([drive, addedFiles]) => drive.changes.length > 0),
-      mergeMap(async ([drive, addedFiles]) => {
-        const filePaths = await Promise.all(
-          drive.changes
-            .filter(change => {
-              console.error(change);
-              return (
-                !change.removed &&
-                !Object.keys(addedFiles).find(id => id === change.fileId)
+      mergeMap(async ([drive, addedFiles]) =>
+        from(
+          Promise.all(
+            drive.changes
+              .filter(change => {
+                return (
+                  !change.removed &&
+                  !Object.keys(addedFiles).find(id => id === change.fileId)
+                );
+              })
+              .map(change => this.downloadFile(change.fileId))
+          )
+        )
+          .pipe(
+            catchError(err => {
+              console.error(
+                'An error has occurred, no clip will be added ',
+                err
               );
+              return of([] as string[]);
+            }),
+            map(filePaths => {
+              const reducedClips = filePaths.reduce(
+                (acc: { [key: string]: Clip }, filePath) => {
+                  if (!fs.existsSync(filePath)) {
+                    console.error('File path not exists: ', filePath);
+                    return acc;
+                  }
+                  const _clips: { [key: string]: Clip } = JSON.parse(
+                    fs.readFileSync(filePath, 'utf8') || 'null'
+                  );
+
+                  console.error('clips: ', _clips);
+
+                  Object.entries(_clips).forEach(([key, clip]) => {
+                    acc[key] =
+                      acc[key] && acc[key].updatedAt > clip.updatedAt
+                        ? acc[key]
+                        : clip;
+                  });
+                  return acc;
+                },
+                {}
+              );
+              const clips: Clip[] = Object.values(reducedClips);
+              // filePaths.forEach(_path => {
+              //   fs.unlink(_path, err => {
+              //     if (err) {
+              //       throw err;
+              //     }
+              //     console.log(`${_path} was deleted.`);
+              //   });
+              // });
+              return clips;
             })
-            .map(change => this.downloadFile(change.fileId))
-        );
-
-        console.error(filePaths);
-
-        const reducedClips = filePaths.reduce(
-          (acc: { [key: string]: Clip }, filePath) => {
-            if (!fs.existsSync(filePath)) {
-              console.error('File path not exists: ', filePath);
-              return acc;
-            }
-
-            const _clips: { [key: string]: Clip } = JSON.parse(
-              fs.readFileSync(filePath, 'utf8') || 'null'
-            );
-
-            Object.entries(_clips).forEach(([key, clip]) => {
-              acc[key] =
-                acc[key] && acc[key].updatedAt > clip.updatedAt
-                  ? acc[key]
-                  : clip;
-            });
-            return acc;
-          },
-          {}
-        );
-        const clips: Clip[] = Object.values(reducedClips);
-        // filePaths.forEach(_path => {
-        //   fs.unlink(_path, err => {
-        //     if (err) {
-        //       throw err;
-        //     }
-        //     console.log(`${_path} was deleted.`);
-        //   });
-        // });
-        return clips;
-      }),
+          )
+          .toPromise()
+      ),
       tap(clips =>
         console.log(
           clips.length > 0

@@ -30,7 +30,6 @@ const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
     return Promise.resolve();
   };
   const subscribe = async (pageToken?: string) => {
-    console.error('Page token: ', pageToken);
     driveHandler.setPageToken(
       pageToken || (await driveHandler.getStartPageToken())
     );
