@@ -13,6 +13,8 @@ import { AppComponent } from './app.component';
 import { AngularFireModule } from '@angular/fire';
 // tslint:disable-next-line: no-submodule-imports
 import { AngularFireFunctionsModule } from '@angular/fire/functions';
+// tslint:disable-next-line: no-submodule-imports
+import { AngularFireStorageModule } from '@angular/fire/storage';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { environment } from './environment.config';
 import { RouterGuard } from './guards/router.guard';
@@ -35,6 +37,7 @@ import { PreferencesServiceModule } from './services/preferences/preferences.mod
     EffectsModule.forRoot([]),
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireFunctionsModule,
+    AngularFireStorageModule,
     PreferencesServiceModule,
     ElectronServiceModule,
     ClipboardServiceModule,

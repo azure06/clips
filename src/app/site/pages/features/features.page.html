@@ -17,7 +17,11 @@
         </ion-item>
       </div>
       <div class="container flex-wrap space-evenly">
-        <button mat-raised-button color="primary" disabled>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="downloadForWindows()"
+        >
           Download for Windows (64Bit)
         </button>
         <button mat-raised-button disabled>Download for Mac</button>
