@@ -10,29 +10,27 @@ export class FeaturesPage {
   constructor(private afs: AngularFireStorage) {}
 
   public async downloadForWindows() {
-    console.error('here');
     const pathReference = this.afs.ref('windows-installer/Infiniti Clips.exe');
     const downloadUrl: string = await pathReference
       .getDownloadURL()
       .toPromise();
 
-    const response: any = await fetch(downloadUrl, {
-      mode: 'no-cors'
-    });
-    const blob = new Blob([response], { type: 'application/octet-stream' });
+    // const response = await fetch(downloadUrl);
+    // const blob = new Blob([await response.blob()], {
+    //   type: 'application/octet-stream'
+    // });
+    // const URL = window.URL;
+    // const url = URL.createObjectURL(blob);
 
-    const URL = window.URL;
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-
     a.style.display = 'none';
-    a.setAttribute('href', url);
+    a.setAttribute('href', downloadUrl);
     a.setAttribute('download', 'Infiniti Clips' + '.exe');
     document.body.appendChild(a);
     a.dispatchEvent(new MouseEvent('click'));
     document.body.removeChild(a);
     setTimeout(() => {
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(downloadUrl);
     }, 100);
   }
 }
