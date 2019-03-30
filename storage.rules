@@ -1,7 +1,10 @@
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
-      allow read, write;
+      allow read, write: if false;
+    }
+    match /windows-installer/{allPaths=**} {
+    	allow read;
     }
   }
 }
