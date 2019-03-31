@@ -20,6 +20,7 @@ import * as url from 'url';
  * @fires GoogleOAuth2#tokens
  */
 export default class GoogleOAuth2Service extends EventEmitter {
+  private credentials: Credentials = {};
   private oauth2Client: OAuth2Client;
   private scopes: string[] = ['profile', 'email'];
 
@@ -78,8 +79,9 @@ export default class GoogleOAuth2Service extends EventEmitter {
    * @param {Credentials} tokens
    */
   public setCredentials(tokens: Credentials) {
-    console.error('autorefresh-tokens: ', tokens);
-    this.oauth2Client.setCredentials(tokens);
+    this.credentials = { ...this.credentials, ...tokens };
+    this.oauth2Client.setCredentials(this.credentials);
+    console.error('autorefresh-tokens: ', this.credentials);
     this.emit('tokens', tokens);
   }
 
