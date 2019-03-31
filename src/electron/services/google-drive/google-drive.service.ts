@@ -156,31 +156,28 @@ export default class GoogleDriveService {
       const userDataDir = path.join(app.getPath('userData'), 'temp');
       const filePath = path.join(userDataDir, `${fileId}.json`);
       const dest = fs.createWriteStream(filePath);
-
       if (!fs.existsSync(userDataDir)) {
         fs.mkdirSync(userDataDir, { recursive: true });
       }
-
-      try {
-        const response = await this.driveHandler.drive.files.get(
-          { fileId, alt: 'media' },
-          { responseType: 'stream' }
-        );
-        (response.data as any)
-          .on('end', () => {
-            console.log('Done downloading file');
-            // File needs some more time to be created
-            setTimeout(() => resolve(filePath), 0);
-          })
-          .on('error', err => {
-            console.error('Error downloading file');
-            reject(err);
-          })
-          .on('data', d => {})
-          .pipe(dest);
-      } catch (err) {
-        reject(err);
-      }
+      return this.driveHandler.drive.files
+        .get({ fileId, alt: 'media' }, { responseType: 'stream' })
+        .then(res => {
+          (res.data as any)
+            .on('end', () => {
+              console.log('Done downloading file');
+              // File needs some more time to be created
+              setTimeout(() => resolve(filePath), 0);
+            })
+            .on('error', err => {
+              console.error('Error downloading file');
+              reject(err);
+            })
+            .on('data', d => {})
+            .pipe(dest);
+        })
+        .catch(err => {
+          console.error('Drive get error', err);
+        });
     });
   }
 
@@ -218,11 +215,17 @@ export default class GoogleDriveService {
                   !Object.keys(addedFiles).find(id => id === change.fileId)
                 );
               })
-              .map(change => this.downloadFile(change.fileId))
-          )
+              .map(change =>
+                this.downloadFile(change.fileId).catch(err =>
+                  console.error(change, err)
+                )
+              )
+            // removing undefined values in case of a promise was unfulfilled
+          ).then(filePaths => filePaths.filter(path => !!path) as string[])
         )
           .pipe(
             catchError(err => {
+              // FIXME remove catchError since it shouldn't occur anymore
               console.error(
                 'An error has occurred, no clip will be added ',
                 err
