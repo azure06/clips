@@ -76,18 +76,22 @@ export class DriveHandler {
       tap(() => console.log('Watching for changes...', (changeCount += 1))),
       concatMap(pageToken =>
         from(
-          (async () => {
-            const {
-              newStartPageToken,
-              nextPageToken,
-              changes
-            } = (await this.driveHandler.drive.changes.list({
+          this.driveHandler.drive.changes
+            .list({
               spaces: 'appDataFolder',
               pageToken,
               fields: '*'
-            })).data;
-            return { changes, pageToken: nextPageToken || newStartPageToken };
-          })()
+            })
+            .then(
+              ({ data: { newStartPageToken, nextPageToken, changes } }) => ({
+                changes,
+                pageToken: nextPageToken || newStartPageToken
+              })
+            )
+            .catch(err => {
+              console.error('Unable to listen for changes: ', err);
+              return { changes: [], pageToken };
+            })
         ).pipe(delay(BUFFER_TIME / 2))
       ),
       delay(BUFFER_TIME / 2), // Important in case changes detected before upload complete
@@ -107,37 +111,39 @@ export default class GoogleDriveService {
   constructor(private driveHandler: DriveHandler) {}
 
   private observeFileAdder() {
-    const addFileToDrive = async (
-      clips: Clip[]
-    ): Promise<GaxiosResponse<drive_v3.Schema$File>> => {
-      const clipMap = clips.reduce(
-        (acc: { [key: string]: Clip }, currentClip) => {
-          acc[currentClip.id] = currentClip;
-          return acc;
-        },
-        {}
-      );
-      const fileMetadata = {
-        name: 'clips.json',
-        parents: ['appDataFolder']
-      };
-      const media = {
-        mimeType: 'application/json',
-        body: createStream(JSON.stringify(clipMap))
-      };
-
-      console.log('Adding file to Drive');
-      return this.driveHandler.drive.files.create({
-        resource: fileMetadata,
-        media,
-        fields: 'id'
-      } as any);
-    };
-
     return this.clipSubject.asObservable().pipe(
       bufferTime(BUFFER_TIME),
       filter(clip => clip.length > 0),
-      mergeMap(clips => from(addFileToDrive(clips))),
+      mergeMap(clips => {
+        const clipMap = clips.reduce(
+          (acc: { [key: string]: Clip }, currentClip) => {
+            acc[currentClip.id] = currentClip;
+            return acc;
+          },
+          {}
+        );
+        const fileMetadata = {
+          name: 'clips.json',
+          parents: ['appDataFolder']
+        };
+        const media = {
+          mimeType: 'application/json',
+          body: createStream(JSON.stringify(clipMap))
+        };
+
+        console.log('Adding file to Drive');
+        return this.driveHandler.drive.files
+          .create({
+            resource: fileMetadata,
+            media,
+            fields: 'id'
+          } as any)
+          .catch(err => {
+            console.error('Couldn\'t add to drive', err);
+            return {};
+          });
+      }),
+      filter(res => Object.keys(res).length > 0),
       scan(
         (
           acc: { [id: string]: GaxiosResponse<drive_v3.Schema$File> },
