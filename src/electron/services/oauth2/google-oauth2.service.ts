@@ -78,6 +78,7 @@ export default class GoogleOAuth2Service extends EventEmitter {
    * @param {Credentials} tokens
    */
   public setCredentials(tokens: Credentials) {
+    console.error('autorefresh-tokens: ', tokens);
     this.oauth2Client.setCredentials(tokens);
     this.emit('tokens', tokens);
   }
