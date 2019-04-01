@@ -22,7 +22,7 @@ const { userId }: { userId: string } = JSON.parse(
 const visitor = ua('UA-136774263-1', userId);
 
 const trackEvent = (category, action, label, value) => {
-  visitor
+  return visitor
     .event({
       ec: category,
       ea: action,
