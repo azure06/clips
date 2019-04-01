@@ -59,17 +59,7 @@
                 Clear local storage
               </h4></ion-label
             >
-            <ion-button color="primary" slot="end">
-              <span>Clear</span>
-            </ion-button>
-          </ion-item>
-          <ion-item>
-            <ion-label
-              ><h4>
-                Clear Google Drive data
-              </h4></ion-label
-            >
-            <ion-button color="primary" fill="outline" slot="end">
+            <ion-button color="primary" slot="end" (click)="removeAllHistory()">
               <span>Clear</span>
             </ion-button>
           </ion-item>

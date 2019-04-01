@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ElectronService } from 'src/app/services/electron/electron.service';
+import { ToastController } from '@ionic/angular';
+import { ClipboardService } from '../../services/clipboard/clipboard.service';
+import { ElectronService } from '../../services/electron/electron.service';
+import { IndexedDBService } from '../../services/indexed-db/indexed-db.service';
 import { PreferencesService } from '../../services/preferences/preferences.service';
 
 @Component({
@@ -37,26 +40,40 @@ export class SystemPage {
   constructor(
     public router: Router,
     public es: ElectronService,
-    public preferencesService: PreferencesService
+    public clipboardService: ClipboardService,
+    public preferencesService: PreferencesService,
+    public indexedDBService: IndexedDBService,
+    public toastController: ToastController
   ) {
     this.general = preferencesService.getAppSettings().general;
     this.translate = preferencesService.getAppSettings().translate;
     this.hotkeys = preferencesService.getAppSettings().hotkeys;
   }
 
-  setGeneralSettings(value?: 'close-on-blur') {
+  public setGeneralSettings(value?: 'close-on-blur') {
     if (value === 'close-on-blur') {
       this.es.mainWindow.setSkipTaskbar(this.general.closeOnBlur);
     }
     this.preferencesService.setAppSettings({ general: this.general });
   }
 
-  setGoogleTranslateOptions() {
+  public setGoogleTranslateOptions() {
     this.preferencesService.setAppSettings({ translate: this.translate });
   }
 
-  setHotkeys() {
+  public setHotkeys() {
     this.preferencesService.setAppSettings({ hotkeys: this.hotkeys });
+  }
+
+  public async removeAllHistory() {
+    await this.indexedDBService.clearAllData();
+    const toast = await this.toastController.create({
+      message: 'Data has been cleared!',
+      duration: 2000,
+      position: 'top',
+      color: 'primary'
+    });
+    toast.present();
   }
 }
 

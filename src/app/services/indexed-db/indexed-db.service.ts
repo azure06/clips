@@ -156,6 +156,21 @@ export class IndexedDBService {
     return this.makeRequest({ successHandler });
   }
 
+  public clearAllData(): Promise<Event> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const objectStore = db
+          .transaction(['clips'], 'readwrite')
+          .objectStore('clips');
+
+        const clearRequest = objectStore.clear();
+        clearRequest.onerror = _reject;
+        clearRequest.onsuccess = resolve;
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
   private onUpgradeNeeded(event: IDBVersionChangeEvent) {
     const data = [];
     const db = (event.target as IDBOpenDBRequest).result;
