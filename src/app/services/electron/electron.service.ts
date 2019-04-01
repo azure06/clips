@@ -104,7 +104,16 @@ class EventTracker {
   ) {
     const { getGlobal } = this.remote || { getGlobal: undefined };
     getGlobal
-      ? getGlobal('trackEvent')(category, action, label, value)
+      ? getGlobal('eventTracker').trackEvent(category, action, label, value)
+      : console.warn('Electron is not available');
+  }
+
+  public pageView(page: string) {
+    const { getGlobal } = this.remote || { getGlobal: undefined };
+    getGlobal
+      ? getGlobal('eventTracker')
+          .visitor.pageview(page)
+          .send()
       : console.warn('Electron is not available');
   }
 }

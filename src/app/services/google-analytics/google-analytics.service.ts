@@ -11,8 +11,12 @@ export class GoogleAnalyticsService {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         console.log('Event', event.urlAfterRedirects);
-        ga('set', 'page', event.urlAfterRedirects);
-        ga('send', 'pageview');
+        !this.es.isAvailable
+          ? (() => {
+              ga('set', 'page', event.urlAfterRedirects);
+              ga('send', 'pageview');
+            })()
+          : this.es.eventTracker.pageView(event.urlAfterRedirects);
       }
     });
   }
@@ -26,9 +30,12 @@ export class GoogleAnalyticsService {
     !this.es.isAvailable
       ? ga('send', 'event', {
           eventCategory,
-          eventLabel,
           eventAction,
-          eventValue
+          eventLabel,
+          eventValue,
+          hitCallback: () => {
+            alert('Event received');
+          }
         })
       : this.es.eventTracker.trackEvent(
           eventCategory,

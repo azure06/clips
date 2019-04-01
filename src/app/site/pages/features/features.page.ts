@@ -1,13 +1,17 @@
 import { Component } from '@angular/core';
 // tslint:disable-next-line: no-submodule-imports
 import { AngularFireStorage } from '@angular/fire/storage';
+import { GoogleAnalyticsService } from '../../../services/google-analytics/google-analytics.service';
 @Component({
   selector: 'app-features',
   templateUrl: './features.page.html',
   styleUrls: ['./features.page.scss']
 })
 export class FeaturesPage {
-  constructor(private afs: AngularFireStorage) {}
+  constructor(
+    private afs: AngularFireStorage,
+    private googleAnalytics: GoogleAnalyticsService
+  ) {}
 
   public async downloadForWindows() {
     const pathReference = this.afs.ref('windows-installer/Infiniti Clips.exe');
@@ -32,5 +36,6 @@ export class FeaturesPage {
     setTimeout(() => {
       URL.revokeObjectURL(downloadUrl);
     }, 100);
+    this.googleAnalytics.trackEvent('download', 'click', 'windows');
   }
 }

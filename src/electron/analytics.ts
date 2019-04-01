@@ -19,12 +19,10 @@ if (!fs.existsSync(userIdFile)) {
 const { userId }: { userId: string } = JSON.parse(
   fs.readFileSync(userIdFile, 'utf8')
 );
-const user = ua('UA-136774263-1', userId);
-
-user.pageview('/').send();
+const visitor = ua('UA-136774263-1', userId);
 
 const trackEvent = (category, action, label, value) => {
-  user
+  visitor
     .event({
       ec: category,
       ea: action,
@@ -34,4 +32,4 @@ const trackEvent = (category, action, label, value) => {
     .send();
 };
 
-global.trackEvent = trackEvent;
+global.eventTracker = { trackEvent, visitor };
