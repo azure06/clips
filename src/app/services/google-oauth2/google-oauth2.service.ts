@@ -23,7 +23,6 @@ export class GoogleOAuth2Service {
     this._userInfo = userInfo;
     if (userInfo) {
       localStorage.setItem('user-info', JSON.stringify(userInfo));
-      this.googleAnalyticsService.setUserId(userInfo.permissionId);
     }
   }
 

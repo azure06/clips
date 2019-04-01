@@ -175,14 +175,15 @@ export default class GoogleDriveService {
               setTimeout(() => resolve(filePath), 0);
             })
             .on('error', err => {
-              console.error('Error downloading file');
+              console.error('Error downloading file: ', err);
               reject(err);
             })
             .on('data', d => {})
             .pipe(dest);
         })
         .catch(err => {
-          console.error('Drive get error', err);
+          console.error('Drive error: ', err);
+          reject(err);
         });
     });
   }
@@ -239,14 +240,14 @@ export default class GoogleDriveService {
               return of([] as string[]);
             }),
             map(filePaths => {
-              const reducedClips = filePaths.reduce(
+              const clipsFromFile = filePaths.reduce(
                 (acc: { [key: string]: Clip }, filePath) => {
                   if (!fs.existsSync(filePath)) {
                     console.error('File path not exists: ', filePath);
                     return acc;
                   }
                   const _clips: { [key: string]: Clip } = JSON.parse(
-                    fs.readFileSync(filePath, 'utf8') || '[]'
+                    fs.readFileSync(filePath, 'utf8') || '{}'
                   );
                   Object.entries(_clips).forEach(([key, clip]) => {
                     acc[key] =
@@ -258,7 +259,7 @@ export default class GoogleDriveService {
                 },
                 {}
               );
-              const clips: Clip[] = Object.values(reducedClips);
+              const clips: Clip[] = Object.values(clipsFromFile);
               // filePaths.forEach(_path => {
               //   fs.unlink(_path, err => {
               //     if (err) {

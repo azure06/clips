@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { ElectronService } from '../electron/electron.service';
 
 // d.ts file is broken
 declare const ga: any;
 
 @Injectable()
 export class GoogleAnalyticsService {
-  constructor(private router: Router) {
+  constructor(private router: Router, private es: ElectronService) {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         console.log('Event', event.urlAfterRedirects);
@@ -16,18 +17,24 @@ export class GoogleAnalyticsService {
     });
   }
 
-  public setUserId(userId: string) {
-    setTimeout(() => {
-      ga('set', 'dimension1', userId);
-    }, 2000);
-  }
-
-  public emitEvent(
+  public trackEvent(
     eventCategory: string,
     eventAction: string,
     eventLabel: string = null,
     eventValue: number = null
   ) {
-    ga('send', 'event', { eventCategory, eventLabel, eventAction, eventValue });
+    !this.es.isAvailable
+      ? ga('send', 'event', {
+          eventCategory,
+          eventLabel,
+          eventAction,
+          eventValue
+        })
+      : this.es.eventTracker.trackEvent(
+          eventCategory,
+          eventLabel,
+          eventAction,
+          eventValue
+        );
   }
 }

@@ -87,6 +87,7 @@
     "material-design-icons": "^3.0.1",
     "moment": "^2.24.0",
     "rxjs": "~6.3.3",
+    "universal-analytics": "^0.4.20",
     "uuid": "^3.3.2",
     "zone.js": "~0.8.29"
   },

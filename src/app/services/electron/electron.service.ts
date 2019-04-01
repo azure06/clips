@@ -7,6 +7,7 @@ export class ElectronService {
   // tslint:disable: no-use-before-declare
   private _mainWindow: MainWindow = new MainWindow();
   private _ipcRenderer: IpcRenderer = new IpcRenderer();
+  private _eventTracker: EventTracker = new EventTracker();
 
   public get isAvailable() {
     return !!((window as any).require && (window as any).require('electron'));
@@ -15,6 +16,7 @@ export class ElectronService {
     if (this.isAvailable) {
       const { ipcRenderer, remote } = (window as any).require('electron');
       this._mainWindow.setRemote(remote);
+      this._eventTracker.setRemote(remote);
       this._ipcRenderer.setIpcRenderer(ipcRenderer);
     }
   }
@@ -25,6 +27,10 @@ export class ElectronService {
 
   get mainWindow() {
     return this._mainWindow;
+  }
+
+  get eventTracker() {
+    return this._eventTracker;
   }
 }
 
@@ -82,6 +88,24 @@ class IpcRenderer {
     this.ipcRenderer
       ? this.ipcRenderer.send(channel, ...args)
       : console.warn('Electron in not available');
+  }
+}
+
+class EventTracker {
+  private remote?: Electron.Remote;
+  public setRemote(remote: Electron.Remote) {
+    this.remote = remote;
+  }
+  public trackEvent(
+    category?: string,
+    action?: string,
+    label?: string,
+    value?: number
+  ) {
+    const { getGlobal } = this.remote || { getGlobal: undefined };
+    getGlobal
+      ? getGlobal('trackEvent')(category, action, label, value)
+      : console.warn('Electron is not available');
   }
 }
 
