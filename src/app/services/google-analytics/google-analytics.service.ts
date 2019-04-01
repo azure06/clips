@@ -4,6 +4,7 @@ import { ElectronService } from '../electron/electron.service';
 
 // d.ts file is broken
 declare const ga: any;
+declare const gtag: any;
 
 @Injectable()
 export class GoogleAnalyticsService {
@@ -28,13 +29,11 @@ export class GoogleAnalyticsService {
     eventValue: number = null
   ) {
     !this.es.isAvailable
-      ? ga('send', 'event', {
-          eventCategory,
-          eventAction,
-          eventLabel,
-          eventValue,
-          hitCallback: () => {
-            alert('Event received');
+      ? gtag('event', eventCategory, {
+          event_label: eventLabel,
+          event_category: eventCategory,
+          event_callback: () => {
+            console.log('Download start');
           }
         })
       : this.es.eventTracker.trackEvent(
