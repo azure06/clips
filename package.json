@@ -32,7 +32,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "pack": "electron-builder --dir",
-    "dist": "npm run ionicBuild && npm run electronBuild && electron-builder"
+    "dist": "npm run ionicBuild && npm run electronBuild && electron-builder",
+    "ship": "npm run ionicBuild && npm run electronBuild && electron-builder --config ./src/electron/electron-builder.yml"
   },
   "build": {
     "appId": "com.infiniti.clips",
@@ -45,6 +46,9 @@
       "node_modules/**/*"
     ],
     "win": {
+      "publish": [
+        "github"
+      ],
       "target": [
         "nsis"
       ],
@@ -81,6 +85,7 @@
     "auto-launch": "^5.0.5",
     "core-js": "^2.5.4",
     "electron-is-dev": "^1.0.1",
+    "electron-updater": "^4.0.6",
     "firebase": "^5.9.1",
     "google-auth-library": "^3.1.0",
     "googleapis": "^37.2.0",

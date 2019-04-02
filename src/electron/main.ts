@@ -9,6 +9,7 @@ import {
 import * as path from 'path';
 import './analytics';
 import './auto-launcher';
+import './auto-updater';
 import clips, { isAvailable } from './clips/clips';
 
 const appLocked = app.requestSingleInstanceLock();
