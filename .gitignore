@@ -20,6 +20,7 @@ npm-debug.log*
 .versions/
 .firebase/
 coverage/
+src/electron/electron-builder.yml
 www/
 node_modules/
 dist/

@@ -192,7 +192,7 @@ const createMainWindow = () => {
       : path.join(`file://${__dirname}`, '../../index.html')
   );
 
-  if (isDevelopment || true) {
+  if (isDevelopment) {
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
   }

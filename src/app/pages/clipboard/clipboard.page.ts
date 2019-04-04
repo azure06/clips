@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
-import { PreferencesService } from 'src/app/services/preferences/preferences.service';
 import { ClipboardService } from '../../services/clipboard/clipboard.service';
 import { ElectronService } from '../../services/electron/electron.service';
+import { PreferencesService } from '../../services/preferences/preferences.service';
 import * as fromClips from '../clipboard/store/index';
 @Component({
   selector: 'app-clipboard',

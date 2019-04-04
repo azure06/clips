@@ -61,4 +61,8 @@
   .sidenav-content {
     width: calc(100vw - 48px);
   }
+
+  .divider {
+    border-bottom: 1px solid var(--ion-color-light-extra-blue);
+  }
 }

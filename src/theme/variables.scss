@@ -19,19 +19,12 @@
   --ion-color-secondary-tint: rgb(228, 83, 107);
 
   /** tertiary **/
-  --ion-color-tertiary: rgb(54, 60, 88);
+  --ion-color-tertiary: rgb(60, 70, 90);
   --ion-color-tertiary-rgb: 55, 61, 89;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
   --ion-color-tertiary-shade: rgb(53, 50, 77);
   --ion-color-tertiary-tint: rgb(69, 77, 112);
-
-  --ion-color-azure: rgba(0, 160, 210, 1);
-  --ion-color-azure-rgb: 0, 145, 210;
-  --ion-color-azure-contrast: #ffffff;
-  --ion-color-azure-contrast-rgb: 255, 255, 255;
-  --ion-color-azure-shade: rgba(0, 130, 190, 1);
-  --ion-color-azure-tint: rgb(50, 150, 170);
 
   /** success **/
   --ion-color-success: #10dc60;
@@ -66,7 +59,7 @@
   --ion-color-dark-tint: #383a3e;
 
   /** medium **/
-  --ion-color-medium: rgb(155, 160, 182);
+  --ion-color-medium: rgb(110, 124, 146);
   --ion-color-medium-rgb: 152, 154, 162;
   --ion-color-medium-contrast: #ffffff;
   --ion-color-medium-contrast-rgb: 255, 255, 255;
@@ -85,7 +78,7 @@
 
   --ion-text-color: #020814; // Default(?)
   --text-color--dark: rgb(16, 32, 64);
-  --text-color--light: #73849a;
+  --text-color--light: rgb(115, 132, 154);
   --text-color--extra-light: hsl(214, 16%, 67%);
   --text-color--light-blue: #448aff;
   --line-rule-color: #edf2f6; //#c1c4cd

@@ -85,6 +85,7 @@
     "auto-launch": "^5.0.5",
     "core-js": "^2.5.4",
     "electron-is-dev": "^1.0.1",
+    "electron-log": "^3.0.5",
     "electron-updater": "^4.0.6",
     "firebase": "^5.9.1",
     "google-auth-library": "^3.1.0",
