@@ -49,6 +49,14 @@
           [color]="router.url === '/clipboard/images' ? 'primary' : 'tertiary'"
           (click)="navigateForward('clipboard/images')"
         >
+          <ion-icon slot="icon-only" name="document"></ion-icon>
+        </ion-button>
+        <div class="divider"></div>
+        <ion-button
+          fill="clear"
+          [color]="router.url === '/clipboard/images' ? 'primary' : 'tertiary'"
+          (click)="navigateForward('clipboard/images')"
+        >
           <ion-icon slot="icon-only" name="image"></ion-icon>
         </ion-button>
         <ion-button
@@ -56,7 +64,7 @@
           [color]="router.url === '/clipboard/finder' ? 'primary' : 'tertiary'"
           (click)="navigateForward('clipboard/finder')"
         >
-          <ion-icon slot="icon-only" name="browsers"></ion-icon>
+          <ion-icon slot="icon-only" name="search"></ion-icon>
         </ion-button>
         <ion-button
           fill="clear"
