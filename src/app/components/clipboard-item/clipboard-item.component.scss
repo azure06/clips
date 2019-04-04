@@ -9,40 +9,52 @@ ion-label {
 }
 
 ion-item:hover {
-  --background: rgba(248, 248, 252, 1);
+  --ion-background-color: rgba(248, 248, 252, 0.9);
 }
 
-.content {
-  div {
-    display: flex;
-    max-height: 64px;
-    /deep/div,
-    img,
+.container {
+  display: flex;
+  justify-content: space-between;
+  .content.start {
+    flex: 1 1 auto;
+    min-width: 0;
+    div {
+      display: flex;
+      max-height: 64px;
+      /deep/div,
+      img,
+      h3 {
+        border-radius: 5px;
+      }
+      img {
+        object-fit: none;
+      }
+    }
+    h3,
+    p {
+      color: var(--text-color--light);
+      font-weight: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     h3 {
-      border-radius: 5px;
+      font-size: 0.76rem;
+      color: var(--text-color--light);
     }
-    img {
-      object-fit: none;
+    p {
+      color: var(--text-color--extra-light);
+      font-size: 0.74rem;
     }
   }
-  h3,
-  p {
-    color: var(--text-color--light);
-    font-weight: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  h3 {
-    font-size: 0.76rem;
-    color: var(--text-color--light);
-  }
-  p {
-    color: var(--text-color--extra-light);
-    font-size: 0.74rem;
+  .content.end {
+    ion-button {
+      margin: 0;
+      --padding-start: 4px;
+      --padding-end: 4px;
+    }
   }
 }
-
 ion-button {
   margin-inline-end: 8px;
 }
@@ -86,17 +98,6 @@ ion-avatar.container.start {
 
 ion-button.remove {
   height: 27.3px;
-}
-
-.container.bottom {
-  position: relative;
-  justify-content: space-between;
-  display: flex;
-  ion-button {
-    margin: 0;
-    --padding-start: 4px;
-    --padding-end: 4px;
-  }
 }
 
 ion-icon {

@@ -17,80 +17,84 @@
     </div>
   </ion-avatar>
   <ion-label>
-    <div class="content">
-      <div *ngIf="clip.type === 'image'" class="image">
-        <img [src]="clip.dataURI" />
-      </div>
-      <div *ngIf="clip.type === 'text'" class="text">
-        <div
-          *ngIf="view === 'htmlView'"
-          [innerHTML]="clip.htmlText | sanitizeHtml"
-          [title]="clip.htmlText"
-        ></div>
-        <h3
-          *ngIf="view === 'plainView' && !clip.translationView"
-          [title]="clip.plainText"
-        >
-          {{ clip.plainView }}
-        </h3>
-        <h3
-          *ngIf="view !== 'htmlView' && clip.translationView"
-          [title]="clip.translationView"
-        >
-          {{ clip.translationView }}
-        </h3>
-      </div>
-      <p>{{ clip.dateFromNow }}</p>
-    </div>
-    <div class="container bottom">
-      <div>
-        <ion-button *ngIf="false" fill="clear" shape="round" color="medium">
-          <ion-icon name="share"></ion-icon>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          shape="round"
-          [color]="view === 'htmlView' ? 'primary' : 'medium'"
-          [disabled]="clip.type === 'image' || !hasHtmlView"
-          (click)="switchView(view !== 'plainView' ? 'plainView' : 'htmlView')"
-        >
-          <i class="material-icons text-format">text_format</i>
-        </ion-button>
-        <ion-button
-          fill="clear"
-          shape="round"
-          color="medium"
-          [disabled]="clip.type === 'image' || disabled.translate"
-          [color]="
-            clip.translationView && view !== 'htmlView' ? 'primary' : 'medium'
-          "
-          (click)="onTranslate($event)"
-        >
-          <ion-spinner *ngIf="isTranslating" name="lines-small"></ion-spinner>
-          <i *ngIf="!isTranslating" class="material-icons translate"
-            >translate</i
+    <div class="container">
+      <div class="content start">
+        <div *ngIf="clip.type === 'image'" class="image">
+          <img [src]="clip.dataURI" />
+        </div>
+        <div *ngIf="clip.type === 'text'" class="text">
+          <div
+            *ngIf="view === 'htmlView'"
+            style="position: relative; overflow:hidden;"
+            [innerHTML]="clip.htmlText | sanitizeHtml"
+            [title]="clip.htmlText"
+          ></div>
+          <h3
+            *ngIf="view === 'plainView' && !clip.translationView"
+            [title]="clip.plainText"
           >
-        </ion-button>
-        <ion-button
-          fill="clear"
-          shape="round"
-          [disabled]="disabled.star"
-          [color]="clip.category === 'starred' ? 'primary' : 'medium'"
-          (click)="onAddToBookmarkClick($event)"
-        >
-          <ion-icon name="star"></ion-icon>
-        </ion-button>
+            {{ clip.plainView }}
+          </h3>
+          <h3
+            *ngIf="view !== 'htmlView' && clip.translationView"
+            [title]="clip.translationView"
+          >
+            {{ clip.translationView }}
+          </h3>
+        </div>
+        <p>{{ clip.dateFromNow }}</p>
       </div>
-      <div *ngIf="hasMouseEntered && !disabled.remove">
-        <ion-button
-          class="remove"
-          fill="clear"
-          shape="round"
-          color="medium"
-          (click)="onRemoveClick($event)"
-        >
-          <ion-icon name="trash"></ion-icon>
-        </ion-button>
+      <div class="content end" *ngIf="hasMouseEntered">
+        <div>
+          <ion-button *ngIf="false" fill="clear" shape="round" color="medium">
+            <ion-icon name="share"></ion-icon>
+          </ion-button>
+          <ion-button
+            fill="clear"
+            shape="round"
+            [color]="view === 'htmlView' ? 'primary' : 'medium'"
+            [disabled]="clip.type === 'image' || !hasHtmlView"
+            (click)="
+              switchView(view !== 'plainView' ? 'plainView' : 'htmlView')
+            "
+          >
+            <i class="material-icons text-format">text_format</i>
+          </ion-button>
+          <ion-button
+            fill="clear"
+            shape="round"
+            color="medium"
+            [disabled]="clip.type === 'image' || disabled.translate"
+            [color]="
+              clip.translationView && view !== 'htmlView' ? 'primary' : 'medium'
+            "
+            (click)="onTranslate($event)"
+          >
+            <ion-spinner *ngIf="isTranslating" name="lines-small"></ion-spinner>
+            <i *ngIf="!isTranslating" class="material-icons translate"
+              >translate</i
+            >
+          </ion-button>
+          <ion-button
+            fill="clear"
+            shape="round"
+            [disabled]="disabled.star"
+            [color]="clip.category === 'starred' ? 'primary' : 'medium'"
+            (click)="onAddToBookmarkClick($event)"
+          >
+            <ion-icon name="star"></ion-icon>
+          </ion-button>
+          <ion-button
+            class="remove"
+            fill="clear"
+            shape="round"
+            color="medium"
+            [disabled]="disabled.remove"
+            (click)="onRemoveClick($event)"
+          >
+            <ion-icon name="trash"></ion-icon>
+          </ion-button>
+        </div>
       </div>
     </div>
   </ion-label>
