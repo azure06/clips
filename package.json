@@ -33,11 +33,18 @@
     "e2e": "ng e2e",
     "pack": "electron-builder --dir",
     "dist": "npm run ionicBuild && npm run electronBuild && electron-builder",
-    "ship": "npm run ionicBuild && npm run electronBuild && electron-builder --config ./src/electron/electron-builder.yml"
+    "publish": "npm run electron-builder -p always"
   },
   "build": {
     "appId": "com.infiniti.clips",
     "productName": "Infiniti Clips",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Infiniti",
+        "repo": "infiniti-clips"
+      }
+    ],
     "directories": {
       "buildResources": "www"
     },
