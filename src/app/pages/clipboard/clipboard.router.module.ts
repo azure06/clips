@@ -18,6 +18,15 @@ const routes: Routes = [
         ]
       },
       {
+        path: 'editor',
+        children: [
+          {
+            path: '',
+            loadChildren: '../editor/editor.module#EditorPageModule'
+          }
+        ]
+      },
+      {
         path: 'images',
         children: [
           {
