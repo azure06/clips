@@ -5,15 +5,20 @@ import { autoUpdater } from 'electron-updater';
 const isDevelopment = (isDev as any).default;
 
 !isDevelopment
-  ? (() => {
-      setInterval(async () => {
-        const result = await autoUpdater
-          .checkForUpdatesAndNotify()
+  ? (async () => {
+      await autoUpdater.checkForUpdatesAndNotify().catch(err => {
+        log.error(err);
+      });
+      setInterval(() => {
+        autoUpdater
+          .checkForUpdates()
+          .then(res => {
+            log.info(res.updateInfo);
+          })
           .catch(err => {
             log.error(err);
           });
-        log.info(result);
-      }, 5000);
+      }, 60000 * 60);
 
       autoUpdater.on(
         'update-downloaded',
