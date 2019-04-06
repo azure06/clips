@@ -1,3 +1,50 @@
 #editor-container {
-  height: 375px;
+  min-height: 12rem;
+
+  /** For Quill JS*/
+  /deep/pre {
+    font-family: 'Roboto Mono', monospace;
+  }
+  /deep/.ql-editor pre.ql-syntax {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: rgba(41, 45, 62, 1) !important;
+  }
+
+  /deep/.ql-editor {
+    padding: 0 !important;
+  }
+
+  /deep/.ql-tooltip,
+  /deep/.ql-picker-options {
+    background-color: var(--ion-color-medium);
+  }
+}
+
+ion-card {
+  ion-card-title {
+    color: var(--text-color--light);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  ion-label {
+    p {
+      text-align: right;
+    }
+  }
+
+  ion-button {
+    span {
+      font-size: 0.79rem;
+      font-weight: 700;
+    }
+    .label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text-color--extra-light);
+    }
+    .copy {
+    }
+    .remove {
+    }
+  }
 }

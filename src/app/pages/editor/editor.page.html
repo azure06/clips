@@ -1,12 +1,42 @@
 <ion-content>
+  <!-- Card -->
   <ion-card>
     <ion-card-header>
-      <ion-card-subtitle>Card Subtitle</ion-card-subtitle>
       <ion-card-title>Card Title</ion-card-title>
     </ion-card-header>
-
     <ion-card-content>
       <div id="editor-container"></div>
     </ion-card-content>
+
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button color="medium" size="small" disabled>
+          <span class="label">Infiniti</span>
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons slot="primary">
+        <ion-button color="medium" size="small">
+          <span class="copy">Copy</span>
+        </ion-button>
+        <ion-button color="medium" size="small">
+          <span class="remove">Remove</span>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
   </ion-card>
 </ion-content>
+
+<!-- Footer -->
+<ion-footer>
+  <ion-toolbar>
+    <ion-searchbar
+      showCancelButton
+      cancelButtonText="Custom Cancel"
+    ></ion-searchbar>
+    <ion-buttons slot="primary">
+      <ion-button shape="round" color="medium">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
