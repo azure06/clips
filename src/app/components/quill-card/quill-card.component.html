@@ -1,0 +1,32 @@
+<ion-card>
+  <ion-card-header>
+    <ion-input
+      placeholder="Untitled"
+      [value]="quillCard.title"
+      (ionChange)="onTitleChange($event)"
+    ></ion-input>
+  </ion-card-header>
+  <ion-card-content>
+    <div [id]="containerId" class="editor-container"></div>
+  </ion-card-content>
+
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="medium" size="small" disabled>
+        <span class="label">Infiniti</span>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="primary">
+      <ion-button color="medium" size="small">
+        <span class="copy">Copy</span>
+      </ion-button>
+      <ion-button
+        color="medium"
+        size="small"
+        (click)="onRemoveQuillCard($event)"
+      >
+        <span class="remove">Remove</span>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-card>

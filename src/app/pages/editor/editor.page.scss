@@ -1,50 +1,26 @@
-#editor-container {
-  min-height: 12rem;
-
-  /** For Quill JS*/
-  /deep/pre {
-    font-family: 'Roboto Mono', monospace;
-  }
-  /deep/.ql-editor pre.ql-syntax {
-    color: rgba(255, 255, 255, 0.9) !important;
-    background-color: rgba(41, 45, 62, 1) !important;
+ion-toolbar {
+  /deep/.searchbar-input.sc-ion-searchbar-md {
+    background-color: rgba(248, 248, 248, 1);
+    box-shadow: none;
+    border: 2px solid transparent;
+    border-radius: 5px;
   }
 
-  /deep/.ql-editor {
-    padding: 0 !important;
+  /deep/.searchbar-input.sc-ion-searchbar-md:focus {
+    border: 2px solid rgba(150, 190, 255, 0.87);
+    border-radius: 5px;
   }
 
-  /deep/.ql-tooltip,
-  /deep/.ql-picker-options {
-    background-color: var(--ion-color-medium);
+  /deep/ .searchbar-input.sc-ion-searchbar-md {
+    height: 30px;
   }
 }
 
-ion-card {
-  ion-card-title {
-    color: var(--text-color--light);
-    font-size: 1rem;
-    font-weight: 700;
-  }
-  ion-label {
-    p {
-      text-align: right;
-    }
-  }
-
-  ion-button {
-    span {
-      font-size: 0.79rem;
-      font-weight: 700;
-    }
-    .label {
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: var(--text-color--extra-light);
-    }
-    .copy {
-    }
-    .remove {
-    }
+ion-searchbar {
+  /deep/ ion-icon {
+    left: 16px;
+    top: 6px !important;
+    width: 21px;
+    height: 21px;
   }
 }

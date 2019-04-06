@@ -1,63 +1,83 @@
-import { Component, OnInit } from '@angular/core';
-import Quill from 'quill';
-
-const Delta = Quill.import('delta');
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, Subject, Subscription } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
+// tslint:disable-next-line: no-submodule-imports
+import uuidv4 from 'uuid/v4';
+import { QuillCard } from '../../models/models';
+import { IndexedDBService } from '../../services/indexed-db/indexed-db.service';
 
 @Component({
   selector: 'app-editor-page',
   templateUrl: './editor.page.html',
   styleUrls: ['./editor.page.scss']
 })
-export class EditorPage implements OnInit {
-  title: '';
-  editor: Quill;
-  change = new Delta();
-  constructor() {}
+export class EditorPage implements OnInit, OnDestroy {
+  public quillCards: Array<QuillCard<any>> = [];
+  public quillCardsBehaviorSubject: BehaviorSubject<
+    Array<QuillCard<any>>
+  > = new BehaviorSubject(this.quillCards);
+  public quillCardsObservable = this.quillCardsBehaviorSubject.asObservable();
+  public quillCardTRSubject = new Subject<QuillCard<any>>();
+  public subscription: Subscription;
 
-  ngOnInit(): void {
-    this.editor = new Quill('#editor-container', {
-      modules: {
-        toolbar: [
-          // [{ header: [1, 2, false] }],
-          ['bold', 'italic', 'underline'],
-          ['image', 'code-block']
-        ]
-      },
-      placeholder: 'Compose...',
-      theme: 'bubble' // or 'bubble'
-    });
+  constructor(private indexedDBService: IndexedDBService) {}
 
-    const changes = localStorage.getItem('untitled');
-    if (changes) {
-      this.change = this.editor.setContents(JSON.parse(changes));
-    }
+  async ngOnInit(): Promise<void> {
+    this.quillCards = await this.indexedDBService.getAllQuillCards();
+    this.quillCardsBehaviorSubject.next(this.quillCards);
 
-    this.editor.on('text-change', delta => {
-      this.change = this.change.compose(delta);
-    });
-
-    // Save periodically
-    setInterval(() => {
-      if (this.change.length() > 0) {
-        console.log('Saving changes', this.change);
-        /*     Send partial changes */
-        // $.post('/your-endpoint', {
-        //   partial: JSON.stringify(change)
-        // });
-
-        localStorage.setItem(
-          this.title || 'untitled',
-          JSON.stringify(this.editor.getContents())
-        );
-        this.change = new Delta();
-      }
-    }, 5 * 1000);
+    this.subscription = this.quillCardTRSubject
+      .asObservable()
+      .pipe(
+        concatMap(quillCard =>
+          this.indexedDBService
+            .modifyQuillCard(quillCard)
+            .catch(err => console.error('Quillcard transaction err: ', err))
+            .then(res => {
+              const index = this.quillCards.findIndex(
+                _quillCard => _quillCard.id === quillCard.id
+              );
+              Object.keys(this.quillCards[index]).forEach(key => {
+                this.quillCards[index][key] = quillCard[key];
+              });
+              this.quillCardsBehaviorSubject.next(this.quillCards);
+              return res;
+            })
+        )
+      )
+      .subscribe(res => {
+        console.error(res);
+      });
   }
 
-  ionViewWillLeave() {
-    localStorage.setItem(
-      this.title || 'untitled',
-      JSON.stringify(this.editor.getContents())
+  public async addQuillCard() {
+    const quillCard = {
+      id: uuidv4(),
+      title: '',
+      contents: {},
+      createdAt: new Date().getTime(),
+      updatedAt: new Date().getTime(),
+      label: 'none',
+      displayOrder: this.quillCards.length
+    };
+    await this.indexedDBService.addQuillCard(quillCard);
+    this.quillCards.push(quillCard);
+    this.quillCardsBehaviorSubject.next(this.quillCards);
+  }
+
+  public modifyQuillCard(quillCard: QuillCard<any>) {
+    this.quillCardTRSubject.next(quillCard);
+  }
+
+  public async removeQuillCard(quillCard: QuillCard<any>) {
+    this.quillCards = this.quillCards.filter(
+      _quillCard => _quillCard.id !== quillCard.id
     );
+    await this.indexedDBService.removeQuillCard(quillCard);
+    this.quillCardsBehaviorSubject.next(this.quillCards);
+  }
+
+  public ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }

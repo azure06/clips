@@ -1,17 +1,19 @@
-/deep/.searchbar-input.sc-ion-searchbar-md {
-  background-color: rgba(248, 248, 248, 1);
-  box-shadow: none;
-  border: 2px solid transparent;
-  border-radius: 5px;
-}
+ion-toolbar {
+  /deep/.searchbar-input.sc-ion-searchbar-md {
+    background-color: rgba(248, 248, 248, 1);
+    box-shadow: none;
+    border: 2px solid transparent;
+    border-radius: 5px;
+  }
 
-/deep/.searchbar-input.sc-ion-searchbar-md:focus {
-  border: 2px solid rgba(150, 190, 255, 0.87);
-  border-radius: 5px;
-}
+  /deep/.searchbar-input.sc-ion-searchbar-md:focus {
+    border: 2px solid rgba(150, 190, 255, 0.87);
+    border-radius: 5px;
+  }
 
-/deep/ .searchbar-input.sc-ion-searchbar-md {
-  height: 30px;
+  /deep/ .searchbar-input.sc-ion-searchbar-md {
+    height: 30px;
+  }
 }
 
 ion-searchbar {

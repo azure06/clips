@@ -21,6 +21,13 @@ export interface Clip extends Partial<ViewDetails>, Base {
   formats: string[];
 }
 
+export interface QuillCard<T> extends Base {
+  title: string;
+  contents: T;
+  label: string;
+  displayOrder: number;
+}
+
 export interface UserInfo {
   displayName: string;
   emailAddress: string;

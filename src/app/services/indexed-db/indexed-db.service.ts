@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Clip } from '../../models/models';
+import { Clip, QuillCard } from '../../models/models';
 
 @Injectable()
 export class IndexedDBService {
@@ -9,7 +9,7 @@ export class IndexedDBService {
   }
 
   constructor() {
-    this.makeRequest({ upgradeHandler: this.onUpgradeNeeded });
+    this.makeRequest({ upgradeHandler: this.onUpgradeNeeded.bind(this) });
   }
 
   private makeRequest({
@@ -44,6 +44,7 @@ export class IndexedDBService {
     });
   }
 
+  // ----------------------------------------- Clips -----------------------------------------------
   public getClips(options?: {
     index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     lowerBound?: number;
@@ -171,7 +172,77 @@ export class IndexedDBService {
     return this.makeRequest({ successHandler });
   }
 
+  // ----------------------------------------- Quill Cards -----------------------------------------------
+
+  public addQuillCard<T>(quillCard: QuillCard<T>): Promise<any> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const transaction = db.transaction(['quill-cards'], 'readwrite');
+        // report on the success of the transaction completing, when everything is done
+        transaction.oncomplete = () => console.log('transaction complete');
+        transaction.onerror = _reject;
+
+        const quillCardStore = transaction.objectStore('quill-cards');
+        const clipStoreRequest = quillCardStore.add(quillCard);
+
+        clipStoreRequest.onsuccess = resolve;
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
+  public modifyQuillCard<T>(quillCard: QuillCard<T>): Promise<any> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const objectStore = db
+          .transaction(['quill-cards'], 'readwrite')
+          .objectStore('quill-cards');
+
+        const updateRequest = objectStore.put(quillCard);
+        updateRequest.onerror = _reject;
+        updateRequest.onsuccess = resolve;
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
+  public removeQuillCard<T>(quillCard: QuillCard<T>): Promise<any> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const objectStore = db
+          .transaction(['quill-cards'], 'readwrite')
+          .objectStore('quill-cards');
+
+        const removeRequest = objectStore.delete(quillCard.id);
+        removeRequest.onerror = _reject;
+        removeRequest.onsuccess = resolve;
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
+  public getAllQuillCards<T>(): Promise<Array<QuillCard<T>>> {
+    const successHandler = (db: IDBDatabase) => {
+      return new Promise((resolve, _reject) => {
+        const transaction = db.transaction(['quill-cards'], 'readonly');
+        const request = transaction
+          .objectStore('quill-cards')
+          .index('displayOrder')
+          .getAll();
+
+        request.onerror = _reject;
+        request.onsuccess = () => resolve(request.result);
+      });
+    };
+    return this.makeRequest({ successHandler });
+  }
+
   private onUpgradeNeeded(event: IDBVersionChangeEvent) {
+    this.createClipsStore(event);
+    this.createQuillCardStore(event);
+  }
+
+  private createClipsStore(event: IDBVersionChangeEvent) {
     const data = [];
     const db = (event.target as IDBOpenDBRequest).result;
     const objectStore = db.createObjectStore('clips', {
@@ -192,6 +263,29 @@ export class IndexedDBService {
         .objectStore('clips');
       data.forEach(clip => {
         clipsObjectStore.add(clip);
+      });
+    };
+  }
+
+  private createQuillCardStore(event: IDBVersionChangeEvent) {
+    const data = [];
+    const db = (event.target as IDBOpenDBRequest).result;
+    const objectStore = db.createObjectStore('quill-cards', {
+      keyPath: 'id'
+    });
+
+    objectStore.createIndex('title', 'title', { unique: false });
+    objectStore.createIndex('displayOrder', 'displayOrder', { unique: false });
+    objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+    objectStore.createIndex('createdAt', 'createdAt', { unique: false });
+
+    objectStore.transaction.oncomplete = _event => {
+      // Store values in the newly created objectStore.
+      const clipsObjectStore = db
+        .transaction('quill-cards', 'readwrite')
+        .objectStore('quill-cards');
+      data.forEach(quillCard => {
+        clipsObjectStore.add(quillCard);
       });
     };
   }

@@ -1,29 +1,11 @@
 <ion-content>
   <!-- Card -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Card Title</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <div id="editor-container"></div>
-    </ion-card-content>
-
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button color="medium" size="small" disabled>
-          <span class="label">Infiniti</span>
-        </ion-button>
-      </ion-buttons>
-      <ion-buttons slot="primary">
-        <ion-button color="medium" size="small">
-          <span class="copy">Copy</span>
-        </ion-button>
-        <ion-button color="medium" size="small">
-          <span class="remove">Remove</span>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-card>
+  <app-quill-card
+    *ngFor="let quillCard of (quillCardsObservable | async); let i = index"
+    [quillCard]="quillCard"
+    (modifyQuillCard)="modifyQuillCard($event)"
+    (removeQuillCard)="removeQuillCard($event)"
+  ></app-quill-card>
 </ion-content>
 
 <!-- Footer -->
@@ -34,7 +16,7 @@
       cancelButtonText="Custom Cancel"
     ></ion-searchbar>
     <ion-buttons slot="primary">
-      <ion-button shape="round" color="medium">
+      <ion-button shape="round" color="medium" (click)="addQuillCard()">
         <ion-icon slot="icon-only" name="add"></ion-icon>
       </ion-button>
     </ion-buttons>

@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { QuillCardComponentModule } from '../../components/quill-card/quill-card.module';
 import { EditorPage } from './editor.page';
 
 @NgModule({
@@ -11,6 +12,7 @@ import { EditorPage } from './editor.page';
     IonicModule,
     CommonModule,
     FormsModule,
+    QuillCardComponentModule,
     RouterModule.forChild([{ path: '', component: EditorPage }])
   ],
   exports: [],
