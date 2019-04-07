@@ -52,6 +52,14 @@
           <ion-button
             fill="clear"
             shape="round"
+            color="medium"
+            (click)="onEdit($event)"
+          >
+            <ion-icon name="create"></ion-icon>
+          </ion-button>
+          <ion-button
+            fill="clear"
+            shape="round"
             [color]="view === 'htmlView' ? 'primary' : 'medium'"
             [disabled]="clip.type === 'image' || !hasHtmlView"
             (click)="

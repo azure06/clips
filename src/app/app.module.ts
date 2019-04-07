@@ -26,6 +26,7 @@ import { GoogleDriveServiceModule } from './services/google-drive/google-drive.m
 import { GoogleOAuth2ServiceModule } from './services/google-oauth2/google-oauth2.module';
 import { GoogleTranslateServiceModule } from './services/google-translate/google-translate.module';
 import { PreferencesServiceModule } from './services/preferences/preferences.module';
+import { QuillCardServiceModule } from './services/quill-cards/quill-cards.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -41,6 +42,7 @@ import { PreferencesServiceModule } from './services/preferences/preferences.mod
     PreferencesServiceModule,
     ElectronServiceModule,
     ClipboardServiceModule,
+    QuillCardServiceModule,
     GoogleOAuth2ServiceModule,
     GoogleDriveServiceModule,
     GoogleTranslateServiceModule,

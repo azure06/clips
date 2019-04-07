@@ -20,7 +20,7 @@ import { IndexedDBService } from '../indexed-db/indexed-db.service';
 export class ClipboardService {
   constructor(
     private electronService: ElectronService,
-    private indexDBService: IndexedDBService,
+    private indexedDBService: IndexedDBService,
     private googleDriveService: GoogleDriveService,
     private store: Store<fromClips.State>,
     private ngZone: NgZone
@@ -44,7 +44,7 @@ export class ClipboardService {
    */
   private async handleClipboardChangeEvent(clip: Clip, addToDrive: boolean) {
     const _clip = { ...clip, id: clip.id || uuidv4() };
-    const targetClip = await this.indexDBService.findClip(clip);
+    const targetClip = await this.indexedDBService.findClip(clip);
     targetClip
       ? this.modifyClip(
           {
@@ -69,7 +69,7 @@ export class ClipboardService {
     index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
     keyRange?: IDBKeyRange;
   }) {
-    const clips = await this.indexDBService.getClips({
+    const clips = await this.indexedDBService.getClips({
       upperBound: limit,
       keyRange,
       index
@@ -81,16 +81,17 @@ export class ClipboardService {
 
   public async getClipsFromIdb(
     options: {
-      limit?: number;
+      upperBound?: number;
+      lowerBound?: number;
       index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
       keyRange?: IDBKeyRange;
     } = {}
   ) {
-    return this.indexDBService.getClips({
-      upperBound: options.limit,
-      keyRange: options.keyRange,
-      index: options.index
-    });
+    return this.indexedDBService.getClips(options);
+  }
+
+  public async clearAllClips() {
+    await this.indexedDBService.clearAllData();
   }
 
   public getClipsFromState(): Promise<Clip[]> {
@@ -117,21 +118,21 @@ export class ClipboardService {
   }
 
   public async addClip(clip: Clip) {
-    await this.indexDBService.addClip(clip);
+    await this.indexedDBService.addClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
     });
   }
 
   public async modifyClip(clip: Clip, sort?: boolean) {
-    await this.indexDBService.modifyClip(clip);
+    await this.indexedDBService.modifyClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new ModifyClip({ clip, sort }));
     });
   }
 
   public async removeClip(clip: Clip) {
-    await this.indexDBService.removeClip(clip);
+    await this.indexedDBService.removeClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new RemoveClip({ clip }));
     });

@@ -2,6 +2,12 @@ ion-card {
   /deep/.editor-container {
     min-height: 2.5rem;
 
+    /deep/.ql-editor p {
+      font-size: 0.8rem;
+      color: var(--text-color--light);
+      font-family: 'Roboto', sans-serif;
+    }
+
     /** For Quill JS*/
     /deep/pre {
       font-family: 'Roboto Mono', monospace;
@@ -32,7 +38,7 @@ ion-card {
       --padding-start: 0;
       --padding-left: 0;
       --color: var(--text-color--light);
-      font-size: 1rem;
+      font-size: 0.96rem;
       font-weight: 700;
     }
   }
@@ -46,7 +52,7 @@ ion-card {
   }
   ion-toolbar {
     ion-input {
-      --color: rgba(190, 200, 205, 1);
+      --color: var(--text-color--extra-light);
       font-size: 0.7rem;
       font-weight: 500;
       max-width: 128px;

@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { ClipboardService } from '../../services/clipboard/clipboard.service';
 import { ElectronService } from '../../services/electron/electron.service';
-import { IndexedDBService } from '../../services/indexed-db/indexed-db.service';
 import { PreferencesService } from '../../services/preferences/preferences.service';
 
 @Component({
@@ -42,7 +41,6 @@ export class SystemPage {
     public es: ElectronService,
     public clipboardService: ClipboardService,
     public preferencesService: PreferencesService,
-    public indexedDBService: IndexedDBService,
     public toastController: ToastController
   ) {
     this.general = preferencesService.getAppSettings().general;
@@ -66,7 +64,7 @@ export class SystemPage {
   }
 
   public async removeAllHistory() {
-    await this.indexedDBService.clearAllData();
+    await this.clipboardService.clearAllClips();
     const toast = await this.toastController.create({
       message: 'Data has been cleared!',
       duration: 2000,

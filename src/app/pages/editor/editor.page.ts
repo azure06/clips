@@ -5,7 +5,7 @@ import { concatMap, map } from 'rxjs/operators';
 // tslint:disable-next-line: no-submodule-imports
 import uuidv4 from 'uuid/v4';
 import { QuillCard } from '../../models/models';
-import { IndexedDBService } from '../../services/indexed-db/indexed-db.service';
+import { QuillCardsService } from '../../services/quill-cards/quill-cards.service';
 
 @Component({
   selector: 'app-editor-page',
@@ -30,17 +30,17 @@ export class EditorPage implements OnInit, OnDestroy {
   public quillCardTRSubject = new Subject<QuillCard<any>>();
   public subscription: Subscription;
 
-  constructor(private indexedDBService: IndexedDBService) {}
+  constructor(private quillCardService: QuillCardsService) {}
 
   async ngOnInit(): Promise<void> {
-    this.quillCards = await this.indexedDBService.getAllQuillCards();
+    this.quillCards = await this.quillCardService.getAllQuillCards();
     this.quillCardsBehaviorSubject.next(this.quillCards);
 
     this.subscription = this.quillCardTRSubject
       .asObservable()
       .pipe(
         concatMap(quillCard =>
-          this.indexedDBService
+          this.quillCardService
             .modifyQuillCard(quillCard)
             .catch(err => console.error('Quillcard transaction err: ', err))
             .then(res => {
@@ -70,7 +70,7 @@ export class EditorPage implements OnInit, OnDestroy {
       label: '',
       displayOrder: this.quillCards.length
     };
-    await this.indexedDBService.addQuillCard(quillCard);
+    await this.quillCardService.addQuillCard(quillCard);
     this.quillCards.push(quillCard);
     this.quillCardsBehaviorSubject.next(this.quillCards);
   }
@@ -83,7 +83,7 @@ export class EditorPage implements OnInit, OnDestroy {
     this.quillCards = this.quillCards.filter(
       _quillCard => _quillCard.id !== quillCard.id
     );
-    await this.indexedDBService.removeQuillCard(quillCard);
+    await this.quillCardService.removeQuillCard(quillCard);
     this.quillCardsBehaviorSubject.next(this.quillCards);
   }
 

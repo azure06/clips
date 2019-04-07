@@ -16,6 +16,7 @@ export class ClipboardItemComponent {
     remove: boolean;
   } = { translate: false, star: false, remove: false };
   @Output() removeClip = new EventEmitter();
+  @Output() editClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
   @Output() copyToClipboard = new EventEmitter();
@@ -52,6 +53,11 @@ export class ClipboardItemComponent {
 
   onMouseLeave(event: MouseEvent) {
     this.hasMouseEntered = false;
+  }
+
+  onEdit(event: Event) {
+    event.stopPropagation();
+    this.editClip.emit({ ...this.clip });
   }
 
   onAddToBookmarkClick(event: Event): void {

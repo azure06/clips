@@ -10,7 +10,6 @@ import { Action } from '@ngrx/store';
 import { from, Observable, of } from 'rxjs';
 import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 import { ClipboardService } from '../../../../services/clipboard/clipboard.service';
-import { IndexedDBService } from '../../../../services/indexed-db/indexed-db.service';
 import {
   AddClip,
   AddClipFailure,
@@ -31,7 +30,6 @@ import {
 export class ClipboardEffects implements OnRunEffects {
   constructor(
     private actions$: Actions,
-    private indexedDBService: IndexedDBService,
     private clipboardService: ClipboardService
   ) {}
 
@@ -47,7 +45,7 @@ export class ClipboardEffects implements OnRunEffects {
             action.payload.limit !== undefined
               ? lowerBound + action.payload.limit
               : undefined;
-          return this.indexedDBService.getClips({
+          return this.clipboardService.getClipsFromIdb({
             ...action.payload,
             lowerBound,
             upperBound
