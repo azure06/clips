@@ -8,14 +8,15 @@
   </ion-card-header>
   <ion-card-content>
     <div [id]="containerId" class="editor-container"></div>
+    <p>{{ quillCard.dateFromNow }}</p>
   </ion-card-content>
 
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button color="medium" size="small" disabled>
-        <span class="label">Infiniti</span>
-      </ion-button>
-    </ion-buttons>
+    <ion-input
+      placeholder="Label..."
+      [value]="quillCard.label"
+      (ionChange)="onLabelChange($event)"
+    ></ion-input>
     <ion-buttons slot="primary">
       <ion-button color="medium" size="small">
         <span class="copy">Copy</span>

@@ -26,6 +26,7 @@ export interface QuillCard<T> extends Base {
   contents: T;
   label: string;
   displayOrder: number;
+  dateFromNow?: string;
 }
 
 export interface UserInfo {

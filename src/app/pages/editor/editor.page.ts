@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import moment from 'moment';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
-import { concatMap } from 'rxjs/operators';
+import { concatMap, map } from 'rxjs/operators';
 // tslint:disable-next-line: no-submodule-imports
 import uuidv4 from 'uuid/v4';
 import { QuillCard } from '../../models/models';
@@ -16,7 +17,16 @@ export class EditorPage implements OnInit, OnDestroy {
   public quillCardsBehaviorSubject: BehaviorSubject<
     Array<QuillCard<any>>
   > = new BehaviorSubject(this.quillCards);
-  public quillCardsObservable = this.quillCardsBehaviorSubject.asObservable();
+  public quillCardsObservable = this.quillCardsBehaviorSubject
+    .asObservable()
+    .pipe(
+      map(quillCards =>
+        quillCards.map(quillCard => {
+          quillCard.dateFromNow = moment(quillCard.updatedAt).fromNow();
+          return quillCard;
+        })
+      )
+    );
   public quillCardTRSubject = new Subject<QuillCard<any>>();
   public subscription: Subscription;
 
@@ -57,7 +67,7 @@ export class EditorPage implements OnInit, OnDestroy {
       contents: {},
       createdAt: new Date().getTime(),
       updatedAt: new Date().getTime(),
-      label: 'none',
+      label: '',
       displayOrder: this.quillCards.length
     };
     await this.indexedDBService.addQuillCard(quillCard);

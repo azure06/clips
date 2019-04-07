@@ -27,6 +27,7 @@ export class QuillCardComponent implements AfterViewInit, OnDestroy {
   private quill: Quill;
   private change = new Delta();
   private title = { hasChange: false, value: '' };
+  private label = { hasChange: false, value: '' };
   private subscription: Subscription;
   public containerId = `editor-container-${uuidv4()}`;
   constructor() {}
@@ -35,6 +36,7 @@ export class QuillCardComponent implements AfterViewInit, OnDestroy {
     return {
       ...this.quillCard,
       title: this.title.value || this.quillCard.title,
+      label: this.label.value || this.quillCard.label,
       contents: this.quill.getContents(),
       updatedAt: new Date().getTime()
     };
@@ -62,10 +64,18 @@ export class QuillCardComponent implements AfterViewInit, OnDestroy {
       delta => (this.change = this.change.compose(delta))
     );
 
+    console.error(this.quillCard);
+
     this.subscription = interval(1500)
       .pipe(
         tap(() => {
-          if (this.change.length() > 0 || this.title.hasChange) {
+          if (
+            this.change.length() > 0 ||
+            this.title.hasChange ||
+            this.label.hasChange
+          ) {
+            this.title.hasChange = false;
+            this.label.hasChange = false;
             this.modifyQuillCard.emit(this._quillCard);
             this.change = new Delta();
           }
@@ -81,12 +91,20 @@ export class QuillCardComponent implements AfterViewInit, OnDestroy {
     };
   }
 
+  public onLabelChange(event) {
+    this.label = {
+      hasChange: true,
+      value: event.detail.value
+    };
+  }
+
   public onRemoveQuillCard() {
     this.removeQuillCard.emit(this.quillCard);
   }
 
   public ngOnDestroy(): void {
     if (this.change.length() > 0 || this.title.hasChange) {
+      this.title.hasChange = false;
       this.modifyQuillCard.emit(this._quillCard);
     }
     this.subscription.unsubscribe();

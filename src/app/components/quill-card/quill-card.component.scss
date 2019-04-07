@@ -1,6 +1,6 @@
 ion-card {
   /deep/.editor-container {
-    min-height: 12rem;
+    min-height: 2.5rem;
 
     /** For Quill JS*/
     /deep/pre {
@@ -19,19 +19,39 @@ ion-card {
     /deep/.ql-picker-options {
       background-color: var(--ion-color-medium);
     }
+
+    /deep/.ql-tooltip-arrow {
+      border-bottom-color: var(--ion-color-medium);
+    }
   }
 }
 
 ion-card {
-  ion-input {
-    --padding-start: 0;
-    --padding-left: 0;
-    --color: var(--text-color--light);
-    font-size: 1rem;
-    font-weight: 700;
-    .native-input.sc-ion-input-md {
-      // padding-left: 0 !important;
-      // padding-right: 0 !important;
+  ion-card-header {
+    ion-input {
+      --padding-start: 0;
+      --padding-left: 0;
+      --color: var(--text-color--light);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+  }
+  ion-card-content {
+    z-index: 11;
+    p {
+      text-align: right;
+      color: var(--text-color--extra-light);
+      font-size: 0.74rem;
+    }
+  }
+  ion-toolbar {
+    ion-input {
+      --color: rgba(190, 200, 205, 1);
+      font-size: 0.7rem;
+      font-weight: 500;
+      max-width: 128px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
   ion-label {
@@ -42,11 +62,11 @@ ion-card {
 
   ion-button {
     span {
-      font-size: 0.79rem;
-      font-weight: 700;
+      font-size: 0.7rem;
+      font-weight: 600;
     }
     .label {
-      font-size: 0.7rem;
+      font-size: 0.66rem;
       font-weight: 500;
       color: var(--text-color--extra-light);
     }
