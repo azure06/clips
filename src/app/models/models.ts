@@ -21,12 +21,15 @@ export interface Clip extends Partial<ViewDetails>, Base {
   formats: string[];
 }
 
-export interface QuillCard<T> extends Base {
+export interface QuillCard<T> {
+  id?: number;
   title: string;
   contents: T;
   label: string;
   displayOrder: number;
   dateFromNow?: string;
+  updatedAt: number;
+  createdAt: number;
 }
 
 export interface UserInfo {

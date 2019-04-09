@@ -174,7 +174,7 @@ export class IndexedDBService {
 
   // ----------------------------------------- Quill Cards -----------------------------------------------
 
-  public addQuillCard<T>(quillCard: QuillCard<T>): Promise<any> {
+  public async addQuillCard<T>(quillCard: QuillCard<T>): Promise<number> {
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
         const transaction = db.transaction(['quill-cards'], 'readwrite');
@@ -188,7 +188,7 @@ export class IndexedDBService {
         clipStoreRequest.onsuccess = resolve;
       });
     };
-    return this.makeRequest({ successHandler });
+    return (await this.makeRequest({ successHandler })).target.result;
   }
 
   public modifyQuillCard<T>(quillCard: QuillCard<T>): Promise<any> {
@@ -225,10 +225,7 @@ export class IndexedDBService {
     const successHandler = (db: IDBDatabase) => {
       return new Promise((resolve, _reject) => {
         const transaction = db.transaction(['quill-cards'], 'readonly');
-        const request = transaction
-          .objectStore('quill-cards')
-          .index('displayOrder')
-          .getAll();
+        const request = transaction.objectStore('quill-cards').getAll();
 
         request.onerror = _reject;
         request.onsuccess = () => resolve(request.result);
@@ -271,7 +268,8 @@ export class IndexedDBService {
     const data = [];
     const db = (event.target as IDBOpenDBRequest).result;
     const objectStore = db.createObjectStore('quill-cards', {
-      keyPath: 'id'
+      keyPath: 'id',
+      autoIncrement: true
     });
 
     objectStore.createIndex('title', 'title', { unique: false });

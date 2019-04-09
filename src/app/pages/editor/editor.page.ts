@@ -33,7 +33,7 @@ export class EditorPage implements OnInit, OnDestroy {
   constructor(private quillCardService: QuillCardsService) {}
 
   async ngOnInit(): Promise<void> {
-    this.quillCards = await this.quillCardService.getAllQuillCards();
+    this.quillCards = (await this.quillCardService.getAllQuillCards()).reverse();
     this.quillCardsBehaviorSubject.next(this.quillCards);
 
     this.subscription = this.quillCardTRSubject
@@ -62,16 +62,15 @@ export class EditorPage implements OnInit, OnDestroy {
 
   public async addQuillCard() {
     const quillCard = {
-      id: uuidv4(),
       title: '',
       contents: {},
       createdAt: new Date().getTime(),
       updatedAt: new Date().getTime(),
       label: '',
-      displayOrder: this.quillCards.length
+      displayOrder: -1
     };
-    await this.quillCardService.addQuillCard(quillCard);
-    this.quillCards.push(quillCard);
+    const id = await this.quillCardService.addQuillCard(quillCard);
+    this.quillCards = [{ id, ...quillCard }, ...this.quillCards];
     this.quillCardsBehaviorSubject.next(this.quillCards);
   }
 

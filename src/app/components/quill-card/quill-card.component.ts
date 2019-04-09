@@ -63,9 +63,6 @@ export class QuillCardComponent implements AfterViewInit, OnDestroy {
       'text-change',
       delta => (this.change = this.change.compose(delta))
     );
-
-    console.error(this.quillCard);
-
     this.subscription = interval(1500)
       .pipe(
         tap(() => {
@@ -98,7 +95,7 @@ export class QuillCardComponent implements AfterViewInit, OnDestroy {
     };
   }
 
-  public onRemoveQuillCard() {
+  public onRemoveQuillCard(event) {
     this.removeQuillCard.emit(this.quillCard);
   }
 

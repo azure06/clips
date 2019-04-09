@@ -65,7 +65,6 @@ export class ClipboardHistoryPage {
 
   async editClip(clip: Clip) {
     await this.quillCardsService.addQuillCard({
-      id: uuidv4(),
       title: '',
       contents: { ops: [{ insert: clip.plainText }] },
       label: '',
