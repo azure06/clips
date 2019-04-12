@@ -12,16 +12,19 @@
 <ion-footer>
   <ion-toolbar>
     <ion-searchbar
-      showCancelButton
-      cancelButtonText="Custom Cancel"
+      animated
+      debounce="500"
+      search-icon="search"
+      type="search"
+      (ionChange)="onInput($event)"
     ></ion-searchbar>
     <ion-buttons slot="primary">
       <ion-button shape="round" color="medium" (click)="addQuillCard()">
         <ion-icon slot="icon-only" name="add"></ion-icon>
       </ion-button>
-      <ion-button shape="round" color="medium" (click)="addQuillCard()">
+      <!-- <ion-button shape="round" color="medium" (click)="addQuillCard()">
         <ion-icon slot="icon-only" name="more"></ion-icon>
-      </ion-button>
+      </ion-button> -->
     </ion-buttons>
   </ion-toolbar>
 </ion-footer>

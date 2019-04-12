@@ -68,6 +68,7 @@ export class ClipboardHistoryPage {
       title: '',
       contents: { ops: [{ insert: clip.plainText }] },
       label: '',
+      plainText: clip.plainText,
       displayOrder: -1,
       updatedAt: new Date().getTime(),
       createdAt: new Date().getTime()

@@ -24,6 +24,7 @@ export interface Clip extends Partial<ViewDetails>, Base {
 export interface QuillCard<T> {
   id?: number;
   title: string;
+  plainText: string;
   contents: T;
   label: string;
   displayOrder: number;

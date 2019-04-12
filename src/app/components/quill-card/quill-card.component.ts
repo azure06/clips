@@ -37,6 +37,7 @@ export class QuillCardComponent implements AfterViewInit, OnDestroy {
       ...this.quillCard,
       title: this.title.value || this.quillCard.title,
       label: this.label.value || this.quillCard.label,
+      plainText: this.quill.getText(0, this.quill.getContents().length()),
       contents: this.quill.getContents(),
       updatedAt: new Date().getTime()
     };

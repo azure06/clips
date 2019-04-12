@@ -1,4 +1,5 @@
 import { app } from 'electron';
+import log from 'electron-log';
 import * as fs from 'fs';
 import { GaxiosResponse } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
@@ -139,7 +140,8 @@ export default class GoogleDriveService {
             fields: 'id'
           } as any)
           .catch(err => {
-            console.error('Couldn\'t add to drive', err);
+            log.error('[File Adder] Could not add to drive: ', err);
+            console.error('Could not add to drive', err);
             return {};
           });
       }),
@@ -182,7 +184,7 @@ export default class GoogleDriveService {
             .pipe(dest);
         })
         .catch(err => {
-          console.error('Drive error: ', err);
+          log.error('Drive download err:', err);
           reject(err);
         });
     });
@@ -246,9 +248,17 @@ export default class GoogleDriveService {
                     console.error('File path not exists: ', filePath);
                     return acc;
                   }
-                  const _clips: { [key: string]: Clip } = JSON.parse(
-                    fs.readFileSync(filePath, 'utf8') || '{}'
-                  );
+
+                  let _clips: { [key: string]: Clip } = {};
+
+                  try {
+                    _clips = JSON.parse(
+                      fs.readFileSync(filePath, 'utf8') || '{}'
+                    );
+                  } catch (error) {
+                    log.error('Reading file error: ', error);
+                  }
+
                   Object.entries(_clips).forEach(([key, clip]) => {
                     acc[key] =
                       acc[key] && acc[key].updatedAt > clip.updatedAt
@@ -260,14 +270,13 @@ export default class GoogleDriveService {
                 {}
               );
               const clips: Clip[] = Object.values(clipsFromFile);
-              // filePaths.forEach(_path => {
-              //   fs.unlink(_path, err => {
-              //     if (err) {
-              //       throw err;
-              //     }
-              //     console.log(`${_path} was deleted.`);
-              //   });
-              // });
+
+              filePaths.forEach(_path => {
+                fs.unlink(_path, err => {
+                  log.error('File unlink err:', err);
+                  console.log(`${_path} was deleted.`);
+                });
+              });
               return clips;
             })
           )
