@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions';
-import * as sendGrid from '@sendgrid/mail';
+import sendGrid from '@sendgrid/mail';
 import { environment } from './environemnt.config';
 
 sendGrid.setApiKey(environment.sendGridApiKey);
