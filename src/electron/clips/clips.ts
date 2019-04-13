@@ -161,12 +161,9 @@ const handleClipboard = () => {
   clipboardService.on('clipboard-change', clipboard =>
     mainWindow.webContents.send('clipboard-change', clipboard)
   );
-  ipcMain.on('copy-to-clipboard', (event, data) => {
-    clipboardService.copyToClipboard(data);
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    }
-  });
+  ipcMain.on('copy-to-clipboard', (event, data) =>
+    clipboardService.copyToClipboard(data)
+  );
 };
 
 const createMainWindow = () => {

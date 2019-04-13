@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { clipboard } from 'electron';
 import { Clip } from '../../models/models';
 
 @Component({

@@ -15,6 +15,7 @@ import * as fromClips from '../../pages/clipboard/store/index';
 import { ElectronService } from '../electron/electron.service';
 import { GoogleDriveService } from '../google-drive/google-drive.service';
 import { IndexedDBService } from '../indexed-db/indexed-db.service';
+import { PreferencesService } from '../preferences/preferences.service';
 
 @Injectable()
 export class ClipboardService {
@@ -22,6 +23,7 @@ export class ClipboardService {
     private electronService: ElectronService,
     private indexedDBService: IndexedDBService,
     private googleDriveService: GoogleDriveService,
+    private preferencesService: PreferencesService,
     private store: Store<fromClips.State>,
     private ngZone: NgZone
   ) {
@@ -143,5 +145,9 @@ export class ClipboardService {
     content: string;
   }) {
     this.electronService.ipcRenderer.send('copy-to-clipboard', data);
+    const { closeOnBlur } = this.preferencesService.getAppSettings().general;
+    if (this.electronService.mainWindow.isVisible() && closeOnBlur) {
+      this.electronService.mainWindow.hide();
+    }
   }
 }

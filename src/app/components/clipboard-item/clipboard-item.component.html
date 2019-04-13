@@ -53,6 +53,7 @@
             fill="clear"
             shape="round"
             color="medium"
+            [disabled]="clip.type === 'image'"
             (click)="onEdit($event)"
           >
             <ion-icon name="create"></ion-icon>
