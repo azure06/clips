@@ -6,7 +6,14 @@ import { OAuth2Client } from 'google-auth-library';
 // tslint:disable-next-line: no-submodule-imports
 import { drive_v3, google } from 'googleapis';
 import * as path from 'path';
-import { BehaviorSubject, combineLatest, from, of, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  from,
+  interval,
+  of,
+  Subject
+} from 'rxjs';
 import {
   bufferTime,
   catchError,
@@ -174,7 +181,19 @@ export default class GoogleDriveService {
             .on('end', () => {
               console.log('Done downloading file');
               // File needs some more time to be created
-              setTimeout(() => resolve(filePath), 0);
+              const subscription = interval(1000)
+                .pipe(
+                  tap(val => {
+                    if (fs.existsSync(filePath)) {
+                      subscription.unsubscribe();
+                      resolve(filePath);
+                    } else if (val > 10) {
+                      subscription.unsubscribe();
+                      reject('Path not found');
+                    }
+                  })
+                )
+                .subscribe();
             })
             .on('error', err => {
               console.error('Error downloading file: ', err);
@@ -272,10 +291,12 @@ export default class GoogleDriveService {
               const clips: Clip[] = Object.values(clipsFromFile);
 
               filePaths.forEach(_path => {
-                fs.unlink(_path, err => {
-                  log.error('File unlink err:', err);
-                  console.log(`${_path} was deleted.`);
-                });
+                if (fs.existsSync(_path)) {
+                  fs.unlink(_path, err => {
+                    log.error('File unlink err:', err, _path);
+                    console.log(`${_path} was deleted.`);
+                  });
+                }
               });
               return clips;
             })
