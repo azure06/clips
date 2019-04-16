@@ -4,6 +4,7 @@ import { select, Store } from '@ngrx/store';
 import moment from 'moment';
 import { Observable } from 'rxjs';
 import { delay, filter, first, map } from 'rxjs/operators';
+import { ElectronService } from 'src/app/services/electron/electron.service';
 import { Clip } from '../../models/models';
 import { ClipboardService } from '../../services/clipboard/clipboard.service';
 import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
@@ -22,6 +23,7 @@ export class ClipboardImagesPage {
   constructor(
     private clipboardService: ClipboardService,
     private googleTranslateService: GoogleTranslateService,
+    private es: ElectronService,
     private store: Store<fromClips.State>
   ) {}
 
@@ -40,7 +42,7 @@ export class ClipboardImagesPage {
         this.loading = false;
         return clips.reduce((acc: Clip[], clip) => {
           if (clip.type === 'image') {
-            clip.plainView = clip.plainText.substring(0, 255);
+            clip.textView = clip.plainText.substring(0, 255);
             clip.dateFromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);
           }
@@ -67,6 +69,17 @@ export class ClipboardImagesPage {
     // if (this.data.length === 1000) {
     // event.target.disabled = true;
     // }
+  }
+
+  async downloadClip(clip: Clip) {
+    const { fileName } = await this.es.mainWindow.showSaveDialog({
+      defaultPath: 'Untitled',
+      filters: [{ name: 'Images', extensions: ['png'] }]
+    });
+
+    if (fileName) {
+      this.es.ipcRenderer.send('download-image-file', fileName, clip);
+    }
   }
 
   modifyClip(clip: Clip) {

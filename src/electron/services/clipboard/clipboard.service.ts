@@ -1,5 +1,6 @@
 import { clipboard, nativeImage } from 'electron';
 import { EventEmitter } from 'events';
+import uuidv4 from 'uuid/v4';
 
 enum Types {
   PlainText = 'text/plain',
@@ -19,19 +20,20 @@ export default class ClipboardService extends EventEmitter {
   async watchClipboard() {
     const plainText = clipboard.readText();
     const htmlText = clipboard.readHTML();
+    const reachText = clipboard.readRTF();
     const image = clipboard.readImage();
     const formats = clipboard.availableFormats();
 
     if (formats.length > 0) {
       if (
         formats.find(format => format.includes('text')) &&
-        !formats.find(format => format.includes('image')) &&
         plainText.trim() !== '' &&
         plainText !== this.previousText
       ) {
         this.previousText = plainText;
         this.emit('clipboard-change', {
           plainText,
+          reachText,
           htmlText,
           category: 'none',
           formats,
@@ -45,9 +47,9 @@ export default class ClipboardService extends EventEmitter {
       ) {
         this.previousFile = image.toBitmap();
         this.emit('clipboard-change', {
-          plainText:
-            plainText || image.toDataURL({ scaleFactor: 0.2 }).slice(-25),
+          plainText: uuidv4(),
           htmlText,
+          reachText,
           dataURI: image.toDataURL(),
           category: 'none',
           formats,

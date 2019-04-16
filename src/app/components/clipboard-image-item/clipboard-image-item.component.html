@@ -11,6 +11,15 @@
         slot="end"
         fill="clear"
         shape="round"
+        [color]="'medium'"
+        (click)="onDownloadClick($event)"
+      >
+        <ion-icon slot="icon-only" name="download"></ion-icon>
+      </ion-button>
+      <ion-button
+        slot="end"
+        fill="clear"
+        shape="round"
         [color]="clip.category === 'starred' ? 'primary' : 'medium'"
         (click)="onAddToBookmarkClick($event)"
       >

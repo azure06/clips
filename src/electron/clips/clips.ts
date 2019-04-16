@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain, nativeImage, shell } from 'electron';
 import * as isDev from 'electron-is-dev';
+import fs from 'fs';
 import { OAuth2Client } from 'google-auth-library';
 import * as path from 'path';
 import { Subscription } from 'rxjs';
@@ -10,7 +11,6 @@ import GoogleDriveService, {
 } from '../services/google-drive/google-drive.service';
 import GoogleTranslate from '../services/google-translate/google-translate.service';
 import GoogleOAuth2Service from '../services/oauth2/google-oauth2.service';
-
 let mainWindow: Electron.BrowserWindow = null;
 
 const initGoogleDrive = (oAuth2Client: OAuth2Client) => {
@@ -164,6 +164,13 @@ const handleClipboard = () => {
   ipcMain.on('copy-to-clipboard', (event, data) =>
     clipboardService.copyToClipboard(data)
   );
+
+  ipcMain.on('download-image-file', (event, fileName, clip) => {
+    const base64Data = clip.dataURI.replace(/^data:image\/png;base64,/, '');
+    fs.writeFile(fileName, base64Data, 'base64', err => {
+      console.error(err);
+    });
+  });
 };
 
 const createMainWindow = () => {
@@ -203,6 +210,7 @@ const createMainWindow = () => {
     event.preventDefault();
     shell.openExternal(url);
   });
+
   // Emitted when the window is closed.
   mainWindow.on('closed', () => (mainWindow = null));
 };

@@ -19,7 +19,7 @@ export class ClipboardItemComponent {
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
   @Output() copyToClipboard = new EventEmitter();
-  public view: 'plainView' | 'htmlView' = 'plainView';
+  public view: 'textView' | 'htmlView' = 'textView';
   public hasMouseEntered = false;
   public isTranslating = false;
 
@@ -29,7 +29,7 @@ export class ClipboardItemComponent {
     return !!this.clip.htmlText;
   }
 
-  switchView(view: 'plainView' | 'htmlView') {
+  switchView(view: 'textView' | 'htmlView') {
     event.stopPropagation();
     this.view = view;
   }
@@ -39,7 +39,7 @@ export class ClipboardItemComponent {
       type: this.clip.type,
       content:
         this.clip.type === 'text'
-          ? this.view === 'plainView'
+          ? this.view === 'textView'
             ? this.clip.translationView || this.clip.plainText
             : this.clip.htmlText
           : this.clip.dataURI

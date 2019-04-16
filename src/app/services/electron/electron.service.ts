@@ -123,7 +123,13 @@ interface ElectronEvent {
   sender: any;
 }
 
-class MainWindow {
+interface Dialog {
+  showSaveDialog(
+    options: Electron.SaveDialogOptions
+  ): Promise<{ fileName: string; bookmark: string }>;
+}
+
+class MainWindow implements Dialog {
   private remote?: Electron.Remote;
   private blurSubject: Subject<ElectronEvent> = new Subject();
   private moveSubject: Subject<ElectronEvent> = new Subject();
@@ -204,5 +210,21 @@ class MainWindow {
     this.mainWindow
       ? this.mainWindow.show()
       : console.warn('Electron is not available');
+  }
+
+  showSaveDialog(
+    options: Electron.SaveDialogOptions
+  ): Promise<{ fileName: string; bookmark: string }> {
+    return new Promise((resolve, reject) =>
+      this.mainWindow
+        ? this.remote.dialog.showSaveDialog(
+            this.mainWindow,
+            options,
+            (fileName, bookmark) => {
+              resolve({ fileName, bookmark });
+            }
+          )
+        : reject('Electron is not available')
+    );
   }
 }

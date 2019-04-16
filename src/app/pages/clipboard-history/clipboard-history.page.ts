@@ -39,7 +39,7 @@ export class ClipboardHistoryPage {
       delay(0),
       map(clips => {
         for (const clip of clips) {
-          clip.plainView = clip.plainText.substring(0, 255);
+          clip.textView = clip.plainText.substring(0, 255);
           clip.dateFromNow = moment(clip.updatedAt).fromNow();
         }
         this.loading = false;

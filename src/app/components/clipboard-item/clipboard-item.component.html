@@ -30,10 +30,10 @@
             [title]="clip.htmlText"
           ></div>
           <h3
-            *ngIf="view === 'plainView' && !clip.translationView"
+            *ngIf="view === 'textView' && !clip.translationView"
             [title]="clip.plainText"
           >
-            {{ clip.plainView }}
+            {{ clip.textView }}
           </h3>
           <h3
             *ngIf="view !== 'htmlView' && clip.translationView"
@@ -64,7 +64,7 @@
             [color]="view === 'htmlView' ? 'primary' : 'medium'"
             [disabled]="clip.type === 'image' || !hasHtmlView"
             (click)="
-              switchView(view !== 'plainView' ? 'plainView' : 'htmlView')
+              switchView(view !== 'textView' ? 'textView' : 'htmlView')
             "
           >
             <i class="material-icons text-format">text_format</i>

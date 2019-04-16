@@ -5,9 +5,7 @@ interface Base {
 }
 
 interface ViewDetails {
-  plainView: string;
-  htmlView: string;
-  imagePreview: string;
+  textView: string;
   translationView: string;
   dateFromNow: string;
 }
@@ -15,6 +13,7 @@ interface ViewDetails {
 export interface Clip extends Partial<ViewDetails>, Base {
   plainText: string;
   htmlText?: string;
+  reachText?: string;
   dataURI?: string;
   category: 'none' | 'starred';
   type: 'text' | 'image';

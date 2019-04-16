@@ -42,7 +42,7 @@ export class ClipboardBookmarkPage {
       map(clips => {
         return clips.reduce((acc: Clip[], clip) => {
           if (clip.category === 'starred') {
-            clip.plainView = clip.plainText.substring(0, 255);
+            clip.textView = clip.plainText.substring(0, 255);
             clip.dateFromNow = moment(clip.updatedAt).fromNow();
             acc.push(clip);
           }

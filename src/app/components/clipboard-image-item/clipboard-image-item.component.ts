@@ -9,6 +9,7 @@ import { Clip } from '../../models/models';
 export class ClipboardImageItemComponent {
   @Input() clip: Clip;
   @Input() index;
+  @Output() downloadClip = new EventEmitter();
   @Output() removeClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
@@ -19,6 +20,10 @@ export class ClipboardImageItemComponent {
       ...this.clip,
       category: this.clip.category === 'starred' ? 'none' : 'starred'
     });
+  }
+
+  onDownloadClick(event: Event): void {
+    this.downloadClip.emit(this.clip);
   }
 
   onRemoveClick(event: Event): void {
