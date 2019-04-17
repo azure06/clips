@@ -80,7 +80,7 @@ export class PreferencesService {
       general: settings.general || {
         startup: true,
         closeOnBlur: true,
-        hideTitleBar: false
+        hideTitleBar: true
       },
       translate: settings.translate || {
         from: 'auto',

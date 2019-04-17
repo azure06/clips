@@ -46,8 +46,9 @@ export default class ClipboardService extends EventEmitter {
         !image.getBitmap().equals(this.previousFile || new Uint8Array())
       ) {
         this.previousFile = image.toBitmap();
+        const dataURI = image.toDataURL();
         this.emit('clipboard-change', {
-          plainText: uuidv4(),
+          plainText: plainText || dataURI.slice(-36),
           htmlText,
           reachText,
           dataURI: image.toDataURL(),
