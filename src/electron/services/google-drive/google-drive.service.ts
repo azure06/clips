@@ -293,7 +293,9 @@ export default class GoogleDriveService {
               filePaths.forEach(_path => {
                 if (fs.existsSync(_path)) {
                   fs.unlink(_path, err => {
-                    log.error('File unlink err:', err, _path);
+                    if (err) {
+                      log.error('File unlink err:', err, _path);
+                    }
                     console.log(`${_path} was deleted.`);
                   });
                 }
