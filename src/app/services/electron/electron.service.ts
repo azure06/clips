@@ -8,6 +8,7 @@ export class ElectronService {
   private _mainWindow: MainWindow = new MainWindow();
   private _ipcRenderer: IpcRenderer = new IpcRenderer();
   private _eventTracker: EventTracker = new EventTracker();
+  private _process?: NodeJS.Process = process;
 
   public get isAvailable() {
     return !!((window as any).require && (window as any).require('electron'));
@@ -19,6 +20,10 @@ export class ElectronService {
       this._eventTracker.setRemote(remote);
       this._ipcRenderer.setIpcRenderer(ipcRenderer);
     }
+  }
+
+  get process() {
+    return this._process || {};
   }
 
   get ipcRenderer() {

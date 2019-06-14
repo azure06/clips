@@ -120,7 +120,15 @@
         <!-- Toggles in a List -->
         <ion-list>
           <ion-item>
-            <ion-label><p>Ctrl + Alt +</p></ion-label>
+            <ion-label
+              ><p>
+                {{
+                  es.process.platform === 'darwin'
+                    ? 'Shift+Command+'
+                    : 'Ctrl + Alt +'
+                }}
+              </p></ion-label
+            >
             <ion-select
               [(ngModel)]="hotkeys.open"
               (ngModelChange)="setHotkeys($event)"

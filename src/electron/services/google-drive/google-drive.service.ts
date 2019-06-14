@@ -279,18 +279,24 @@ export default class GoogleDriveService {
       ),
       tap(clips => {
         const userDataDir = path.join(app.getPath('userData'), 'temp');
-        fs.readdir(userDataDir, (error, files) => {
-          if (error) {
-            throw error;
-          }
-          for (const file of files) {
-            fs.unlink(path.join(userDataDir, file), err => {
-              if (err) {
-                throw err;
+        try {
+          if (fs.existsSync(userDataDir)) {
+            fs.readdir(userDataDir, (error, files) => {
+              if (error) {
+                throw error;
+              }
+              for (const file of files) {
+                fs.unlink(path.join(userDataDir, file), err => {
+                  if (err) {
+                    throw err;
+                  }
+                });
               }
             });
           }
-        });
+        } catch (error) {
+          log.error('File removing error: ', error);
+        }
         console.log(
           clips.length > 0
             ? `New updates found: ${clips.length}.`
