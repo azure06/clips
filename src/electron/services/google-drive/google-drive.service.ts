@@ -21,7 +21,6 @@ import {
   delay,
   filter,
   map,
-  mergeMap,
   scan,
   startWith,
   tap
@@ -96,18 +95,18 @@ export class DriveHandler {
                 pageToken: nextPageToken || newStartPageToken
               })
             )
-            .catch(err => {
-              console.error('Unable to listen for changes: ', err);
+            .catch(error => {
+              console.error('Unable to listen for changes: ', error);
               return { changes: [], pageToken };
             })
-        ).pipe(delay(BUFFER_TIME / 2))
+        )
       ),
-      delay(BUFFER_TIME / 2), // Important in case changes detected before upload complete
+      delay(BUFFER_TIME),
       tap(({ pageToken }) =>
         this.driveHandler.pageTokenBehaviorSubject.next(pageToken)
       ),
       tap(({ changes }) =>
-        console.log('Emitted if new files are more then 0: ', changes.length)
+        console.log('Emit if new files are more then 0: ', changes.length)
       ),
       filter(({ changes }) => changes.length > 0)
     );
@@ -122,7 +121,7 @@ export default class GoogleDriveService {
     return this.clipSubject.asObservable().pipe(
       bufferTime(BUFFER_TIME),
       filter(clip => clip.length > 0),
-      mergeMap(clips => {
+      concatMap(clips => {
         const clipMap = clips.reduce(
           (acc: { [key: string]: Clip }, currentClip) => {
             acc[currentClip.id] = currentClip;
@@ -146,9 +145,9 @@ export default class GoogleDriveService {
             media,
             fields: 'id'
           } as any)
-          .catch(err => {
-            log.error('[File Adder] Could not add to drive: ', err);
-            console.error('Could not add to drive', err);
+          .catch(error => {
+            log.error('Could not add to drive: ', error);
+            console.error('Could not add to drive: ', error);
             return {};
           });
       }),
@@ -224,16 +223,16 @@ export default class GoogleDriveService {
     const fileAdderObservable = this.observeFileAdder().pipe(startWith({}));
 
     return combineLatest(driveObservable, fileAdderObservable).pipe(
-      tap(([{ changes }, addedFiles]) =>
+      tap(([{ changes }, addedFiles]) => {
         console.log(
           'Drive changes: ',
           changes.length,
           ', Files from current device: ',
           Object.keys(addedFiles)
-        )
-      ),
+        );
+      }),
       filter(([drive, addedFiles]) => drive.changes.length > 0),
-      mergeMap(async ([drive, addedFiles]) =>
+      concatMap(async ([drive, addedFiles]) =>
         from(
           Promise.all(
             drive.changes
@@ -252,24 +251,10 @@ export default class GoogleDriveService {
           ).then(filePaths => filePaths.filter(path => !!path) as string[])
         )
           .pipe(
-            catchError(err => {
-              // FIXME remove catchError since it shouldn't occur anymore
-              console.error(
-                'An error has occurred, no clip will be added ',
-                err
-              );
-              return of([] as string[]);
-            }),
             map(filePaths => {
               const clipsFromFile = filePaths.reduce(
                 (acc: { [key: string]: Clip }, filePath) => {
-                  if (!fs.existsSync(filePath)) {
-                    console.error('File path not exists: ', filePath);
-                    return acc;
-                  }
-
                   let _clips: { [key: string]: Clip } = {};
-
                   try {
                     _clips = JSON.parse(
                       fs.readFileSync(filePath, 'utf8') || '{}'
@@ -277,7 +262,6 @@ export default class GoogleDriveService {
                   } catch (error) {
                     log.error('Reading file error: ', error);
                   }
-
                   Object.entries(_clips).forEach(([key, clip]) => {
                     acc[key] =
                       acc[key] && acc[key].updatedAt > clip.updatedAt
@@ -288,30 +272,31 @@ export default class GoogleDriveService {
                 },
                 {}
               );
-              const clips: Clip[] = Object.values(clipsFromFile);
-
-              filePaths.forEach(_path => {
-                if (fs.existsSync(_path)) {
-                  fs.unlink(_path, err => {
-                    if (err) {
-                      log.error('File unlink err:', err, _path);
-                    }
-                    console.log(`${_path} was deleted.`);
-                  });
-                }
-              });
-              return clips;
+              return Object.values(clipsFromFile);
             })
           )
           .toPromise()
       ),
-      tap(clips =>
+      tap(clips => {
+        const userDataDir = path.join(app.getPath('userData'), 'temp');
+        fs.readdir(userDataDir, (error, files) => {
+          if (error) {
+            throw error;
+          }
+          for (const file of files) {
+            fs.unlink(path.join(userDataDir, file), err => {
+              if (err) {
+                throw err;
+              }
+            });
+          }
+        });
         console.log(
           clips.length > 0
             ? `New updates found: ${clips.length}.`
             : '...Nothing new found'
-        )
-      ),
+        );
+      }),
       filter(clips => clips.length > 0)
     );
   }
