@@ -1,6 +1,6 @@
 {
   "name": "infiniti-clips",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "author": "Infiniti",
   "homepage": "https://infiniticlips.com",
   "repository": {
@@ -52,6 +52,13 @@
       "www/**/*",
       "node_modules/**/*"
     ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns",
+      "publish": [
+        "github"
+      ]
+    },
     "win": {
       "publish": [
         "github"
