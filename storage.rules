@@ -3,7 +3,10 @@ service firebase.storage {
     match /{allPaths=**} {
       allow read, write: if false;
     }
-    match /windows-installer/{allPaths=**} {
+    match /windows/{allPaths=**} {
+    	allow read;
+    }
+    match /mac/{allPaths=**} {
     	allow read;
     }
   }
