@@ -2,8 +2,12 @@
   <!-- Header -->
   <div class="light-theme">
     <mat-toolbar class="nav-bar">
-      <img src="assets/icon/clip.svg" />
-      <span> <h2>Infiniti Clips</h2></span>
+      <button mat-flat-button (click)="navigate('')">
+        <div class="home-btn">
+          <img src="assets/icon/clip.svg" />
+          <h2>Infiniti Clips</h2>
+        </div>
+      </button>
       <button
         mat-button
         [color]="router.url === '/features' ? 'primary' : ''"

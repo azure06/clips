@@ -17,6 +17,12 @@
     width: 48px;
   }
 
+  .home-btn {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
   .github {
     color: var(--text-color--light);
     font-size: 0.8rem;

@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { FeaturesPage } from '../features/features.page';
 import { NavigationPage } from './navigation.page';
 
 const routes: Routes = [
@@ -8,6 +7,15 @@ const routes: Routes = [
     path: '',
     component: NavigationPage,
     children: [
+      {
+        path: '',
+        children: [
+          {
+            path: '',
+            loadChildren: '../home/home.module#HomePageModule'
+          }
+        ]
+      },
       {
         path: 'features',
         children: [
