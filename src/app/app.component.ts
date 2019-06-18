@@ -34,6 +34,12 @@ export class AppComponent {
 
     if (this.electronService.isAvailable) {
       this.navCtrl.navigateRoot('clipboard/history', { replaceUrl: true });
+
+      this.electronService.ipcRenderer.on(
+        'navigate',
+        (event, { routeUrl }: { routeUrl: string }) =>
+          this.navCtrl.navigateRoot(routeUrl)
+      );
     }
   }
 }

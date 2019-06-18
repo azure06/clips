@@ -61,12 +61,22 @@ const appLocked = app.requestSingleInstanceLock();
         );
 
         // Set tray
-        tray = new Tray(nativeImg);
+        tray = new Tray(
+          nativeImg.resize({ width: 16, height: 16, quality: 'best' })
+        );
         const contextMenu = Menu.buildFromTemplate([
           { label: '  Infiniti Clips              ', enabled: false },
           { type: 'separator' },
           // { label: '  Pause Syncing' },
-          { label: '  Preferences' },
+          {
+            label: '  Preferences',
+            click() {
+              clips.mainWindow.show();
+              clips.mainWindow.webContents.send('navigate', {
+                routeUrl: 'preferences/iam'
+              });
+            }
+          },
           { type: 'separator' },
           {
             label: '  Quit',
@@ -76,7 +86,7 @@ const appLocked = app.requestSingleInstanceLock();
             }
           }
         ]);
-        tray.setToolTip('This is my application.');
+        tray.setToolTip('Infiniti Clips');
         tray.setContextMenu(contextMenu);
         tray.setHighlightMode('selection');
         tray.on('click', () => {
