@@ -11,9 +11,7 @@ import {
 })
 export class FocusOnDirective implements OnChanges {
   @Input() focus = false;
-  constructor(private el: ElementRef) {
-    console.error('const')
-  }
+  constructor(private el: ElementRef) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.focus && changes.focus.currentValue) {

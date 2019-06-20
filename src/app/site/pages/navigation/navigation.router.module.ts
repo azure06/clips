@@ -43,12 +43,12 @@ const routes: Routes = [
               '../privacy-policy/privacy-policy.module#PrivacyPolicyPageModule'
           }
         ]
-      },
-      {
-        path: '',
-        redirectTo: '/features',
-        pathMatch: 'full'
       }
+      // {
+      //   path: '',
+      //   redirectTo: '/features',
+      //   pathMatch: 'full'
+      // }
     ]
   },
   {

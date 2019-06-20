@@ -1,9 +1,24 @@
-import { Component, OnInit, ViewChild, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, NavController } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import moment from 'moment';
-import { Observable, fromEvent, combineLatest } from 'rxjs';
-import { delay, filter, first, map, tap } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  combineLatest,
+  fromEvent,
+  Observable,
+  Subscription
+} from 'rxjs';
+import {
+  concatMap,
+  delay,
+  filter,
+  first,
+  map,
+  startWith,
+  tap,
+  withLatestFrom
+} from 'rxjs/operators';
 // tslint:disable-next-line: no-submodule-imports
 import uuidv4 from 'uuid/v4';
 import { Clip } from '../../models/models';
@@ -16,7 +31,8 @@ export enum KEY_CODE {
   LEFT_ARROW = 37,
   UP_ARROW = 38,
   RIGHT_ARROW = 39,
-  DOWN_ARROW = 40
+  DOWN_ARROW = 40,
+  ENTER = 13
 }
 
 @Component({
@@ -27,6 +43,7 @@ export enum KEY_CODE {
 export class ClipboardHistoryPage {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<Clip[]>;
+  subscription: Subscription;
   focusIndex = -1;
   loading = false;
 
@@ -58,17 +75,30 @@ export class ClipboardHistoryPage {
       })
     );
 
-    combineLatest(fromEvent(document, 'keydown'), this.clips$)
+    this.subscription = fromEvent(document, 'keydown')
       .pipe(
+        withLatestFrom(this.clips$),
         tap(([event, clips]: [KeyboardEvent, Clip[]]) => {
-          if (
-            event.keyCode === KEY_CODE.UP_ARROW &&
+          if (event.keyCode === KEY_CODE.UP_ARROW && this.focusIndex > 0) {
+            this.focusIndex -= 1;
+          } else if (
+            event.keyCode === KEY_CODE.DOWN_ARROW &&
             this.focusIndex < clips.length
           ) {
             this.focusIndex += 1;
-          }
-          if (event.keyCode === KEY_CODE.DOWN_ARROW && this.focusIndex > 0) {
-            this.focusIndex -= 1;
+          } else if (
+            event.keyCode === KEY_CODE.ENTER &&
+            this.focusIndex <= clips.length &&
+            this.focusIndex >= 0
+          ) {
+            const { type, dataURI, translationView, plainText } = clips[
+              this.focusIndex
+            ];
+            // FIXME modify children method instead
+            this.copyToClipboard({
+              type,
+              content: type === 'text' ? translationView || plainText : dataURI
+            });
           }
         })
       )
@@ -111,7 +141,7 @@ export class ClipboardHistoryPage {
     this.clipboardService.removeClip(clip);
   }
 
-  copyToClipboard(data) {
+  copyToClipboard(data: { type: 'text' | 'image'; content: string }) {
     this.clipboardService.copyToClipboard(data);
   }
 
@@ -122,5 +152,9 @@ export class ClipboardHistoryPage {
         clip.plainText
       )
     });
+  }
+
+  public ionViewDidLeave(): void {
+    this.subscription.unsubscribe();
   }
 }
