@@ -1,4 +1,7 @@
 <ion-item
+  appFocusOn
+  [tabindex]="index"
+  [focus]="focus"
   (click)="onClick($event)"
   button="true"
   (mouseenter)="onMouseEnter($event)"
@@ -63,9 +66,7 @@
             shape="round"
             [color]="view === 'htmlView' ? 'primary' : 'medium'"
             [disabled]="clip.type === 'image' || !hasHtmlView"
-            (click)="
-              switchView(view !== 'textView' ? 'textView' : 'htmlView')
-            "
+            (click)="switchView(view !== 'textView' ? 'textView' : 'htmlView')"
           >
             <i class="material-icons text-format">text_format</i>
           </ion-button>

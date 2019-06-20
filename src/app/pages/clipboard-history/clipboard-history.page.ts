@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, HostListener } from '@angular/core';
 import { IonInfiniteScroll, NavController } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import moment from 'moment';
-import { Observable } from 'rxjs';
-import { delay, filter, first, map } from 'rxjs/operators';
+import { Observable, fromEvent, combineLatest } from 'rxjs';
+import { delay, filter, first, map, tap } from 'rxjs/operators';
 // tslint:disable-next-line: no-submodule-imports
 import uuidv4 from 'uuid/v4';
 import { Clip } from '../../models/models';
@@ -11,6 +11,13 @@ import { GoogleTranslateService } from '../../services/google-translate/google-t
 import { QuillCardsService } from '../../services/quill-cards/quill-cards.service';
 import * as fromClips from '../clipboard/store/index';
 import { ClipboardService } from './../../services/clipboard/clipboard.service';
+
+export enum KEY_CODE {
+  LEFT_ARROW = 37,
+  UP_ARROW = 38,
+  RIGHT_ARROW = 39,
+  DOWN_ARROW = 40
+}
 
 @Component({
   selector: 'app-clipboard-history-page',
@@ -20,6 +27,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
 export class ClipboardHistoryPage {
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   clips$: Observable<Clip[]>;
+  focusIndex = -1;
   loading = false;
 
   constructor(
@@ -31,6 +39,7 @@ export class ClipboardHistoryPage {
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
+    // window.ang = this;
     this.loading = true;
     // Set clips from indexedDB into the state
     await this.clipboardService.getClipsFromIdbAndSetInState({ limit: 15 });
@@ -42,10 +51,28 @@ export class ClipboardHistoryPage {
           clip.textView = clip.plainText.substring(0, 255);
           clip.dateFromNow = moment(clip.updatedAt).fromNow();
         }
-        this.loading = false;
         return clips;
+      }),
+      tap(() => {
+        this.loading = false;
       })
     );
+
+    combineLatest(fromEvent(document, 'keydown'), this.clips$)
+      .pipe(
+        tap(([event, clips]: [KeyboardEvent, Clip[]]) => {
+          if (
+            event.keyCode === KEY_CODE.UP_ARROW &&
+            this.focusIndex < clips.length
+          ) {
+            this.focusIndex += 1;
+          }
+          if (event.keyCode === KEY_CODE.DOWN_ARROW && this.focusIndex > 0) {
+            this.focusIndex -= 1;
+          }
+        })
+      )
+      .subscribe();
   }
 
   async loadMore(event): Promise<void> {

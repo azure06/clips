@@ -9,6 +9,7 @@ import { Clip } from '../../models/models';
 export class ClipboardItemComponent {
   @Input() clip: Clip;
   @Input() index;
+  @Input() focus: boolean;
   @Input() disabled: {
     translate: boolean;
     star: boolean;
