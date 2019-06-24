@@ -82,7 +82,7 @@
     }
   }
   .item:nth-child(odd) {
-    background-color: rgba(248, 248, 248, 1);
+    background-color: rgba(252, 252, 252, 1);
     @media screen and (max-width: 1100px) {
       flex-direction: column-reverse;
     }
