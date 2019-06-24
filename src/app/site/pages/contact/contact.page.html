@@ -6,14 +6,15 @@
         For any kind of questions
       </div>
     </div>
-    <!-- <img src="assets/images/contact.png" /> -->
   </div>
   <div class="wrapper">
     <div class="container form">
-      <mat-card class="card">
+      <mat-card class="card mat-elevation-z">
         <form [formGroup]="form" (ngSubmit)="send()">
-          <mat-card-title style="font-weight: 900; color: var(--text-color--light-blue)">
-            CONTACT
+          <mat-card-title
+            style="font-size: 1.9rem; font-weight: 700; color: var(--text-color--dark)"
+          >
+            CONTACT FORM
           </mat-card-title>
           <mat-card-subtitle>
             For any kind of questions
@@ -69,6 +70,7 @@
           </mat-card-content>
           <mat-card-actions class="actions">
             <button
+              style="min-width: 240px"
               mat-flat-button
               color="primary"
               [disabled]="sending"
