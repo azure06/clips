@@ -155,6 +155,7 @@ export class ClipboardHistoryPage {
   }
 
   public ionViewDidLeave(): void {
+    this.focusIndex = -1;
     this.subscription.unsubscribe();
   }
 }

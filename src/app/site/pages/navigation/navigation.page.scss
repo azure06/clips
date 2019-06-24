@@ -1,13 +1,12 @@
 .nav-bar {
   color: var(--ion-color-tertiary);
   background-color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 3px; // border
+  margin-bottom: 1px; // border
   button {
     display: none;
   }
   h2 {
     font-weight: 700;
-    margin-right: 3rem;
     font-size: 0.9rem;
     text-transform: uppercase;
     color: #8a99b8;
@@ -17,10 +16,15 @@
     width: 48px;
   }
 
-  .home-btn {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
+  button.home-btn {
+    div {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    @media only screen and (max-width: 720px) {
+      display: flex;
+    }
   }
 
   .github {
@@ -34,8 +38,7 @@
       display: inline;
     }
   }
-
-  &.small {
+  &.show-small {
     display: none;
     @media only screen and (max-width: 720px) {
       display: flex;
