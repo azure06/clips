@@ -1,12 +1,21 @@
 <ion-content class="light-theme">
+  <div class="header">
+    <div class="contact">
+      <div class="title">Contact us</div>
+      <div class="subt">
+        For any kind of questions
+      </div>
+    </div>
+    <!-- <img src="assets/images/contact.png" /> -->
+  </div>
   <div class="wrapper">
     <div class="container form">
       <mat-card class="card">
-        <mat-card-title class="title"> Contact us </mat-card-title>
-        <mat-card-subtitle class="subt">
-          For any kind of questions
-        </mat-card-subtitle>
         <form [formGroup]="form" (ngSubmit)="send()">
+          <mat-card-title class="title"> Contact us </mat-card-title>
+          <mat-card-subtitle class="subt">
+            For any kind of questions
+          </mat-card-subtitle>
           <mat-card-content class="content">
             <div class="inputs">
               <mat-form-field class="field">
