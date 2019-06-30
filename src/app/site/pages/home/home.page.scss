@@ -27,21 +27,16 @@
 .header {
   padding: 3vw 6vw;
   min-height: 540px;
-  background-image: url('../../../../assets/images/app.jpg');
-  box-shadow: inset 0 0 360px rgba(0, 0, 0, 0.25);
-  background-size: cover; /* <------ */
-  background-repeat: no-repeat;
-  background-position: center center;
   h1 {
     text-transform: uppercase;
     font-size: 2rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.9);
+    color: #137BE6;
     text-align: center;
   }
   h2 {
     font-size: 1rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color--extra-light);
     font-weight: 600;
   }
   h4 {
@@ -49,11 +44,11 @@
     font-size: 1.2rem;
     font-weight: 300;
     padding: 30px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color--extra-light);
   }
   p {
     font-weight: 300;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color--extra-light);
     font-size: 0.7rem;
   }
   button {
