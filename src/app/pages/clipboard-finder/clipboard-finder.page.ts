@@ -1,11 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
-import { IonInfiniteScroll, NavController } from '@ionic/angular';
+import { IonInfiniteScroll, IonSearchbar, NavController } from '@ionic/angular';
 import moment from 'moment';
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
-import { QuillCardsService } from 'src/app/services/quill-cards/quill-cards.service';
 import { Clip } from '../../models/models';
 import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
+import { QuillCardsService } from '../../services/quill-cards/quill-cards.service';
 import * as fromClips from '../clipboard/store/index';
 import { ClipboardService } from './../../services/clipboard/clipboard.service';
 
@@ -15,6 +15,7 @@ import { ClipboardService } from './../../services/clipboard/clipboard.service';
   styleUrls: ['./clipboard-finder.page.scss']
 })
 export class ClipboardFinderPage {
+  @ViewChild(IonSearchbar) ionSearchbar: IonSearchbar;
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   ionicInfiniteScrollAmount = 0;
   infiniteScrollSubject = new BehaviorSubject(this.ionicInfiniteScrollAmount);
@@ -50,6 +51,10 @@ export class ClipboardFinderPage {
         }, [])
       )
     );
+  }
+
+  ionViewDidEnter() {
+    this.ionSearchbar.setFocus();
   }
 
   async loadMore(event): Promise<void> {
