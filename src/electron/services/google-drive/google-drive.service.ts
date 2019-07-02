@@ -1,18 +1,10 @@
-import { app } from 'electron';
 import log from 'electron-log';
-import * as fs from 'fs';
 import { GaxiosResponse } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
 // tslint:disable-next-line: no-submodule-imports
 import { drive_v3, google } from 'googleapis';
-import * as path from 'path';
-import {
-  BehaviorSubject,
-  combineLatest,
-  from,
-  interval,
-  Subject
-} from 'rxjs';
+import * as memoryStreams from 'memory-streams';
+import { BehaviorSubject, combineLatest, from, interval, Subject } from 'rxjs';
 import {
   bufferTime,
   concatMap,
@@ -163,45 +155,29 @@ export default class GoogleDriveService {
     );
   }
 
-  private downloadFile(fileId: string): Promise<string> {
+  private getStream(fileId: string): Promise<{ [key: string]: Clip }> {
+    const bufferChunks = [];
     return new Promise(async (resolve, reject) => {
-      const userDataDir = path.join(app.getPath('userData'), 'temp');
-      const filePath = path.join(userDataDir, `${fileId}.json`);
-      const dest = fs.createWriteStream(filePath);
-      if (!fs.existsSync(userDataDir)) {
-        fs.mkdirSync(userDataDir, { recursive: true });
-      }
       return this.driveHandler.drive.files
         .get({ fileId, alt: 'media' }, { responseType: 'stream' })
         .then(res => {
           (res.data as any)
             .on('end', () => {
               console.log('Done downloading file');
-              // File needs some more time to be created
-              const subscription = interval(1000)
-                .pipe(
-                  tap(val => {
-                    if (fs.existsSync(filePath)) {
-                      subscription.unsubscribe();
-                      resolve(filePath);
-                    } else if (val > 10) {
-                      subscription.unsubscribe();
-                      reject('Path not found');
-                    }
-                  })
-                )
-                .subscribe();
+              try {
+                const data =
+                  bufferChunks.length > 0
+                    ? Buffer.concat(bufferChunks).toString('utf8')
+                    : '{}';
+                resolve(JSON.parse(data));
+              } catch (err) {
+                reject(err);
+              }
             })
             .on('error', err => {
-              console.error('Error downloading file: ', err);
               reject(err);
             })
-            .on('data', d => {})
-            .pipe(dest);
-        })
-        .catch(err => {
-          log.error('Drive download err:', err);
-          reject(err);
+            .on('data', data => bufferChunks.push(data));
         });
     });
   }
@@ -230,72 +206,27 @@ export default class GoogleDriveService {
         );
       }),
       filter(([drive, addedFiles]) => drive.changes.length > 0),
-      concatMap(async ([drive, addedFiles]) =>
-        from(
-          Promise.all(
-            drive.changes
-              .filter(change => {
-                return (
-                  !change.removed &&
-                  !Object.keys(addedFiles).find(id => id === change.fileId)
-                );
-              })
-              .map(change =>
-                this.downloadFile(change.fileId).catch(err =>
-                  console.error(change, err)
-                )
-              )
-            // removing undefined values in case of a promise was unfulfilled
-          ).then(filePaths => filePaths.filter(path => !!path) as string[])
-        )
-          .pipe(
-            map(filePaths => {
-              const clipsFromFile = filePaths.reduce(
-                (acc: { [key: string]: Clip }, filePath) => {
-                  let _clips: { [key: string]: Clip } = {};
-                  try {
-                    _clips = JSON.parse(
-                      fs.readFileSync(filePath, 'utf8') || '{}'
-                    );
-                  } catch (error) {
-                    log.error('Reading file error: ', error);
-                  }
-                  Object.entries(_clips).forEach(([key, clip]) => {
-                    acc[key] =
-                      acc[key] && acc[key].updatedAt > clip.updatedAt
-                        ? acc[key]
-                        : clip;
-                  });
-                  return acc;
-                },
-                {}
-              );
-              return Object.values(clipsFromFile);
-            })
-          )
-          .toPromise()
-      ),
+      concatMap(async ([drive, addedFiles]) => {
+        const clips = await Promise.all(
+          drive.changes
+            .filter(
+              change =>
+                !change.removed &&
+                !Object.keys(addedFiles).find(id => id === change.fileId)
+            )
+            .map(change =>
+              this.getStream(change.fileId)
+                .catch(err => {
+                  console.error('Error during download: ', err);
+                  log.error('Error during download: ', err);
+                  return {};
+                })
+                .then(clip => Object.values(clip))
+            )
+        );
+        return clips.reduce((acc, val) => [...acc, ...val], []);
+      }),
       tap(clips => {
-        const userDataDir = path.join(app.getPath('userData'), 'temp');
-        // FIXME
-        // try {
-        //   if (fs.existsSync(userDataDir)) {
-        //     fs.readdir(userDataDir, (error, files) => {
-        //       if (error) {
-        //         throw error;
-        //       }
-        //       for (const file of files) {
-        //         fs.unlink(path.join(userDataDir, file), err => {
-        //           if (err) {
-        //             throw err;
-        //           }
-        //         });
-        //       }
-        //     });
-        //   }
-        // } catch (error) {
-        //   log.error('File removing error: ', error);
-        // }
         console.log(
           clips.length > 0
             ? `New updates found: ${clips.length}.`
