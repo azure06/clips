@@ -3,7 +3,6 @@ import { GaxiosResponse } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
 // tslint:disable-next-line: no-submodule-imports
 import { drive_v3, google } from 'googleapis';
-import * as memoryStreams from 'memory-streams';
 import { BehaviorSubject, combineLatest, from, interval, Subject } from 'rxjs';
 import {
   bufferTime,
