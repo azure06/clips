@@ -166,9 +166,9 @@ export default class GoogleDriveService {
               try {
                 const data =
                   bufferChunks.length > 0
-                    ? Buffer.concat(bufferChunks).toString('utf8')
-                    : '{}';
-                resolve(JSON.parse(data));
+                    ? JSON.parse(Buffer.concat(bufferChunks).toString('utf8'))
+                    : {};
+                resolve(data);
               } catch (err) {
                 reject(err);
               }
