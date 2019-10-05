@@ -20,7 +20,7 @@ export default class ClipboardService extends EventEmitter {
   async watchClipboard() {
     const plainText = clipboard.readText();
     const htmlText = clipboard.readHTML();
-    const reachText = clipboard.readRTF();
+    const richText = clipboard.readRTF();
     const image = clipboard.readImage();
     const formats = clipboard.availableFormats();
 
@@ -33,7 +33,7 @@ export default class ClipboardService extends EventEmitter {
         this.previousText = plainText;
         this.emit('clipboard-change', {
           plainText,
-          reachText,
+          richText,
           htmlText,
           category: 'none',
           formats,
@@ -50,7 +50,7 @@ export default class ClipboardService extends EventEmitter {
         this.emit('clipboard-change', {
           plainText: plainText || dataURI.slice(-36),
           htmlText,
-          reachText,
+          richText,
           dataURI: image.toDataURL(),
           category: 'none',
           formats,

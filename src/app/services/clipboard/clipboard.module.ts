@@ -1,10 +1,9 @@
 import { NgModule } from '@angular/core';
-import { IndexedDBServiceModule } from '../indexed-db/indexed-db.module';
 import { ClipboardService } from './clipboard.service';
 
 @NgModule({
   declarations: [],
-  imports: [IndexedDBServiceModule],
+  imports: [],
   exports: [],
   providers: [ClipboardService],
   bootstrap: []

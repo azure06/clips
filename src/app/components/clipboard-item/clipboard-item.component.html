@@ -27,22 +27,13 @@
         </div>
         <div *ngIf="clip.type === 'text'" class="text">
           <div
-            *ngIf="view === 'htmlView'"
+            *ngIf="view === 'htmlTextView'"
             style="position: relative; overflow:hidden;"
             [innerHTML]="clip.htmlText | sanitizeHtml"
             [title]="clip.htmlText"
           ></div>
-          <h3
-            *ngIf="view === 'textView' && !clip.translationView"
-            [title]="clip.plainText"
-          >
-            {{ clip.textView }}
-          </h3>
-          <h3
-            *ngIf="view !== 'htmlView' && clip.translationView"
-            [title]="clip.translationView"
-          >
-            {{ clip.translationView }}
+          <h3 *ngIf="view === 'plainTextView'" [title]="currentText">
+            {{ clip.translationText || clip.compactText }}
           </h3>
         </div>
         <p>{{ clip.dateFromNow }}</p>
@@ -64,9 +55,13 @@
           <ion-button
             fill="clear"
             shape="round"
-            [color]="view === 'htmlView' ? 'primary' : 'medium'"
-            [disabled]="clip.type === 'image' || !hasHtmlView"
-            (click)="switchView(view !== 'textView' ? 'textView' : 'htmlView')"
+            [color]="view === 'htmlTextView' ? 'primary' : 'medium'"
+            [disabled]="clip.type === 'image' || !clip.htmlText"
+            (click)="
+              switchView(
+                view === 'htmlTextView' ? 'plainTextView' : 'htmlTextView'
+              )
+            "
           >
             <i class="material-icons text-format">text_format</i>
           </ion-button>
@@ -74,9 +69,11 @@
             fill="clear"
             shape="round"
             color="medium"
-            [disabled]="clip.type === 'image' || disabled.translate"
+            [disabled]="clip.type === 'image'"
             [color]="
-              clip.translationView && view !== 'htmlView' ? 'primary' : 'medium'
+              clip.translationText && view !== 'htmlTextView'
+                ? 'primary'
+                : 'medium'
             "
             (click)="onTranslate($event)"
           >
@@ -88,7 +85,6 @@
           <ion-button
             fill="clear"
             shape="round"
-            [disabled]="disabled.star"
             [color]="clip.category === 'starred' ? 'primary' : 'medium'"
             (click)="onAddToBookmarkClick($event)"
           >
@@ -99,7 +95,6 @@
             fill="clear"
             shape="round"
             color="medium"
-            [disabled]="disabled.remove"
             (click)="onRemoveClick($event)"
           >
             <ion-icon name="trash"></ion-icon>

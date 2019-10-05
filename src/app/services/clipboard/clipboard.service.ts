@@ -1,9 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { first, scan } from 'rxjs/operators';
-// tslint:disable-next-line: no-submodule-imports
-import uuidv4 from 'uuid/v4';
-import { Clip } from '../../models/models';
+import { first } from 'rxjs/operators';
 import {
   AddClip,
   LoadNext,
@@ -14,14 +11,16 @@ import {
 import * as fromClips from '../../pages/clipboard/store/index';
 import { ElectronService } from '../electron/electron.service';
 import { GoogleDriveService } from '../google-drive/google-drive.service';
-import { IndexedDBService } from '../indexed-db/indexed-db.service';
 import { PreferencesService } from '../preferences/preferences.service';
+import { ClipDocType } from './clipboard.models';
+import { ClipsRxDbService } from './clipboard.rxdb';
 
 @Injectable()
 export class ClipboardService {
+  private clipsRxDbService = new ClipsRxDbService();
+
   constructor(
     private electronService: ElectronService,
-    private indexedDBService: IndexedDBService,
     private googleDriveService: GoogleDriveService,
     private preferencesService: PreferencesService,
     private store: Store<fromClips.State>,
@@ -44,9 +43,15 @@ export class ClipboardService {
    *
    * @param clip Clipboard Item
    */
-  private async handleClipboardChangeEvent(clip: Clip, addToDrive: boolean) {
-    const _clip = { ...clip, id: clip.id || uuidv4() };
-    const targetClip = await this.indexedDBService.findClip(clip);
+  private async handleClipboardChangeEvent(
+    // @ts-ignore
+    clip: Omit<ClipDocType, 'id'> & { id?: string },
+    addToDrive: boolean
+  ) {
+    const [targetClip] = await this.clipsRxDbService.findClips({
+      clip,
+      field: 'plainText'
+    });
     targetClip
       ? this.modifyClip(
           {
@@ -55,48 +60,63 @@ export class ClipboardService {
           },
           true
         )
-      : this.addClip(_clip);
+      : this.addClip(clip);
 
     if (addToDrive) {
-      this.googleDriveService.addToDrive(_clip);
+      this.googleDriveService.addToDrive(clip);
     }
   }
 
-  public async getClipsFromIdbAndSetInState({
-    limit,
-    index,
-    keyRange
-  }: {
+  public async findClips(args: {
     limit?: number;
-    index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
-    keyRange?: IDBKeyRange;
+    skip?: number;
+    field?: 'id' | 'plainText' | 'type' | 'category';
+    clip?: Partial<ClipDocType>;
+    sort?:
+      | 'plainText'
+      | 'type'
+      | 'category'
+      | 'updatedAt'
+      | 'createdAt'
+      | '-plainText'
+      | '-type'
+      | '-category'
+      | '-updatedAt'
+      | '-createdAt';
   }) {
-    const clips = await this.indexedDBService.getClips({
-      upperBound: limit,
-      keyRange,
-      index
-    });
+    return this.clipsRxDbService.findClips(args);
+  }
+
+  public async findClipsWithRegex(
+    query: { [P in keyof Partial<ClipDocType>]: { $regex: RegExp } }
+  ) {
+    return this.clipsRxDbService.findWithRegex(query);
+  }
+
+  public async findClipsAndSetInState(args: {
+    limit?: number;
+    skip?: number;
+    field?: 'id' | 'plainText' | 'type' | 'category';
+    clip?: Partial<ClipDocType>;
+    sort?:
+      | 'plainText'
+      | 'type'
+      | 'category'
+      | 'updatedAt'
+      | 'createdAt'
+      | '-plainText'
+      | '-type'
+      | '-category'
+      | '-updatedAt'
+      | '-createdAt';
+  }) {
+    const clips = await this.findClips(args);
     this.ngZone.run(() => {
       this.store.dispatch(new SetClips({ clips }));
     });
   }
 
-  public async getClipsFromIdb(
-    options: {
-      upperBound?: number;
-      lowerBound?: number;
-      index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
-      keyRange?: IDBKeyRange;
-    } = {}
-  ) {
-    return this.indexedDBService.getClips(options);
-  }
-
-  public async clearAllClips() {
-    await this.indexedDBService.clearAllData();
-  }
-
-  public getClipsFromState(): Promise<Clip[]> {
+  public getClipsFromState(): Promise<ClipDocType[]> {
     return this.store
       .pipe(
         select(fromClips.getClips),
@@ -105,39 +125,58 @@ export class ClipboardService {
       .toPromise();
   }
 
-  public loadNext({
-    limit,
-    index,
-    keyRange
-  }: {
+  public loadNext(args: {
     limit?: number;
-    index?: 'plainText' | 'type' | 'category' | 'updatedAt' | 'createdAt';
-    keyRange?: IDBKeyRange;
+    skip?: number;
+    field?: 'id' | 'plainText' | 'type' | 'category';
+    clip?: Partial<ClipDocType>;
+    sort?:
+      | 'plainText'
+      | 'type'
+      | 'category'
+      | 'updatedAt'
+      | 'createdAt'
+      | '-plainText'
+      | '-type'
+      | '-category'
+      | '-updatedAt'
+      | '-createdAt';
   }) {
     this.ngZone.run(() => {
-      this.store.dispatch(new LoadNext({ limit, index, keyRange }));
+      this.store.dispatch(new LoadNext(args));
     });
   }
 
-  public async addClip(clip: Clip) {
-    await this.indexedDBService.addClip(clip);
+  public async setClips(clips: ClipDocType[]) {
+    this.ngZone.run(() => {
+      this.store.dispatch(new SetClips({ clips }));
+    });
+  }
+
+  // @ts-ignore
+  public async addClip(_clip: Omit<ClipDocType, 'id'> & { id?: string }) {
+    const clip = await this.clipsRxDbService.insertClip(_clip);
     this.ngZone.run(() => {
       this.store.dispatch(new AddClip({ clip }));
     });
   }
 
-  public async modifyClip(clip: Clip, sort?: boolean) {
-    await this.indexedDBService.modifyClip(clip);
+  public async modifyClip(clip: ClipDocType, sort?: boolean) {
+    await this.clipsRxDbService.upsertClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new ModifyClip({ clip, sort }));
     });
   }
 
-  public async removeClip(clip: Clip) {
-    await this.indexedDBService.removeClip(clip);
+  public async removeClip(clip: ClipDocType, sort?: boolean) {
+    await this.clipsRxDbService.removeClip(clip);
     this.ngZone.run(() => {
       this.store.dispatch(new RemoveClip({ clip }));
     });
+  }
+
+  public async removeAllClips() {
+    return this.clipsRxDbService.removeAllClips();
   }
 
   public async copyToClipboard(data: {

@@ -1,4 +1,4 @@
-import { Clip } from '../../../../models/models';
+import { ClipDocType } from '../../../../services/clipboard/clipboard.models';
 import {
   ClipActions,
   ClipboardActionTypes
@@ -7,7 +7,7 @@ import {
 export interface State {
   loading: boolean;
   loadingNext: boolean;
-  clips: Clip[];
+  clips: ClipDocType[];
 }
 
 export const initialState: State = {

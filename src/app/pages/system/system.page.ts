@@ -64,7 +64,7 @@ export class SystemPage {
   }
 
   public async removeAllHistory() {
-    await this.clipboardService.clearAllClips();
+    await this.clipboardService.removeAllClips();
     const toast = await this.toastController.create({
       message: 'Data has been cleared!',
       duration: 2000,

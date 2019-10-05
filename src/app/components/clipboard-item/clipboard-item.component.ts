@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Clip } from '../../models/models';
+import moment = require('moment');
+import { ClipDocType } from '../../services/clipboard/clipboard.models';
 
 @Component({
   selector: 'app-clipboard-item-component',
@@ -7,30 +8,26 @@ import { Clip } from '../../models/models';
   styleUrls: ['./clipboard-item.component.scss']
 })
 export class ClipboardItemComponent {
-  @Input() clip: Clip;
+  @Input() clip: ClipDocType & {
+    translationText?: string;
+    compactText?: string;
+    dateFromNow: string;
+  };
   @Input() index;
   @Input() focus: boolean;
-  @Input() disabled: {
-    translate: boolean;
-    star: boolean;
-    remove: boolean;
-  } = { translate: false, star: false, remove: false };
+
   @Output() removeClip = new EventEmitter();
   @Output() editClip = new EventEmitter();
   @Output() modifyClip = new EventEmitter();
   @Output() translateText = new EventEmitter();
   @Output() copyToClipboard = new EventEmitter();
-  public view: 'textView' | 'htmlView' = 'textView';
+
+  public view: 'plainTextView' | 'htmlTextView' = 'plainTextView';
+
   public hasMouseEntered = false;
   public isTranslating = false;
 
-  constructor() {}
-
-  get hasHtmlView() {
-    return !!this.clip.htmlText;
-  }
-
-  switchView(view: 'textView' | 'htmlView') {
+  switchView(view: 'plainTextView' | 'htmlTextView') {
     event.stopPropagation();
     this.view = view;
   }
@@ -40,9 +37,11 @@ export class ClipboardItemComponent {
       type: this.clip.type,
       content:
         this.clip.type === 'text'
-          ? this.view === 'textView'
-            ? this.clip.translationView || this.clip.plainText
-            : this.clip.htmlText
+          ? this.clip.translationText
+            ? this.clip.translationText
+            : this.view === 'htmlTextView'
+            ? this.clip.htmlText
+            : this.clip.plainText
           : this.clip.dataURI
     });
   }
@@ -75,13 +74,13 @@ export class ClipboardItemComponent {
 
   onTranslate(event: Event): void {
     event.stopPropagation();
-    this.isTranslating = !this.clip.translationView;
-    if (!this.clip.translationView) {
+    this.isTranslating = !this.clip.translationText;
+    if (!this.clip.translationText) {
       this.translateText.emit(this.clip);
     } else {
       this.modifyClip.emit({
         ...this.clip,
-        translationView: ''
+        translationText: ''
       });
     }
   }

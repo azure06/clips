@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Clip } from '../../models/models';
+import { ClipDocType } from '../../services/clipboard/clipboard.models';
 
 @Component({
   selector: 'app-clipboard-image-item',
@@ -7,7 +7,7 @@ import { Clip } from '../../models/models';
   styleUrls: ['./clipboard-image-item.component.scss']
 })
 export class ClipboardImageItemComponent {
-  @Input() clip: Clip;
+  @Input() clip: ClipDocType;
   @Input() index;
   @Output() downloadClip = new EventEmitter();
   @Output() removeClip = new EventEmitter();

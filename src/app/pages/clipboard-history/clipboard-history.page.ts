@@ -1,29 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonInfiniteScroll, NavController } from '@ionic/angular';
+import { Component, ViewChild } from '@angular/core';
+import { IonInfiniteScroll, IonSearchbar, NavController } from '@ionic/angular';
 import { select, Store } from '@ngrx/store';
 import moment from 'moment';
-import {
-  BehaviorSubject,
-  combineLatest,
-  fromEvent,
-  Observable,
-  Subscription
-} from 'rxjs';
-import {
-  concatMap,
-  delay,
-  filter,
-  first,
-  map,
-  startWith,
-  tap,
-  withLatestFrom
-} from 'rxjs/operators';
-// tslint:disable-next-line: no-submodule-imports
-import uuidv4 from 'uuid/v4';
-import { Clip } from '../../models/models';
+import { fromEvent, Observable, Subscription } from 'rxjs';
+import { delay, filter, first, map, tap, withLatestFrom } from 'rxjs/operators';
+import { ClipDocType } from '../../services/clipboard/clipboard.models';
 import { GoogleTranslateService } from '../../services/google-translate/google-translate.service';
-import { QuillCardsService } from '../../services/quill-cards/quill-cards.service';
 import * as fromClips from '../clipboard/store/index';
 import { ClipboardService } from './../../services/clipboard/clipboard.service';
 
@@ -41,35 +23,44 @@ export enum KEY_CODE {
   styleUrls: ['./clipboard-history.page.scss']
 })
 export class ClipboardHistoryPage {
+  @ViewChild(IonSearchbar) ionSearchbar: IonSearchbar;
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
-  clips$: Observable<Clip[]>;
+  clips$: Observable<ClipDocType[]>;
   subscription: Subscription;
   focusIndex = -1;
   loading = false;
 
   constructor(
     private clipboardService: ClipboardService,
-    private quillCardsService: QuillCardsService,
     private googleTranslateService: GoogleTranslateService,
     private store: Store<fromClips.State>,
     private navCtrl: NavController
   ) {}
 
-  async ionViewWillEnter(): Promise<void> {
-    // window.ang = this;
+  public async ionViewWillEnter(): Promise<void> {
     this.loading = true;
-    // Set clips from indexedDB into the state
-    await this.clipboardService.getClipsFromIdbAndSetInState({ limit: 15 });
+    await this.clipboardService.findClipsAndSetInState({
+      limit: 15,
+      sort: '-updatedAt'
+    });
     this.clips$ = this.store.pipe(
       select(fromClips.getClips),
       delay(0),
-      map(clips => {
-        for (const clip of clips) {
-          clip.textView = clip.plainText.substring(0, 255);
-          clip.dateFromNow = moment(clip.updatedAt).fromNow();
+      map(
+        (
+          clips: Array<
+            ClipDocType & { compactText: string; dateFromNow: string }
+          >
+        ) => {
+          for (const clip of clips) {
+            clip.compactText = clip.plainText
+              ? clip.plainText.substring(0, 255)
+              : '';
+            clip.dateFromNow = moment(clip.updatedAt).fromNow();
+          }
+          return clips;
         }
-        return clips;
-      }),
+      ),
       tap(() => {
         this.loading = false;
       })
@@ -78,34 +69,67 @@ export class ClipboardHistoryPage {
     this.subscription = fromEvent(document, 'keydown')
       .pipe(
         withLatestFrom(this.clips$),
-        tap(([event, clips]: [KeyboardEvent, Clip[]]) => {
-          if (event.keyCode === KEY_CODE.UP_ARROW && this.focusIndex > 0) {
-            this.focusIndex -= 1;
-          } else if (
-            event.keyCode === KEY_CODE.DOWN_ARROW &&
-            this.focusIndex < clips.length
-          ) {
-            this.focusIndex += 1;
-          } else if (
-            event.keyCode === KEY_CODE.ENTER &&
-            this.focusIndex <= clips.length &&
-            this.focusIndex >= 0
-          ) {
-            const { type, dataURI, translationView, plainText } = clips[
-              this.focusIndex
-            ];
-            // FIXME modify children method instead
-            this.copyToClipboard({
-              type,
-              content: type === 'text' ? translationView || plainText : dataURI
-            });
+        tap(
+          ([event, clips]: [
+            KeyboardEvent,
+            Array<ClipDocType & { translation?: string }>
+          ]) => {
+            if (event.keyCode === KEY_CODE.UP_ARROW && this.focusIndex > 0) {
+              this.focusIndex -= 1;
+            } else if (
+              event.keyCode === KEY_CODE.DOWN_ARROW &&
+              this.focusIndex < clips.length
+            ) {
+              this.focusIndex += 1;
+            } else if (
+              event.keyCode === KEY_CODE.ENTER &&
+              this.focusIndex <= clips.length &&
+              this.focusIndex >= 0
+            ) {
+              const { type, dataURI, translation, plainText } = clips[
+                this.focusIndex
+              ];
+              // FIXME modify children method instead
+              this.copyToClipboard({
+                type,
+                content: type === 'text' ? translation || plainText : dataURI
+              });
+            }
           }
-        })
+        )
       )
       .subscribe();
   }
 
-  async loadMore(event): Promise<void> {
+  public ionViewDidEnter() {
+    this.ionSearchbar.setFocus();
+  }
+
+  public ionViewDidLeave(): void {
+    this.focusIndex = -1;
+    this.subscription.unsubscribe();
+  }
+
+  public async search(event): Promise<void> {
+    const searchQuery = event.target.value;
+    const clips =
+      searchQuery && searchQuery.trim() !== ''
+        ? await this.clipboardService.findClipsWithRegex({
+            plainText: { $regex: new RegExp(`.*${searchQuery}.*`) }
+          })
+        : await this.clipboardService.findClips({
+            limit: 15,
+            sort: '-updatedAt'
+          });
+
+    this.clipboardService.setClips(clips);
+
+    // this.ionicInfiniteScrollAmount = 10;
+    // this.infiniteScrollSubject.next(this.ionicInfiniteScrollAmount);
+    // this.clipsSubject.next(clips);
+  }
+
+  public async loadMore(event): Promise<void> {
     this.clipboardService.loadNext({ limit: 20 });
     const isLoadingNext = await this.store
       .pipe(
@@ -120,42 +144,30 @@ export class ClipboardHistoryPage {
     // }
   }
 
-  async editClip(clip: Clip) {
-    await this.quillCardsService.addQuillCard({
-      title: '',
-      contents: { ops: [{ insert: clip.plainText }] },
-      label: '',
-      plainText: clip.plainText,
-      displayOrder: -1,
-      updatedAt: new Date().getTime(),
-      createdAt: new Date().getTime()
-    });
-    this.navCtrl.navigateForward('clipboard/editor');
+  public async editClip(clip: ClipDocType) {
+
   }
 
-  modifyClip(clip: Clip) {
+  public modifyClip(clip: ClipDocType & { translationText?: string }) {
     this.clipboardService.modifyClip(clip);
   }
 
-  removeClip(clip: Clip) {
+  public removeClip(clip: ClipDocType) {
     this.clipboardService.removeClip(clip);
   }
 
-  copyToClipboard(data: { type: 'text' | 'image'; content: string }) {
+  public copyToClipboard(data: { type: 'text' | 'image'; content: string }) {
     this.clipboardService.copyToClipboard(data);
   }
 
-  async translateText(clip: Clip): Promise<void> {
+  async translateText(
+    clip: ClipDocType & { translationView: string }
+  ): Promise<void> {
     this.modifyClip({
       ...clip,
-      translationView: await this.googleTranslateService.translate(
+      translationText: await this.googleTranslateService.translate(
         clip.plainText
       )
     });
-  }
-
-  public ionViewDidLeave(): void {
-    this.focusIndex = -1;
-    this.subscription.unsubscribe();
   }
 }

@@ -21,3 +21,14 @@
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
+<ion-footer no-border class="footer">
+  <ion-toolbar>
+    <ion-searchbar
+      animated
+      debounce="500"
+      search-icon="search"
+      type="search"
+      (ionChange)="search($event)"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-footer>

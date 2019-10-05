@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import uuidv4 from 'uuid/v4';
-import { GoogleTranslateResult } from '../../models/models';
 import { ElectronService } from '../electron/electron.service';
 import { PreferencesService } from '../preferences/preferences.service';
+
 @Injectable()
 export class GoogleTranslateService {
   constructor(

@@ -18,15 +18,6 @@ const routes: Routes = [
         ]
       },
       {
-        path: 'editor',
-        children: [
-          {
-            path: '',
-            loadChildren: '../editor/editor.module#EditorPageModule'
-          }
-        ]
-      },
-      {
         path: 'images',
         children: [
           {
@@ -43,16 +34,6 @@ const routes: Routes = [
             path: '',
             loadChildren:
               '../clipboard-bookmark/clipboard-bookmark.module#ClipboardBookmarkPageModule'
-          }
-        ]
-      },
-      {
-        path: '',
-        children: [
-          {
-            path: 'finder',
-            loadChildren:
-              '../clipboard-finder/clipboard-finder.module#ClipboardFinderPageModule'
           }
         ]
       },

@@ -1,5 +1,5 @@
 import { Action } from '@ngrx/store';
-import { Clip } from '../../../../models/models';
+import { ClipDocType } from '../../../../services/clipboard/clipboard.models';
 
 // tslint:disable: max-classes-per-file
 export enum ClipboardActionTypes {
@@ -25,12 +25,12 @@ export enum ClipboardActionTypes {
 // Add Clip
 export class AddClip implements Action {
   readonly type = ClipboardActionTypes.AddClip;
-  constructor(public payload: { clip: Clip }) {}
+  constructor(public payload: { clip: ClipDocType }) {}
 }
 
 export class AddClipSuccess implements Action {
   readonly type = ClipboardActionTypes.AddClipSuccess;
-  constructor(public payload: { clip: Clip }) {}
+  constructor(public payload: { clip: ClipDocType }) {}
 }
 
 export class AddClipFailure implements Action {
@@ -41,12 +41,12 @@ export class AddClipFailure implements Action {
 // Modify Clip
 export class ModifyClip implements Action {
   readonly type = ClipboardActionTypes.ModifyClip;
-  constructor(public payload: { clip: Clip; sort?: boolean }) {}
+  constructor(public payload: { clip: ClipDocType; sort?: boolean }) {}
 }
 
 export class ModifyClipSuccess implements Action {
   readonly type = ClipboardActionTypes.ModifyClipSuccess;
-  constructor(public payload: { clip: Clip; sort?: boolean }) {}
+  constructor(public payload: { clip: ClipDocType; sort?: boolean }) {}
 }
 
 export class ModifyClipFailure implements Action {
@@ -57,12 +57,12 @@ export class ModifyClipFailure implements Action {
 // Remove Clip
 export class RemoveClip implements Action {
   readonly type = ClipboardActionTypes.RemoveClip;
-  constructor(public payload: { clip: Clip }) {}
+  constructor(public payload: { clip: ClipDocType }) {}
 }
 
 export class RemoveClipSuccess implements Action {
   readonly type = ClipboardActionTypes.RemoveClipSuccess;
-  constructor(public payload: { clip: Clip }) {}
+  constructor(public payload: { clip: ClipDocType }) {}
 }
 
 export class RemoveClipFailure implements Action {
@@ -75,16 +75,27 @@ export class LoadNext implements Action {
   constructor(
     public payload: {
       limit?: number;
-      index?: 'plainText' | 'category' | 'type' | 'updatedAt' | 'createdAt';
-      keyRange?: IDBKeyRange;
-      direction?: IDBCursorDirection;
+      skip?: number;
+      field?: 'id' | 'plainText' | 'type' | 'category';
+      clip?: Partial<ClipDocType>;
+      sort?:
+        | 'plainText'
+        | 'type'
+        | 'category'
+        | 'updatedAt'
+        | 'createdAt'
+        | '-plainText'
+        | '-type'
+        | '-category'
+        | '-updatedAt'
+        | '-createdAt';
     }
   ) {}
 }
 
 export class LoadNextSuccess implements Action {
   readonly type = ClipboardActionTypes.LoadNextSuccess;
-  constructor(public payload: { clips: Clip[] }) {}
+  constructor(public payload: { clips: ClipDocType[] }) {}
 }
 
 export class LoadNextFailure implements Action {
@@ -95,7 +106,7 @@ export class LoadNextFailure implements Action {
 // Set Clip
 export class SetClips implements Action {
   readonly type = ClipboardActionTypes.SetClips;
-  constructor(public payload: { clips: Clip[] }) {}
+  constructor(public payload: { clips: ClipDocType[] }) {}
 }
 
 export type ClipActions =

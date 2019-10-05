@@ -4,6 +4,8 @@ interface Base {
   createdAt: number;
 }
 
+
+// --fixme doesn't exist anymore
 interface ViewDetails {
   textView: string;
   translationView: string;
@@ -12,7 +14,7 @@ interface ViewDetails {
 
 export interface Clip extends Partial<ViewDetails>, Base {
   plainText: string;
-  reachText?: string;
+  richText?: string;
   htmlText?: string;
   dataURI?: string;
   category: 'none' | 'starred';

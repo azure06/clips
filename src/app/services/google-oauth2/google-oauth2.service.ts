@@ -1,8 +1,16 @@
 import { Injectable } from '@angular/core';
-import { UserInfo } from '../../models/models';
 import { ElectronService } from '../electron/electron.service';
 import { GoogleAnalyticsService } from '../google-analytics/google-analytics.service';
 import { PreferencesService } from '../preferences/preferences.service';
+
+interface UserInfo {
+  displayName: string;
+  emailAddress: string;
+  kind: string;
+  me: true;
+  permissionId: string;
+  photoLink: string;
+}
 
 @Injectable()
 export class GoogleOAuth2Service {
