@@ -9,10 +9,10 @@ export interface ClipsDatabaseCollection {
 
 export interface ClipDoc {
   id: string;
-  plainText?: string;
-  htmlText?: string;
-  richText?: string;
-  dataURI?: string;
+  plainText: string;
+  htmlText: string;
+  richText: string;
+  dataURI: string;
   category: 'none' | 'starred';
   type: 'text' | 'image';
   formats: string[];
