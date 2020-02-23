@@ -58,16 +58,19 @@ const clipboardAsObservable = interval(1000).pipe(
         return;
       }
 
+      const fromDataURL = (value: string) =>
+        /^data:image\/.*;base64,$/gi.test(value) ? '' : value;
+
       return {
         plainText: current.plainText,
         htmlText: current.htmlText,
         richText: current.richText,
-        dataURI: current.image.toDataURL(),
+        dataURI: fromDataURL(current.image.toDataURL()),
         category: 'none',
         type: isImage ? 'image' : 'text',
         formats: current.formats,
-        createdAt: new Date().getTime(),
-        updatedAt: new Date().getTime(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
     }
   }),

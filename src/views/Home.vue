@@ -28,7 +28,7 @@
             <v-img
               v-else
               style="border-radius: 5px; max-height: 80px;"
-              :src="clip.dataURI"
+              :src="clip.dataURI || clip.plainText || clip.htmlText"
               :alt="clip.preview"
             ></v-img>
             <v-list-item-subtitle v-text="clip.fromNow"></v-list-item-subtitle>

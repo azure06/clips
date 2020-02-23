@@ -48,7 +48,7 @@ const vm = new Vue({
     filterClip(clip: Clip): Clip {
       return Object.entries(this.settings.storage.formats).reduce((acc, entry) => {
         const [key, value] = entry as ['plainText' | 'richText' | 'htmlText' | 'dataURI', boolean];
-        acc[key] = value ? clip[key] : undefined;
+        acc[key] = value ? clip[key] : '';
         return acc;
       }, clip);
     },
