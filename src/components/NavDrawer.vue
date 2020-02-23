@@ -58,7 +58,7 @@
         <span>Account</span>
       </v-tooltip>
 
-      <v-list-item class="mt-1 pa-1" link :to="{ name: 'about' }">
+      <v-list-item v-if="false" class="mt-1 pa-1" link :to="{ name: 'about' }">
         <v-list-item-icon>
           <v-icon>mdi-account-group-outline</v-icon>
         </v-list-item-icon>

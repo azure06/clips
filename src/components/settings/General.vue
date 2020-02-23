@@ -123,6 +123,7 @@
         :value="settings.drive.threshold"
         :disabled="!settings.drive.sync"
         class="pl-10 pr-10"
+        style="-webkit-app-region: no-drag"
         step="10"
         min="50"
         max="200"

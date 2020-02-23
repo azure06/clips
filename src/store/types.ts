@@ -70,6 +70,9 @@ export interface ClipsState {
 }
 
 export interface RootState {
+  date: number;
+  branch: string;
+  commit: string;
   version: string;
 }
 

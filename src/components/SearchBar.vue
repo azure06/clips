@@ -128,7 +128,7 @@
               <v-list-item-title>Download Items</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item link>
+          <v-list-item link :to="{ name: 'about' }">
             <v-list-item-avatar class="pa-0 ma-0">
               <v-icon v-text="`mdi-information`" dense></v-icon>
             </v-list-item-avatar>
