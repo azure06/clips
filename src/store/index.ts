@@ -9,7 +9,17 @@ Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
   state: {
-    version: '1.0.0',
+    // @ts-ignore
+    date: __DATE__,
+    // @ts-ignore
+    commit: __COMMITHASH__,
+    // @ts-ignore
+    version: __VERSION__,
+    // @ts-ignore
+    branch: __BRANCH__,
+  },
+  getters: {
+    rootState: (state) => state,
   },
   modules: {
     clips,
