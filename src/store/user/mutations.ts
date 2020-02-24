@@ -5,7 +5,6 @@ import storeService from '../../electron/service/electron-store.service';
 
 const mutations: MutationTree<UserState> = {
   loadUser(state) {
-    storeService.getUser();
     Vue.set(state, 'user', storeService.getUser());
   },
   setUser(state, user: User) {

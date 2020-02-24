@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, ipcMain, screen } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import clipboardService from './service/clipboard.service';
 import { GoogleOAuth2Service } from './service/google-auth.service';
@@ -92,7 +92,17 @@ function clipboardSubscriptions(mainWindow: BrowserWindow) {
 function handleShortcuts(mainWindow: BrowserWindow) {
   const settings = storeService.getAppSettings();
   const storedShortcut = settings ? fromFuzzy(settings.system.shortcut) : undefined;
-  const onShortcutPressed = () => (mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show());
+  const show = () => {
+    const point = screen.getCursorScreenPoint();
+    const appSettings = storeService.getAppSettings();
+    // https://github.com/electron/electron/blob/master/docs/api/screen.md
+    // const display = screen.getDisplayNearestPoint(point);
+    if (appSettings && appSettings.system.display.type === 'cursor')
+      mainWindow.setPosition(point.x, point.y);
+
+    mainWindow.show();
+  };
+  const onShortcutPressed = () => (mainWindow.isVisible() ? mainWindow.hide() : show());
   shortcutUtil.register(storedShortcut, onShortcutPressed);
   ipcMain.handle('change-shortcut', (_, shortcut) =>
     shortcutUtil.register(fromFuzzy(shortcut), onShortcutPressed)

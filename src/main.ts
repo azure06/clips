@@ -110,7 +110,7 @@ const vm = new Vue({
           system: {
             ...this.settings.system,
             display:
-              this.settings.system === 'maintain'
+              this.settings.system.display.type === 'cursor'
                 ? {
                     type: 'cursor',
                     height,
