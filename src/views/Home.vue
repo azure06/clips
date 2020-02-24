@@ -26,11 +26,14 @@
               v-text="clip.preview"
             ></v-list-item-title>
             <v-img
-              v-else
+              v-else-if="clip.dataURI"
               style="border-radius: 5px; max-height: 80px;"
-              :src="clip.dataURI || clip.plainText || clip.htmlText"
+              :src="clip.dataURI"
               :alt="clip.preview"
             ></v-img>
+            <v-list-item-title v-else>
+              {{ clip.plainText }}
+            </v-list-item-title>
             <v-list-item-subtitle v-text="clip.fromNow"></v-list-item-subtitle>
           </v-list-item-content>
 
