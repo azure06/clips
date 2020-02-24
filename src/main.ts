@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/electron';
 import { environment } from './environment.config';
 import { interval, from } from 'rxjs';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
-import { Clip } from './store/types';
+import { Clip, SettingsState } from './store/types';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -44,6 +44,7 @@ const vm = new Vue({
     }),
     ...mapMutations('settings', {
       loadSettings: 'loadSettings',
+      changeSettings: 'changeSettings',
     }),
     filterClip(clip: Clip): Clip {
       return Object.entries(this.settings.storage.formats).reduce((acc, entry) => {
@@ -56,6 +57,12 @@ const vm = new Vue({
   created() {
     this.loadUser();
     this.loadSettings({ vuetify: this.$vuetify });
+
+    /**
+     * Get clipboard data from background.ts
+     * Add to drive once
+     *
+     */
     this.$subscribeTo(
       subscriptions.clipboardChange
         .pipe(map((clip) => this.filterClip(clip)))
@@ -78,6 +85,9 @@ const vm = new Vue({
       (clip) => this.addClip(clip)
     );
 
+    /**
+     * Optimize storage
+     */
     this.$subscribeTo(
       interval(this.oneHour)
         .pipe(filter(() => !!this.user && this.settings.storage.optimize.every > 0))
@@ -87,6 +97,29 @@ const vm = new Vue({
           )
         ),
       (value: Clip[]) => {}
+    );
+
+    /**
+     * On bounds change
+     */
+    this.$subscribeTo(subscriptions.onBoundsChange, ({ height, width, x, y }) =>
+      this.changeSettings({
+        vuetify: this.$vuetify,
+        payload: {
+          ...this.settings,
+          system: {
+            ...this.settings.system,
+            display:
+              this.settings.system === 'maintain'
+                ? {
+                    type: 'cursor',
+                    height,
+                    width,
+                  }
+                : { type: 'maintain', height, width, position: { x, y } },
+          },
+        } as SettingsState,
+      })
     );
   },
 }).$mount('#app');

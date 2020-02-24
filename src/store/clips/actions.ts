@@ -9,6 +9,7 @@ import { ipcRenderer } from 'electron';
 import Store from 'electron-store';
 import { GaxiosResponse, GaxiosError } from 'gaxios';
 import { isGaxiosResponse } from '@/utils/gaxios';
+import storeService from '@/electron/service/electron-store.service';
 
 let clipsDB = from(createDB());
 const collection = () => clipsDB.pipe(map((db) => db.clips));
@@ -170,9 +171,7 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(take(1))
       .toPromise(),
   uploadToDrive: async ({ commit }, args: { clip: Clip; threshold: number; force?: boolean }) => {
-    const store = new Store();
-    const targetNm = 'clips';
-    const clips: Clip[] = store.get(targetNm, []);
+    const clips = storeService.getClips();
     clips.push(args.clip);
     if (clips.length >= args.threshold || args.force) {
       commit('setSyncStatus', 'pending');
@@ -180,13 +179,13 @@ const actions: ActionTree<ClipsState, RootState> = {
         .invoke('upload-to-drive', clips)
         .catch((_) => {});
       if (isGaxiosResponse(response) && response.status === 200) {
-        store.set(targetNm, []);
+        storeService.removeClips();
         commit('setSyncStatus', 'resolved');
       } else {
         commit('setSyncStatus', 'rejected');
       }
     } else {
-      store.set(targetNm, clips);
+      storeService.setClips(clips);
       return clips;
     }
   },

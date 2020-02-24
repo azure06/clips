@@ -11,7 +11,7 @@ interface CursorType extends Display {
 
 interface MaintainType extends Display {
   type: 'maintain';
-  position?: { x: number; y: number };
+  position: { x: number; y: number };
 }
 
 type MacOSFuzzy = ['⌘', 'shift', string];

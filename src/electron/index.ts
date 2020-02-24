@@ -7,14 +7,11 @@ import { tap } from 'rxjs/operators';
 import { environment } from './environment.config';
 import mainComponent from './component/main.component';
 import trayComponent from './component/tray.component';
-import Store from 'electron-store';
 import Sentry from './sentry';
 import shortcutUtil, { fromFuzzyShortcut as fromFuzzy } from './utils/shortcut.util';
-import { SettingsState } from '@/store/types';
+import storeService from './service/electron-store.service';
 
 Sentry.init(environment.sentry);
-
-const store = new Store();
 
 /**
  *  Subscribe to Google Services
@@ -26,8 +23,8 @@ const store = new Store();
 function googleSubscriptions(mainWindow: BrowserWindow) {
   const authService = new GoogleOAuth2Service(environment.googleOAuth2);
   const driveService = new GoogleDriveService(authService.getOAuth2Client());
-  const credentials = store.get('credentials');
-  const pageToken = store.get('page-token');
+  const credentials = storeService.getCredentials();
+  const pageToken = storeService.getPageToken();
 
   if (credentials) {
     authService.setCredentials(credentials);
@@ -40,13 +37,13 @@ function googleSubscriptions(mainWindow: BrowserWindow) {
   /** Keep updating credentials */
   authService
     .credentialsAsObservable()
-    .pipe(tap((credentials) => store.set('credentials', credentials)))
+    .pipe(tap(storeService.setCredentials))
     .subscribe();
 
   /** Keep updating google drive page-token */
   driveService
     .pageTokenAsObservable()
-    .pipe(tap((pageToken) => store.set('page-token', pageToken)))
+    .pipe(tap(storeService.setPageToken))
     .subscribe();
 
   ipcMain.handle('sign-in', () => {
@@ -57,7 +54,7 @@ function googleSubscriptions(mainWindow: BrowserWindow) {
   });
 
   ipcMain.handle('sign-out', () => {
-    store.delete('credentials');
+    storeService.removeCredentials();
     return authService.revokeCredentials().catch(Sentry.captureException);
   });
 
@@ -93,7 +90,7 @@ function clipboardSubscriptions(mainWindow: BrowserWindow) {
 
 /** Handle Shortcuts */
 function handleShortcuts(mainWindow: BrowserWindow) {
-  const settings = store.get('app-settings');
+  const settings = storeService.getAppSettings();
   const storedShortcut = settings ? fromFuzzy(settings.system.shortcut) : undefined;
   const onShortcutPressed = () => (mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show());
   shortcutUtil.register(storedShortcut, onShortcutPressed);

@@ -1,9 +1,9 @@
 import { ActionTree } from 'vuex';
 import { UserState, User, RootState } from '@/store/types';
-import { from, of } from 'rxjs';
-import { map, concatMap, tap, take, catchError } from 'rxjs/operators';
+import { from } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { ipcRenderer } from 'electron';
-import Store from 'electron-store';
+import storeService from '../../electron/service/electron-store.service';
 
 const actions: ActionTree<UserState, RootState> = {
   signIn: async ({ commit }) => {
@@ -11,7 +11,7 @@ const actions: ActionTree<UserState, RootState> = {
       .pipe(
         tap((user?: User) => {
           if (user) {
-            new Store().set('user', user);
+            storeService.setUser(user);
             commit('setUser', user);
           }
         })
@@ -22,7 +22,7 @@ const actions: ActionTree<UserState, RootState> = {
     from(ipcRenderer.invoke('sign-out'))
       .pipe(
         tap((_) => {
-          new Store().delete('user');
+          storeService.removeUser();
           commit('setUser', undefined);
         })
       )
