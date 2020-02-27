@@ -4,6 +4,7 @@ import clipboardService from './service/clipboard.service';
 import { GoogleOAuth2Service } from './service/google-auth.service';
 import { GoogleDriveService } from './service/google-drive.service';
 import { tap } from 'rxjs/operators';
+import fs from 'fs';
 import { environment } from './environment.config';
 import mainComponent from './component/main.component';
 import trayComponent from './component/tray.component';
@@ -85,6 +86,14 @@ function clipboardSubscriptions(mainWindow: BrowserWindow) {
 
   ipcMain.handle('copy-to-clipboard', (event, type, content) => {
     return copyToClipboard(type, content);
+  });
+
+  ipcMain.handle('from-dump', (event, path, clips) => {
+    return new Promise((resolve: any, reject: any) => {
+      fs.writeFile(path, JSON.stringify(clips), function(err) {
+        return err ? reject(err) : resolve(clips);
+      });
+    });
   });
 }
 

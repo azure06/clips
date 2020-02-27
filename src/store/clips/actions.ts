@@ -6,10 +6,10 @@ import { ClipSearchConditions } from '@/rxdb/clips.models';
 import { map, concatMap, tap, take, catchError, startWith } from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
 import { ipcRenderer } from 'electron';
-import Store from 'electron-store';
 import { GaxiosResponse, GaxiosError } from 'gaxios';
 import { isGaxiosResponse } from '@/utils/gaxios';
 import storeService from '@/electron/service/electron-store.service';
+import { remote } from 'electron';
 
 let clipsDB = from(createDB());
 const collection = () => clipsDB.pipe(map((db) => db.clips));
@@ -188,6 +188,29 @@ const actions: ActionTree<ClipsState, RootState> = {
       storeService.setClips(clips);
       return clips;
     }
+  },
+  fromDump: async ({ commit }) => {
+    return collection()
+      .pipe(tap((_) => commit('setLoadingStatus', true)))
+      .pipe(concatMap((methods) => methods.dumpCollection()))
+      .pipe(
+        concatMap(async (clips) => {
+          const { filePath } = await remote.dialog.showSaveDialog({
+            defaultPath: 'untitled',
+            filters: [{ name: 'JSON', extensions: ['json'] }],
+          });
+          return filePath ? ipcRenderer.invoke('from-dump', filePath, clips) : [];
+        })
+      )
+      .pipe(
+        catchError((error) => {
+          Sentry.captureException(error);
+          return of([]);
+        })
+      )
+      .pipe(tap((_) => commit('setLoadingStatus', false)))
+      .pipe(take(1))
+      .toPromise();
   },
 };
 

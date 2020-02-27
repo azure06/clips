@@ -103,7 +103,7 @@
         transition="slide-y-transition"
         bottom
         :close-on-click="true"
-        :close-on-content-click="false"
+        :close-on-content-click="true"
         nudge-width="150"
       >
         <template v-slot:activator="{ on }">
@@ -120,7 +120,7 @@
               <v-list-item-title>Upload Items</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item link>
+          <v-list-item link @click="$emit('download-json')">
             <v-list-item-avatar class="pa-0 ma-0">
               <v-icon v-text="`mdi-download`" dense></v-icon>
             </v-list-item-avatar>

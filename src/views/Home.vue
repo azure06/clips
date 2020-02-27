@@ -81,6 +81,16 @@
       </transition>
     </v-container>
 
+    <!-- Dialog -->
+    <v-dialog v-model="dialog" hide-overlay persistent width="300">
+      <v-card color="blue darken-2" dark>
+        <v-card-text>
+          This might take several minutes...
+          <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <!-- Search bar -->
     <SearchBar
       @change-mode="onChangeMode"
@@ -88,6 +98,7 @@
       @change-category="onChangeCategory"
       @remove-items="onRemoveItems"
       @query-change="search"
+      @download-json="downloadJson"
       :type="searchConditions.filters.type"
       :category="searchConditions.filters.category"
       :sync-status="syncStatus"
@@ -151,6 +162,8 @@ export default class Home extends Vue {
   public removeClips!: (ids: string[]) => Promise<Clip[]>;
   @Action('copyToClipboard', { namespace: 'clips' })
   public copyToClipboard!: (clip: Clip) => Promise<void>;
+  @Action('fromDump', { namespace: 'clips' })
+  public fromDump!: () => Promise<Clip[]>;
   @Getter('clips', { namespace: 'clips' })
   public clips!: Clip[];
   @Getter('loading', { namespace: 'clips' })
@@ -167,6 +180,7 @@ export default class Home extends Vue {
   public mode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
   public dateTime: number = Date.now();
+  public dialog = false;
 
   public get clipCount() {
     return this.mode === 'select' ? Object.entries(this.removeTarget).length : this.clips.length;
@@ -260,6 +274,12 @@ export default class Home extends Vue {
 
       return this.loadClips(this.searchConditions);
     }, 500);
+  }
+
+  public async downloadJson() {
+    this.dialog = true;
+    await this.fromDump();
+    this.dialog = false;
   }
 
   public infiniteScroll() {

@@ -32,6 +32,9 @@ export async function createDB() {
   };
 
   const clipsCollectionsMethods: ClipsCollectionMethods = {
+    async dumpCollection() {
+      return (await this.dump()).docs;
+    },
     async countAllDocuments() {
       return this.countAllDocuments();
     },
@@ -63,9 +66,9 @@ export async function createDB() {
       );
     },
     async modifyClip(clip) {
-      return this.atomicUpsert(
-        utils.clip.normalize({ ...clip, updatedAt: new Date().getTime() })
-      ).then(utils.clip.normalize);
+      return this.atomicUpsert(utils.clip.normalize({ ...clip, updatedAt: Date.now() })).then(
+        utils.clip.normalize
+      );
     },
     async removeClips(ids: string[]) {
       const query = this.find()

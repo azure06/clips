@@ -66,6 +66,7 @@ export type ClipRegExp =
 export type ClipsDocMethods = {};
 
 export type ClipsCollectionMethods = {
+  dumpCollection(this: ClipsCollection): Promise<ClipDoc[]>;
   countAllDocuments(this: ClipsCollection): Promise<number>;
   findClips(
     this: ClipsCollection,
