@@ -1,16 +1,18 @@
 import { BrowserWindow, ipcMain, screen } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
-import clipboardService from './service/clipboard.service';
-import { GoogleOAuth2Service } from './service/google-auth.service';
-import { GoogleDriveService } from './service/google-drive.service';
+import { clipboardService } from './services/clipboard.service';
+import { GoogleOAuth2Service } from './services/google-auth.service';
+import { GoogleDriveService } from './services/google-drive.service';
 import { tap } from 'rxjs/operators';
 import fs from 'fs';
 import { environment } from './environment.config';
-import mainComponent from './component/main.component';
-import trayComponent from './component/tray.component';
+import { mainWindow } from './helpers/main-win.helper';
+import { tray } from './helpers/tray.helper';
 import Sentry from './sentry';
-import shortcutUtil, { fromFuzzyShortcut as fromFuzzy } from './utils/shortcut.util';
-import storeService from './service/electron-store.service';
+import { storeService } from './services/electron-store.service';
+import { initEvents } from './helpers/events.helper';
+import { initShortcuts } from './helpers/shortcuts.helper';
+import { initAutoLauncher } from './helpers/autolauncher.helper';
 
 Sentry.init(environment.sentry);
 
@@ -113,37 +115,19 @@ function clipboardSubscriptions(mainWindow: BrowserWindow) {
   });
 }
 
-/** Handle Shortcuts */
-function handleShortcuts(mainWindow: BrowserWindow) {
-  const settings = storeService.getAppSettings();
-  const storedShortcut = settings ? fromFuzzy(settings.system.shortcut) : undefined;
-  const show = () => {
-    const point = screen.getCursorScreenPoint();
-    const appSettings = storeService.getAppSettings();
-    // https://github.com/electron/electron/blob/master/docs/api/screen.md
-    // const display = screen.getDisplayNearestPoint(point);
-    if (appSettings && appSettings.system.display.type === 'cursor')
-      mainWindow.setPosition(point.x, point.y);
-
-    mainWindow.show();
-  };
-  const onShortcutPressed = () => (mainWindow.isVisible() ? mainWindow.hide() : show());
-  shortcutUtil.register(storedShortcut, onShortcutPressed);
-  ipcMain.handle('change-shortcut', (_, shortcut) =>
-    shortcutUtil.register(fromFuzzy(shortcut), onShortcutPressed)
-  );
-}
-
 export function onReady() {
-  const mainWindow = mainComponent.create();
-  const _ = trayComponent.create(mainWindow);
+  const win = mainWindow.create();
+  const _ = tray.create(win);
+
+  initEvents(win);
+  initShortcuts(win);
+  initAutoLauncher();
 
   /** Subscribe to all services */
-  clipboardSubscriptions(mainWindow);
-  googleSubscriptions(mainWindow);
-  handleShortcuts(mainWindow);
+  clipboardSubscriptions(win);
+  googleSubscriptions(win);
 }
 
 export function onActivate() {
-  const _ = mainComponent.window ? mainComponent.window.show() : mainComponent.create();
+  const _ = mainWindow.instance ? mainWindow.instance.show() : mainWindow.create();
 }

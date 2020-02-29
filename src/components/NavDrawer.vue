@@ -2,8 +2,8 @@
   <v-navigation-drawer v-model="drawer" mini-variant app permanent>
     <v-list dense nav class="py-0">
       <v-list-item two-line>
-        <v-list-item-avatar color="#CEF2EF">
-          <span v-if="!user" class="headline subtitle-2" style="color: #1B9488;">F</span>
+        <v-list-item-avatar color="#ebf2ff">
+          <span v-if="!user" class="headline subtitle-2" style="color: #3281ff;">λ</span>
           <img v-else :src="user.photoLink" />
         </v-list-item-avatar>
       </v-list-item>

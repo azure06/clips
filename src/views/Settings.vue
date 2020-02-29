@@ -66,7 +66,12 @@
         <v-list dense nav class="py-0">
           <transition name="fade">
             <v-list-item v-if="false" class="pa-1 mb-1" link>
-              <v-progress-circular indeterminate color="cyan darken-2" :width="3" :size="25"></v-progress-circular>
+              <v-progress-circular
+                indeterminate
+                color="cyan darken-2"
+                :width="3"
+                :size="25"
+              ></v-progress-circular>
             </v-list-item>
           </transition>
           <v-tooltip top>
@@ -104,6 +109,7 @@
           :settings="settings"
           @change-settings="(payload) => changeSettings({ vuetify: $vuetify, payload })"
           @change-shortcut="(payload) => changeShortcut({ vuetify: $vuetify, payload })"
+          @change-startup="(payload) => changeStartup({ vuetify: $vuetify, payload })"
           @action="openDialog"
         />
       </div>
@@ -132,17 +138,13 @@ export default class Settings extends Vue {
   @Getter('settings', { namespace: 'settings' })
   public settings!: SettingsState;
   @Mutation('changeSettings', { namespace: 'settings' })
-  public changeSettings!: (args: {
-    vuetify: any;
-    payload: SettingsState;
-  }) => void;
+  public changeSettings!: (args: { vuetify: any; payload: SettingsState }) => void;
   @Mutation('restoreSettings', { namespace: 'settings' })
   public restoreSettings!: () => void;
   @Action('changeShortcut', { namespace: 'settings' })
-  public changeShortcut!: (args: {
-    vuetify: any;
-    payload: any;
-  }) => Promise<void>;
+  public changeShortcut!: (args: { vuetify: any; payload: any }) => Promise<void>;
+  @Action('changeStartup', { namespace: 'settings' })
+  public changeStartup!: (args: { vuetify: any; payload: boolean }) => Promise<void>;
   @Action('restoreFactoryDefault', { namespace: 'clips' })
   public restoreFactoryDefault!: () => Promise<boolean>;
   public dialog = false;

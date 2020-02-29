@@ -4,8 +4,8 @@
       <v-row>
         <v-col cols="12">
           <v-row align="center" justify="center" class="pa-3">
-            <v-avatar color="#CEF2EF" width="90" height="90">
-              <span class="headline " style="color: #1B9488;">F</span>
+            <v-avatar width="90" height="90">
+              <v-icon x-large>mdi-login</v-icon>
             </v-avatar>
           </v-row>
 

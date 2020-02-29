@@ -30,7 +30,7 @@ const vm = new Vue({
       settings: 'settings',
     }),
     oneHour() {
-      return 1000 * 60 * 60 * 24;
+      return 1000 * 60 * 60;
     },
   },
   methods: {
@@ -116,10 +116,17 @@ const vm = new Vue({
                     height,
                     width,
                   }
-                : { type: 'maintain', height, width, position: { x, y } },
+                : {
+                    type: 'maintain',
+                    height,
+                    width,
+                    position: { x, y },
+                  },
           },
         } as SettingsState,
       })
     );
+
+    this.$subscribeTo(subscriptions.onNavigate, (location) => this.$router.push(location));
   },
 }).$mount('#app');

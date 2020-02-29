@@ -5,6 +5,9 @@ module.exports = {
   transpileDependencies: ['vuetify'],
   pluginOptions: {
     electronBuilder: {
+      builderOptions: {
+        productName: 'Clips',
+      },
       chainWebpackRendererProcess: (config) => {
         config.plugin('define').tap((definitions) => {
           definitions[0] = Object.assign(definitions[0], {

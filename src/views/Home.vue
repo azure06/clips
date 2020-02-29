@@ -19,10 +19,13 @@
           <!-- FIXME Remove icon for now -->
           <!-- <v-list-item-avatar size="40">
             <v-icon :class="clip.iconClass" v-text="clip.icon"></v-icon>
-          </v-list-item-avatar> -->
+          </v-list-item-avatar>-->
 
           <v-list-item-content>
-            <v-list-item-title v-if="clip.type === 'text'" v-text="clip.preview"></v-list-item-title>
+            <v-list-item-title
+              v-if="clip.type === 'text'"
+              v-text="clip.preview"
+            ></v-list-item-title>
             <v-img
               v-else-if="clip.dataURI"
               style="border-radius: 5px; max-height: 80px;"
@@ -47,7 +50,8 @@
                       : 'blue-gray'
                   }`
                 "
-              >mdi-star</v-icon>
+                >mdi-star</v-icon
+              >
             </v-btn>
           </v-list-item-action>
           <v-list-item-action class="pa-0 pl-2 pr-2 ma-0" v-else>
@@ -65,7 +69,11 @@
       <transition name="fade">
         <div v-show="loading">
           <v-row align="center" justify="center" style="margin-top: 1.5rem; margin-bottom: 1rem;">
-            <v-progress-circular indeterminate color="cyan darken-2" size="50"></v-progress-circular>
+            <v-progress-circular
+              indeterminate
+              color="cyan darken-2"
+              size="50"
+            ></v-progress-circular>
           </v-row>
           <v-row align="center" justify="center" class="text-center">
             <v-subheader class="text-center overline">Loading more data...</v-subheader>
@@ -84,6 +92,12 @@
       </v-card>
     </v-dialog>
 
+    <!-- Dialog -->
+    <v-snackbar v-model="snackbar">
+      {{ snackbarText }}
+      <v-btn color="blue darken-2" text @click="snackbar = false">Close</v-btn>
+    </v-snackbar>
+
     <!-- Search bar -->
     <SearchBar
       @change-mode="onChangeMode"
@@ -93,6 +107,7 @@
       @query-change="search"
       @download-json="downloadJson"
       @upload-json="uploadJson"
+      @sync-with-drive="syncWithDrive"
       :type="searchConditions.filters.type"
       :category="searchConditions.filters.category"
       :sync-status="syncStatus"
@@ -106,7 +121,7 @@ import { Component, Vue, Mixins } from 'vue-property-decorator';
 import Observable, { fromEvent, Subject, merge } from 'rxjs';
 import AppBar from '@/components/AppBar.vue';
 import SearchBar from '@/components/SearchBar.vue';
-import { Clip, SettingsState } from '@/store/types';
+import { Clip, SettingsState, User } from '@/store/types';
 import { Getter, Mutation, Action } from 'vuex-class';
 import { ClipSearchConditions, SearchFilters } from '@/rxdb/clips.models';
 import { utils } from '@/rxdb';
@@ -129,39 +144,24 @@ type ClipEx = Clip & { fromNow?: string; preview?: string };
   subscriptions() {
     return {
       clipsObserver: this.$watchAsObservable('clips').pipe(
-        map(
-          ({
-            oldValue,
-            newValue,
-          }: {
-            oldValue: ClipEx[];
-            newValue: ClipEx[];
-          }) => {
-            return newValue.map((clip, index) => ({
-              ...clip,
-              icon:
-                clip.type === 'text' ? 'mdi-clipboard-text' : 'mdi-image-area',
-              iconClass: `${
-                clip.type === 'text' ? 'blue darken-2' : 'cyan darken-2'
-              } white--text`,
-              preview: (clip.plainText || '').substring(0, 255),
-              fromNow: moment(clip.updatedAt).fromNow(),
-            }));
-          }
-        )
+        map(({ oldValue, newValue }: { oldValue: ClipEx[]; newValue: ClipEx[] }) => {
+          return newValue.map((clip, index) => ({
+            ...clip,
+            icon: clip.type === 'text' ? 'mdi-clipboard-text' : 'mdi-image-area',
+            iconClass: `${clip.type === 'text' ? 'blue darken-2' : 'cyan darken-2'} white--text`,
+            preview: (clip.plainText || '').substring(0, 255),
+            fromNow: moment(clip.updatedAt).fromNow(),
+          }));
+        })
       ),
     };
   },
 })
 export default class Home extends Vue {
   @Action('loadClips', { namespace: 'clips' })
-  public loadClips!: (
-    searchConditions: Partial<ClipSearchConditions>
-  ) => Promise<Clip[]>;
+  public loadClips!: (searchConditions: Partial<ClipSearchConditions>) => Promise<Clip[]>;
   @Action('loadNext', { namespace: 'clips' })
-  public loadNext!: (
-    searchConditions: Partial<ClipSearchConditions>
-  ) => Promise<Clip[]>;
+  public loadNext!: (searchConditions: Partial<ClipSearchConditions>) => Promise<Clip[]>;
   @Action('modifyClip', { namespace: 'clips' })
   public modifyClip!: (payload: {
     clip: Clip;
@@ -175,6 +175,16 @@ export default class Home extends Vue {
   public uploadJson!: () => Promise<Clip[]>;
   @Action('downloadJson', { namespace: 'clips' })
   public downloadJson!: () => Promise<Clip[]>;
+  @Action('uploadToDrive', { namespace: 'clips' })
+  public uploadToDrive!: ({
+    clip,
+    threshold,
+  }: Partial<{
+    clip: Clip;
+    threshold: number;
+  }>) => Promise<Clip[]>;
+  @Getter('user', { namespace: 'user' })
+  public user!: User;
   @Getter('clips', { namespace: 'clips' })
   public clips!: Clip[];
   @Getter('loading', { namespace: 'clips' })
@@ -196,10 +206,11 @@ export default class Home extends Vue {
   public removeTarget: { [id: string]: boolean } = {};
   public dateTime: number = Date.now();
 
+  public snackbar = false;
+  public snackbarText = '';
+
   public get clipCount() {
-    return this.mode === 'select'
-      ? Object.entries(this.removeTarget).length
-      : this.clips.length;
+    return this.mode === 'select' ? Object.entries(this.removeTarget).length : this.clips.length;
   }
 
   public async onClipHover(clip: ClipEx) {
@@ -274,10 +285,7 @@ export default class Home extends Vue {
             case 'fuzzy':
               return utils.patterns.likeSearch('plainText', value);
             case 'advanced-fuzzy':
-              return utils.patterns.advancedSearch(
-                'plainText',
-                value.split(' ')
-              );
+              return utils.patterns.advancedSearch('plainText', value.split(' '));
           }
         }
       })();
@@ -293,6 +301,20 @@ export default class Home extends Vue {
 
       return this.loadClips(this.searchConditions);
     }, 500);
+  }
+
+  public async syncWithDrive() {
+    if (this.user) {
+      const clips = await this.uploadToDrive({});
+      this.snackbarText =
+        clips.length > 0
+          ? `${clips.length} items have been uploaded to Google Drive`
+          : 'Your clipboard is already synced with Google Drive';
+    } else {
+      this.snackbarText = 'Sign-in to sync with Google Drive';
+    }
+
+    this.snackbar = true;
   }
 
   public infiniteScroll() {
@@ -313,9 +335,7 @@ export default class Home extends Vue {
   public async mounted() {
     this.loadClips(this.searchConditions);
     this.$subscribeTo(
-      this.infiniteScroll().pipe(
-        concatMap(() => this.loadNext(this.searchConditions))
-      ),
+      this.infiniteScroll().pipe(concatMap(() => this.loadNext(this.searchConditions))),
       (value) => {
         const target = this.$refs['scroll-target'] as Element;
         if (value.length === 0) {

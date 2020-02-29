@@ -8,7 +8,7 @@ import * as Sentry from '@sentry/electron';
 import { ipcRenderer } from 'electron';
 import { GaxiosResponse, GaxiosError } from 'gaxios';
 import { isGaxiosResponse } from '@/utils/gaxios';
-import storeService from '@/electron/service/electron-store.service';
+import { storeService } from '@/electron/services/electron-store.service';
 import { remote } from 'electron';
 
 let clipsDB = from(createDB());
@@ -164,14 +164,13 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(catchError((error) => Sentry.captureException(error)))
       .pipe(take(1))
       .toPromise(),
-  uploadToDrive: async ({ commit }, args: { clip: Clip; threshold: number; force?: boolean }) => {
-    const clips = storeService.getClips();
-    clips.push(args.clip);
-    if (clips.length >= args.threshold || args.force) {
+  uploadToDrive: async ({ commit }, { clip, threshold }: { clip?: Clip; threshold?: number }) => {
+    const clips = clip ? [...storeService.getClips(), clip] : storeService.getClips();
+    if ((threshold === undefined && clips.length > 0) || (threshold && clips.length >= threshold)) {
       commit('setSyncStatus', 'pending');
       const response: GaxiosResponse | GaxiosError = await ipcRenderer
         .invoke('upload-to-drive', clips)
-        .catch((_) => {});
+        .catch((_) => []);
       if (isGaxiosResponse(response) && response.status === 200) {
         storeService.removeClips();
         commit('setSyncStatus', 'resolved');
@@ -180,8 +179,8 @@ const actions: ActionTree<ClipsState, RootState> = {
       }
     } else {
       storeService.setClips(clips);
-      return clips;
     }
+    return clips;
   },
   downloadJson: async ({ commit }) =>
     collection()

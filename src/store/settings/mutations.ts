@@ -2,7 +2,7 @@ import { MutationTree } from 'vuex';
 import { SettingsState } from '@/store/types';
 import { Framework } from 'vuetify';
 import objectUtil from '@/utils/object';
-import storeService from '@/electron/service/electron-store.service';
+import { storeService } from '@/electron/services/electron-store.service';
 
 const mutations: MutationTree<SettingsState> = {
   loadSettings(state, { vuetify }: { vuetify: Framework }) {

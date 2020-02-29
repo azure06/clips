@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@mdi/font": "^4.9.95",
+    "@types/auto-launch": "^5.0.1",
     "@types/jest": "^24.0.25",
     "@types/node": "12.12.6",
     "@types/uuid": "^3.4.6",
@@ -54,6 +55,7 @@
     "@vue/eslint-config-prettier": "^5.0.0",
     "@vue/eslint-config-typescript": "^4.0.0",
     "@vue/test-utils": "1.0.0-beta.30",
+    "auto-launch": "^5.0.5",
     "electron": "^7.0.0",
     "electron-icon-builder": "^1.0.2",
     "eslint": "^5.16.0",

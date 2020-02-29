@@ -6,7 +6,6 @@ import { google } from 'googleapis';
 import { stringify } from 'querystring';
 import * as url from 'url';
 import { Subject } from 'rxjs';
-import { startWith } from 'rxjs/operators';
 
 /**
  * Tokens updated event

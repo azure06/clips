@@ -1,4 +1,4 @@
-import { SettingsState, Clip, User } from './../../store/types';
+import { SettingsState, Clip, User } from '../../store/types';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import Store from 'electron-store';
 
@@ -68,7 +68,7 @@ function clear() {
   store.clear();
 }
 
-interface AppStore {
+interface StoreService {
   getUser(): User | undefined;
   getUser(defaultValue: User): User;
   getClips(defaultValue?: Clip[]): Clip[];
@@ -89,7 +89,7 @@ interface AppStore {
   clear(): void;
 }
 
-const appStore: AppStore = {
+export const storeService: StoreService = {
   getUser,
   getClips,
   getPageToken,
@@ -105,5 +105,3 @@ const appStore: AppStore = {
   removeCredentials,
   clear,
 };
-
-export default appStore;

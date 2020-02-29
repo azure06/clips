@@ -4,20 +4,26 @@ import path from 'path';
 /* global __static */
 declare const __static: string;
 
-let tray: Tray | null = null;
+let _tray: Tray | null = null;
 
 function create(mainWindow: BrowserWindow) {
   const nativeImg = nativeImage.createFromPath(path.join(__static, 'icon.png'));
-  tray = new Tray(nativeImg.resize({ width: 16, height: 16, quality: 'best' }));
+  _tray = new Tray(nativeImg.resize({ width: 16, height: 16, quality: 'best' }));
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Clips              ', enabled: false },
+    {
+      label: 'Clips              ',
+      enabled: true,
+      click() {
+        mainWindow.show();
+      },
+    },
     { type: 'separator' },
     // { label: '  Pause Syncing' },
     {
       label: 'Preferences       ',
       click() {
         mainWindow.show();
-        mainWindow.webContents.send('preference-click');
+        mainWindow.webContents.send('navigate', { name: 'settings' });
       },
     },
     { type: 'separator' },
@@ -29,9 +35,9 @@ function create(mainWindow: BrowserWindow) {
       },
     },
   ]);
-  tray.setToolTip('Clips');
-  tray.setContextMenu(contextMenu);
-  tray.on('click', () => {
+  _tray.setToolTip('Clips');
+  _tray.setContextMenu(contextMenu);
+  _tray.on('click', () => {
     if (mainWindow.isVisible()) {
       mainWindow.hide();
     } else {
@@ -40,9 +46,9 @@ function create(mainWindow: BrowserWindow) {
   });
 }
 
-export default {
-  get tray() {
-    return tray;
+export const tray = {
+  get instance() {
+    return _tray;
   },
   create,
 };

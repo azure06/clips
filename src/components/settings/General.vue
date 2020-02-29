@@ -149,15 +149,7 @@
         <v-list-item-action>
           <v-switch
             :input-value="settings.system.startup"
-            @change="
-              $emit('change-settings', {
-                ...settings,
-                system: {
-                  ...settings.system,
-                  startup: !settings.system.startup,
-                },
-              })
-            "
+            @change="(value) => $emit('change-startup', value)"
             dense
             color="blue darken-2"
           ></v-switch>

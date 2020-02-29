@@ -1,12 +1,13 @@
 import { BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import storeService from '../service/electron-store.service';
+import { storeService } from '../services/electron-store.service';
 import path from 'path';
 
-/* global __static */
 declare const __static: string;
+
 const appSettings = storeService.getAppSettings();
-const storeFlgs = appSettings
+
+const storeFlags = appSettings
   ? ((display) =>
       display.type === 'maintain'
         ? {
@@ -31,30 +32,31 @@ const flags = {
   resizable: true,
   skipTaskbar: true,
   icon: path.join(__static, 'icon.png'),
+  setSkipTaskbar: true,
 };
 
-let mainWindow: BrowserWindow | null = null;
+let win: BrowserWindow | null = null;
 
 function create() {
-  mainWindow = new BrowserWindow({ ...flags, ...storeFlgs });
+  win = new BrowserWindow({ ...flags, ...storeFlags });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
-    mainWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
-    if (!process.env.IS_TEST) mainWindow.webContents.openDevTools();
+    win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
+    if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
     createProtocol('app');
     // Load the index.html when not in development
-    mainWindow.loadURL('app://./index.html');
+    win.loadURL('app://./index.html');
   }
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  win.on('closed', () => {
+    win = null;
   });
-  return mainWindow;
+  return win;
 }
 
-export default {
-  get window() {
-    return mainWindow;
+export const mainWindow = {
+  get instance() {
+    return win;
   },
   create,
 };

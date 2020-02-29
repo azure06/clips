@@ -87,12 +87,11 @@
 
       <v-tooltip top>
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on" icon @click="$emit('change-mode', 'normal')">
+          <v-btn v-on="on" icon @click="$emit('sync-with-drive', 'normal')">
             <v-icon
               v-if="syncStatus !== 'rejected'"
               :class="syncStatus === 'pending' ? 'infinite-spinning' : ''"
-              >mdi-sync</v-icon
-            >
+            >mdi-sync</v-icon>
             <v-icon color="amber darken-1" v-else>mdi-sync-alert</v-icon>
           </v-btn>
         </template>
@@ -133,7 +132,7 @@
               <v-icon v-text="`mdi-information`" dense></v-icon>
             </v-list-item-avatar>
             <v-list-item-content>
-              <v-list-item-title> About Clips</v-list-item-title>
+              <v-list-item-title>About Clips</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-list>
