@@ -66,22 +66,22 @@
         <v-list dense nav class="py-0">
           <transition name="fade">
             <v-list-item v-if="false" class="pa-1 mb-1" link>
-              <v-progress-circular
-                indeterminate
-                color="cyan darken-2"
-                :width="3"
-                :size="25"
-              ></v-progress-circular>
+              <v-progress-circular indeterminate color="cyan darken-2" :width="3" :size="25"></v-progress-circular>
             </v-list-item>
           </transition>
-          <v-list-item class="pa-1 mb-1" link :to="{ name: 'about' }">
-            <v-list-item-icon>
-              <v-icon>mdi-information</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>title</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
+          <v-tooltip top>
+            <template v-slot:activator="{ on }">
+              <v-list-item v-on="on" class="pa-1 mb-1" link :to="{ name: 'about' }">
+                <v-list-item-icon>
+                  <v-icon>mdi-information</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title>title</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+            <span>About</span>
+          </v-tooltip>
         </v-list>
       </template>
     </v-navigation-drawer>
@@ -132,11 +132,17 @@ export default class Settings extends Vue {
   @Getter('settings', { namespace: 'settings' })
   public settings!: SettingsState;
   @Mutation('changeSettings', { namespace: 'settings' })
-  public changeSettings!: (args: { vuetify: any; payload: SettingsState }) => void;
+  public changeSettings!: (args: {
+    vuetify: any;
+    payload: SettingsState;
+  }) => void;
   @Mutation('restoreSettings', { namespace: 'settings' })
   public restoreSettings!: () => void;
   @Action('changeShortcut', { namespace: 'settings' })
-  public changeShortcut!: (args: { vuetify: any; payload: any }) => Promise<void>;
+  public changeShortcut!: (args: {
+    vuetify: any;
+    payload: any;
+  }) => Promise<void>;
   @Action('restoreFactoryDefault', { namespace: 'clips' })
   public restoreFactoryDefault!: () => Promise<boolean>;
   public dialog = false;

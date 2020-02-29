@@ -36,7 +36,8 @@ export async function createDB() {
       return (await this.dump()).docs;
     },
     async countAllDocuments() {
-      return this.countAllDocuments();
+      const allDocs = await this.find().exec();
+      return allDocs.length;
     },
     async findClips({ limit, skip, regex, filters, sort }: Partial<ClipSearchConditions>) {
       let query = this.find(regex);

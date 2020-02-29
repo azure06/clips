@@ -77,8 +77,8 @@ const clipboardAsObservable = interval(1000).pipe(
   filter((value) => !!value)
 );
 
-export const copyToClipboard = (type: 'text' | 'image', content: string) => {
-  type === 'image'
+export const copyToClipboard = (type: 'text' | 'base64', content: string) => {
+  type === 'base64'
     ? clipboard.writeImage(nativeImage.createFromDataURL(content))
     : clipboard.writeText(content);
 };

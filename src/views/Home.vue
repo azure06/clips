@@ -21,10 +21,7 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title
-              v-if="clip.type === 'text'"
-              v-text="clip.preview"
-            ></v-list-item-title>
+            <v-list-item-title v-if="clip.type === 'text'" v-text="clip.preview"></v-list-item-title>
             <v-img
               v-else-if="clip.dataURI"
               style="border-radius: 5px; max-height: 80px;"
@@ -32,7 +29,7 @@
               :alt="clip.preview"
             ></v-img>
             <v-list-item-title v-else>
-              {{ clip.plainText }}
+              <div v-html="clip.htmlText" style="border-radius: 5px; max-height: 80px;"></div>
             </v-list-item-title>
             <v-list-item-subtitle v-text="clip.fromNow"></v-list-item-subtitle>
           </v-list-item-content>
@@ -49,8 +46,7 @@
                       : 'blue-gray'
                   }`
                 "
-                >mdi-star</v-icon
-              >
+              >mdi-star</v-icon>
             </v-btn>
           </v-list-item-action>
           <v-list-item-action class="pa-0 pl-2 pr-2 ma-0" v-else>
@@ -68,11 +64,7 @@
       <transition name="fade">
         <div v-show="loading">
           <v-row align="center" justify="center" style="margin-top: 1.5rem; margin-bottom: 1rem;">
-            <v-progress-circular
-              indeterminate
-              color="cyan darken-2"
-              size="50"
-            ></v-progress-circular>
+            <v-progress-circular indeterminate color="cyan darken-2" size="50"></v-progress-circular>
           </v-row>
           <v-row align="center" justify="center" class="text-center">
             <v-subheader class="text-center overline">Loading more data...</v-subheader>
@@ -136,24 +128,39 @@ type ClipEx = Clip & { fromNow?: string; preview?: string };
   subscriptions() {
     return {
       clipsObserver: this.$watchAsObservable('clips').pipe(
-        map(({ oldValue, newValue }: { oldValue: ClipEx[]; newValue: ClipEx[] }) => {
-          return newValue.map((clip, index) => ({
-            ...clip,
-            icon: clip.type === 'text' ? 'mdi-clipboard-text' : 'mdi-image-area',
-            iconClass: `${clip.type === 'text' ? 'blue darken-2' : 'cyan darken-2'} white--text`,
-            preview: (clip.plainText || '').substring(0, 255),
-            fromNow: moment(clip.updatedAt).fromNow(),
-          }));
-        })
+        map(
+          ({
+            oldValue,
+            newValue,
+          }: {
+            oldValue: ClipEx[];
+            newValue: ClipEx[];
+          }) => {
+            return newValue.map((clip, index) => ({
+              ...clip,
+              icon:
+                clip.type === 'text' ? 'mdi-clipboard-text' : 'mdi-image-area',
+              iconClass: `${
+                clip.type === 'text' ? 'blue darken-2' : 'cyan darken-2'
+              } white--text`,
+              preview: (clip.plainText || '').substring(0, 255),
+              fromNow: moment(clip.updatedAt).fromNow(),
+            }));
+          }
+        )
       ),
     };
   },
 })
 export default class Home extends Vue {
   @Action('loadClips', { namespace: 'clips' })
-  public loadClips!: (searchConditions: Partial<ClipSearchConditions>) => Promise<Clip[]>;
+  public loadClips!: (
+    searchConditions: Partial<ClipSearchConditions>
+  ) => Promise<Clip[]>;
   @Action('loadNext', { namespace: 'clips' })
-  public loadNext!: (searchConditions: Partial<ClipSearchConditions>) => Promise<Clip[]>;
+  public loadNext!: (
+    searchConditions: Partial<ClipSearchConditions>
+  ) => Promise<Clip[]>;
   @Action('modifyClip', { namespace: 'clips' })
   public modifyClip!: (payload: {
     clip: Clip;
@@ -177,7 +184,9 @@ export default class Home extends Vue {
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
   @Getter('settings', { namespace: 'settings' })
   public settings!: SettingsState;
-  public searchConditions: Partial<ClipSearchConditions> & { filters: Partial<SearchFilters> } = {
+  public searchConditions: Partial<ClipSearchConditions> & {
+    filters: Partial<SearchFilters>;
+  } = {
     limit: 15,
     sort: '-updatedAt',
     filters: {},
@@ -187,7 +196,9 @@ export default class Home extends Vue {
   public dateTime: number = Date.now();
 
   public get clipCount() {
-    return this.mode === 'select' ? Object.entries(this.removeTarget).length : this.clips.length;
+    return this.mode === 'select'
+      ? Object.entries(this.removeTarget).length
+      : this.clips.length;
   }
 
   public async onClipHover(clip: ClipEx) {
@@ -262,7 +273,10 @@ export default class Home extends Vue {
             case 'fuzzy':
               return utils.patterns.likeSearch('plainText', value);
             case 'advanced-fuzzy':
-              return utils.patterns.advancedSearch('plainText', value.split(' '));
+              return utils.patterns.advancedSearch(
+                'plainText',
+                value.split(' ')
+              );
           }
         }
       })();
@@ -298,7 +312,9 @@ export default class Home extends Vue {
   public async mounted() {
     this.loadClips(this.searchConditions);
     this.$subscribeTo(
-      this.infiniteScroll().pipe(concatMap(() => this.loadNext(this.searchConditions))),
+      this.infiniteScroll().pipe(
+        concatMap(() => this.loadNext(this.searchConditions))
+      ),
       (value) => {
         const target = this.$refs['scroll-target'] as Element;
         if (value.length === 0) {

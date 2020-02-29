@@ -15,8 +15,8 @@ let clipsDB = from(createDB());
 const collection = () => clipsDB.pipe(map((db) => db.clips));
 
 const actions: ActionTree<ClipsState, RootState> = {
-  loadClips: async ({ commit }, searchConditions: Partial<ClipSearchConditions>) => {
-    return collection()
+  loadClips: async ({ commit }, searchConditions: Partial<ClipSearchConditions>) =>
+    collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
@@ -31,10 +31,9 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((clips) => commit('loadClips', { clips })))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
-  loadNext: async ({ commit, state }, searchConditions: Partial<ClipSearchConditions>) => {
-    return collection()
+      .toPromise(),
+  loadNext: async ({ commit, state }, searchConditions: Partial<ClipSearchConditions>) =>
+    collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
@@ -49,10 +48,9 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((clips) => commit('addClips', { clips })))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
-  addClip: async ({ commit }, clip: Clip) => {
-    return collection()
+      .toPromise(),
+  addClip: async ({ commit }, clip: Clip) =>
+    collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
@@ -78,13 +76,12 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap(({ action, clip }) => commit(action, { clip })))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
+      .toPromise(),
   modifyClip: async (
     { commit },
     { clip, options }: { clip: Clip; options?: { silently?: boolean } }
-  ) => {
-    return collection()
+  ) =>
+    collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
@@ -99,10 +96,9 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((clip) => (clip ? commit('modifyClip', { clip, options }) : null)))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
-  removeClips: async ({ commit }, ids: string[]) => {
-    return collection()
+      .toPromise(),
+  removeClips: async ({ commit }, ids: string[]) =>
+    collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
@@ -117,11 +113,10 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((clips) => commit('removeClips', { clips })))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
+      .toPromise(),
   /** Remove clipboard item before X date excluding starred */
-  removeClipsLte: async ({ commit }, updatedAt: number) => {
-    return collection()
+  removeClipsLte: async ({ commit }, updatedAt: number) =>
+    collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
@@ -140,10 +135,9 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((clips) => commit('removeClips', { clips })))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
-  restoreFactoryDefault: async ({ commit }) => {
-    return collection()
+      .toPromise(),
+  restoreFactoryDefault: async ({ commit }) =>
+    collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(concatMap((methods) => methods.restore()))
       .pipe()
@@ -158,14 +152,13 @@ const actions: ActionTree<ClipsState, RootState> = {
       )
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
+      .toPromise(),
   copyToClipboard: async ({ commit }, clip: Clip) =>
     from(
       ipcRenderer.invoke(
         'copy-to-clipboard',
-        clip.type,
-        clip.type === 'image' ? clip.dataURI : clip.plainText
+        clip.dataURI ? 'base64' : 'text',
+        clip.type === 'image' ? clip.dataURI || clip.htmlText : clip.plainText
       )
     )
       .pipe(catchError((error) => Sentry.captureException(error)))
@@ -190,8 +183,8 @@ const actions: ActionTree<ClipsState, RootState> = {
       return clips;
     }
   },
-  downloadJson: async ({ commit }) => {
-    return collection()
+  downloadJson: async ({ commit }) =>
+    collection()
       .pipe(tap((_) => commit('setProcessingStatus', true)))
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(concatMap((methods) => methods.dumpCollection()))
@@ -213,10 +206,9 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((_) => commit('setProcessingStatus', false)))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
-  uploadJson: async ({ commit, dispatch }) => {
-    return collection()
+      .toPromise(),
+  uploadJson: async ({ commit, dispatch }) =>
+    collection()
       .pipe(tap((_) => commit('setProcessingStatus', true)))
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
@@ -240,8 +232,14 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((_) => commit('setProcessingStatus', false)))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
-      .toPromise();
-  },
+      .toPromise(),
+  countClips: ({ commit }) =>
+    collection()
+      .pipe(tap((_) => commit('setLoadingStatus', true)))
+      .pipe(concatMap(async (methods) => methods.countAllDocuments()))
+      .pipe(tap((_) => commit('setLoadingStatus', false)))
+      .pipe(take(1))
+      .toPromise(),
 };
 
 export default actions;
