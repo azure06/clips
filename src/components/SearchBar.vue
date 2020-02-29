@@ -112,7 +112,7 @@
           </v-btn>
         </template>
         <v-list dense>
-          <v-list-item link>
+          <v-list-item link @click="$emit('upload-json')">
             <v-list-item-avatar class="pa-0 ma-0">
               <v-icon v-text="`mdi-upload`" dense></v-icon>
             </v-list-item-avatar>

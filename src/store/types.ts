@@ -65,6 +65,7 @@ export interface UserState {
 
 export interface ClipsState {
   loading: boolean;
+  processing: boolean;
   clips: Clip[];
   sync?: 'resolved' | 'rejected' | 'pending';
 }

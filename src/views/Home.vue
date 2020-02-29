@@ -82,7 +82,7 @@
     </v-container>
 
     <!-- Dialog -->
-    <v-dialog v-model="dialog" hide-overlay persistent width="300">
+    <v-dialog v-model="processing" hide-overlay persistent width="300">
       <v-card color="blue darken-2" dark>
         <v-card-text>
           This might take several minutes...
@@ -99,6 +99,7 @@
       @remove-items="onRemoveItems"
       @query-change="search"
       @download-json="downloadJson"
+      @upload-json="uploadJson"
       :type="searchConditions.filters.type"
       :category="searchConditions.filters.category"
       :sync-status="syncStatus"
@@ -162,12 +163,16 @@ export default class Home extends Vue {
   public removeClips!: (ids: string[]) => Promise<Clip[]>;
   @Action('copyToClipboard', { namespace: 'clips' })
   public copyToClipboard!: (clip: Clip) => Promise<void>;
-  @Action('fromDump', { namespace: 'clips' })
-  public fromDump!: () => Promise<Clip[]>;
+  @Action('uploadJson', { namespace: 'clips' })
+  public uploadJson!: () => Promise<Clip[]>;
+  @Action('downloadJson', { namespace: 'clips' })
+  public downloadJson!: () => Promise<Clip[]>;
   @Getter('clips', { namespace: 'clips' })
   public clips!: Clip[];
   @Getter('loading', { namespace: 'clips' })
   public loading!: boolean;
+  @Getter('processing', { namespace: 'clips' })
+  public processing!: Clip[];
   @Getter('syncStatus', { namespace: 'clips' })
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
   @Getter('settings', { namespace: 'settings' })
@@ -180,7 +185,6 @@ export default class Home extends Vue {
   public mode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
   public dateTime: number = Date.now();
-  public dialog = false;
 
   public get clipCount() {
     return this.mode === 'select' ? Object.entries(this.removeTarget).length : this.clips.length;
@@ -274,12 +278,6 @@ export default class Home extends Vue {
 
       return this.loadClips(this.searchConditions);
     }, 500);
-  }
-
-  public async downloadJson() {
-    this.dialog = true;
-    await this.fromDump();
-    this.dialog = false;
   }
 
   public infiniteScroll() {

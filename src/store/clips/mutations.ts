@@ -32,6 +32,9 @@ const mutations: MutationTree<ClipsState> = {
   setLoadingStatus: (state, loading: boolean) => {
     state.loading = loading;
   },
+  setProcessingStatus: (state, processing: boolean) => {
+    state.processing = processing;
+  },
   setSyncStatus: (state, sync: 'pending' | 'resolved' | 'rejected') => {
     state.sync = sync;
   },

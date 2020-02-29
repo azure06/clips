@@ -119,6 +119,7 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(take(1))
       .toPromise();
   },
+  /** Remove clipboard item before X date excluding starred */
   removeClipsLte: async ({ commit }, updatedAt: number) => {
     return collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
@@ -189,17 +190,18 @@ const actions: ActionTree<ClipsState, RootState> = {
       return clips;
     }
   },
-  fromDump: async ({ commit }) => {
+  downloadJson: async ({ commit }) => {
     return collection()
+      .pipe(tap((_) => commit('setProcessingStatus', true)))
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(concatMap((methods) => methods.dumpCollection()))
       .pipe(
         concatMap(async (clips) => {
           const { filePath } = await remote.dialog.showSaveDialog({
             defaultPath: 'untitled',
-            filters: [{ name: 'JSON', extensions: ['json'] }],
+            filters: [{ name: 'Json File', extensions: ['json'] }],
           });
-          return filePath ? ipcRenderer.invoke('from-dump', filePath, clips) : [];
+          return filePath ? ipcRenderer.invoke('downloadJson', filePath, clips) : [];
         })
       )
       .pipe(
@@ -208,6 +210,34 @@ const actions: ActionTree<ClipsState, RootState> = {
           return of([]);
         })
       )
+      .pipe(tap((_) => commit('setProcessingStatus', false)))
+      .pipe(tap((_) => commit('setLoadingStatus', false)))
+      .pipe(take(1))
+      .toPromise();
+  },
+  uploadJson: async ({ commit, dispatch }) => {
+    return collection()
+      .pipe(tap((_) => commit('setProcessingStatus', true)))
+      .pipe(tap((_) => commit('setLoadingStatus', true)))
+      .pipe(
+        concatMap(async (_) => {
+          const { filePaths } = await remote.dialog.showOpenDialog({
+            properties: ['openFile'],
+            filters: [{ name: 'Json File', extensions: ['json'] }],
+          });
+          return (filePaths.length > 0
+            ? ipcRenderer.invoke('uploadJson', filePaths[0])
+            : Promise.resolve([])) as Promise<Clip[]>;
+        })
+      )
+      .pipe(
+        catchError((error) => {
+          Sentry.captureException(error);
+          return of([] as Clip[]);
+        })
+      )
+      .pipe(concatMap((clips) => Promise.all(clips.map((clip) => dispatch('addClip', clip)))))
+      .pipe(tap((_) => commit('setProcessingStatus', false)))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise();

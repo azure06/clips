@@ -6,6 +6,7 @@ import mutations from './mutations';
 
 const state: ClipsState = {
   loading: false,
+  processing: false,
   sync: 'resolved',
   clips: [],
 };

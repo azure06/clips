@@ -88,10 +88,26 @@ function clipboardSubscriptions(mainWindow: BrowserWindow) {
     return copyToClipboard(type, content);
   });
 
-  ipcMain.handle('from-dump', (event, path, clips) => {
+  ipcMain.handle('downloadJson', (event, path, clips) => {
     return new Promise((resolve: any, reject: any) => {
       fs.writeFile(path, JSON.stringify(clips), function(err) {
         return err ? reject(err) : resolve(clips);
+      });
+    });
+  });
+
+  ipcMain.handle('uploadJson', (event, path) => {
+    return new Promise((resolve: any, reject: any) => {
+      fs.readFile(path, 'utf-8', function(err, data) {
+        return err
+          ? reject(err)
+          : (() => {
+              try {
+                resolve(JSON.parse(data));
+              } catch (err) {
+                reject(err);
+              }
+            })();
       });
     });
   });
