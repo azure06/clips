@@ -16,9 +16,10 @@
           @mouseover="onClipHover(clip)"
           @click="onClipClick(clip)"
         >
-          <v-list-item-avatar size="40">
+          <!-- FIXME Remove icon for now -->
+          <!-- <v-list-item-avatar size="40">
             <v-icon :class="clip.iconClass" v-text="clip.icon"></v-icon>
-          </v-list-item-avatar>
+          </v-list-item-avatar> -->
 
           <v-list-item-content>
             <v-list-item-title v-if="clip.type === 'text'" v-text="clip.preview"></v-list-item-title>

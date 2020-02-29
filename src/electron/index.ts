@@ -145,5 +145,5 @@ export function onReady() {
 }
 
 export function onActivate() {
-  const _ = mainComponent.window ? mainComponent.window : mainComponent.create();
+  const _ = mainComponent.window ? mainComponent.window.show() : mainComponent.create();
 }
