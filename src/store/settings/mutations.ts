@@ -1,13 +1,13 @@
 import { MutationTree } from 'vuex';
 import { SettingsState } from '@/store/types';
 import { Framework } from 'vuetify';
-import objectUtil from '@/utils/object';
-import { storeService } from '@/electron/services/electron-store.service';
+import { mergeDeep } from '@/utils/object';
+import { storeService } from '@/electron/services/electron-store';
 
 const mutations: MutationTree<SettingsState> = {
   loadSettings(state, { vuetify }: { vuetify: Framework }) {
     const storedSettings = storeService.getAppSettings(state);
-    Object.assign(state, objectUtil.mergeDeep(state, storedSettings));
+    Object.assign(state, mergeDeep(state, storedSettings));
     vuetify.theme.dark = state.appearance.theme.dark;
   },
   changeSettings(state, { vuetify, payload }: { vuetify: Framework; payload: SettingsState }) {

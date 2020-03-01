@@ -3,7 +3,7 @@ import { UserState, User, RootState } from '@/store/types';
 import { from } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ipcRenderer } from 'electron';
-import { storeService } from '../../electron/services/electron-store.service';
+import { storeService } from '../../electron/services/electron-store';
 
 const actions: ActionTree<UserState, RootState> = {
   signIn: async ({ commit }) => {

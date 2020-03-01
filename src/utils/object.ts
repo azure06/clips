@@ -2,7 +2,7 @@ export function isObject(item: any) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-function mergeDeep<T>(target: T, source: T): T {
+export function mergeDeep<T>(target: T, source: T): T {
   return Object.entries(source).reduce(
     (acc, [key, value]) => {
       if (isObject(value)) {
@@ -19,7 +19,3 @@ function mergeDeep<T>(target: T, source: T): T {
     { ...target }
   );
 }
-
-export default {
-  mergeDeep,
-};

@@ -1,5 +1,5 @@
 import { BrowserWindow } from 'electron';
-import { storeService } from '../services/electron-store.service';
+import { storeService } from '../services/electron-store';
 
 export function initEvents(mainWindow: BrowserWindow) {
   const maybeHide = () => {

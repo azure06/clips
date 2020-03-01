@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import { storeService } from '../services/electron-store.service';
+import { storeService } from '../services/electron-store';
 import path from 'path';
 
 declare const __static: string;

@@ -3,12 +3,12 @@ import { ClipsState, Clip, RootState } from '@/store/types';
 import { createDB } from '@/rxdb';
 import { from, EMPTY, of } from 'rxjs';
 import { ClipSearchConditions } from '@/rxdb/clips.models';
-import { map, concatMap, tap, take, catchError, startWith } from 'rxjs/operators';
+import { map, concatMap, tap, take, catchError } from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
 import { ipcRenderer } from 'electron';
 import { GaxiosResponse, GaxiosError } from 'gaxios';
 import { isGaxiosResponse } from '@/utils/gaxios';
-import { storeService } from '@/electron/services/electron-store.service';
+import { storeService } from '@/electron/services/electron-store';
 import { remote } from 'electron';
 
 let clipsDB = from(createDB());

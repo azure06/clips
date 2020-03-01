@@ -8,7 +8,7 @@ import vuetify from './plugins/vuetify';
 import subscriptions from './subscriptions';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
 import * as Sentry from '@sentry/electron';
-import { environment } from './environment.config';
+import { environment } from './environment';
 import { interval, from } from 'rxjs';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { Clip, SettingsState } from './store/types';

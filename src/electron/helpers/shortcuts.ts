@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain, screen, globalShortcut } from 'electron';
-import { storeService } from '../services/electron-store.service';
+import { storeService } from '../services/electron-store';
 
 type MacOS = ['Command', 'Shift', string];
 type MacOSFuzzy = ['⌘', 'shift', string];

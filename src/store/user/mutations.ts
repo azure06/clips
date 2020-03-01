@@ -1,7 +1,7 @@
 import { MutationTree } from 'vuex';
 import { UserState, User } from '@/store/types';
 import Vue from 'vue';
-import { storeService } from '../../electron/services/electron-store.service';
+import { storeService } from '../../electron/services/electron-store';
 
 const mutations: MutationTree<UserState> = {
   loadUser(state) {

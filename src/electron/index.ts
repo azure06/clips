@@ -1,18 +1,18 @@
 import { BrowserWindow, ipcMain, screen } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
-import { clipboardService } from './services/clipboard.service';
-import { GoogleOAuth2Service } from './services/google-auth.service';
-import { GoogleDriveService } from './services/google-drive.service';
+import { clipboardService } from './services/clipboard';
+import { GoogleOAuth2Service } from './services/google-auth';
+import { GoogleDriveService } from './services/google-drive';
 import { tap } from 'rxjs/operators';
 import fs from 'fs';
-import { environment } from './environment.config';
-import { mainWindow } from './helpers/main-win.helper';
-import { tray } from './helpers/tray.helper';
+import { environment } from './environment';
+import { mainWindow } from './helpers/main-win';
+import { tray } from './helpers/tray';
 import Sentry from './sentry';
-import { storeService } from './services/electron-store.service';
-import { initEvents } from './helpers/events.helper';
-import { initShortcuts } from './helpers/shortcuts.helper';
-import { initAutoLauncher } from './helpers/autolauncher.helper';
+import { storeService } from './services/electron-store';
+import { initEvents } from './helpers/events';
+import { initShortcuts } from './helpers/shortcuts';
+import { initAutoLauncher } from './helpers/autolauncher';
 
 Sentry.init(environment.sentry);
 

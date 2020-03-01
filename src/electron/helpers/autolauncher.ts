@@ -1,6 +1,5 @@
 import AutoLaunch from 'auto-launch';
-import Sentry from './../sentry';
-import { storeService } from '../services/electron-store.service';
+import Sentry from '../sentry';
 import { ipcMain } from 'electron';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
