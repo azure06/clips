@@ -1,6 +1,6 @@
 <template>
   <v-list width="100%" height="100%">
-    <v-subheader>Wakeup on</v-subheader>
+    <v-subheader>{{ translations.wakeOn }}</v-subheader>
     <v-row>
       <v-col cols="12" style="display: flex;">
         <v-text-field
@@ -55,7 +55,7 @@
         ></v-select>
       </v-col>
     </v-row>
-    <v-subheader>Language</v-subheader>
+    <v-subheader>{{ translations.language }}</v-subheader>
     <v-row>
       <v-col cols="12" style="display: flex;">
         <v-text-field
@@ -98,6 +98,8 @@ import { SettingsState } from '@/store/types';
 
 @Component
 export default class Shortcuts extends Vue {
+  @Prop({ required: true })
+  public translations!: any;
   @Prop({ required: true })
   public settings!: SettingsState;
   public keys = [

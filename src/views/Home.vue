@@ -1,7 +1,7 @@
 <template>
   <div class="fill-height">
     <!-- Application bar -->
-    <AppBar :time="dateTime" :count="clipCount" />
+    <AppBar :translations="$translations" :time="dateTime" :count="clipCount" />
     <v-container
       fluid
       pa-0
@@ -86,7 +86,7 @@
     <v-dialog v-model="processing" hide-overlay persistent width="300">
       <v-card color="blue darken-2" dark>
         <v-card-text>
-          This might take several minutes...
+          {{ $translations.mightTakeSeveralMinutes }}
           <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear>
         </v-card-text>
       </v-card>
@@ -108,6 +108,7 @@
       @download-json="downloadJson"
       @upload-json="uploadJson"
       @sync-with-drive="syncWithDrive"
+      :translations="$translations"
       :type="searchConditions.filters.type"
       :category="searchConditions.filters.category"
       :sync-status="syncStatus"
@@ -125,17 +126,10 @@ import { Clip, SettingsState, User } from '@/store/types';
 import { Getter, Mutation, Action } from 'vuex-class';
 import { ClipSearchConditions, SearchFilters } from '@/rxdb/clips.models';
 import { utils } from '@/rxdb';
+import { BaseVue } from '@/utils/base-vue';
 import moment from 'moment';
 import electron from 'electron';
-import {
-  tap,
-  map,
-  filter,
-  concatMap,
-  delay,
-  distinctUntilChanged,
-  debounceTime,
-} from 'rxjs/operators';
+import { map, filter, concatMap, delay, distinctUntilChanged, debounceTime } from 'rxjs/operators';
 
 type ClipEx = Clip & { fromNow?: string; preview?: string };
 
@@ -157,7 +151,7 @@ type ClipEx = Clip & { fromNow?: string; preview?: string };
     };
   },
 })
-export default class Home extends Vue {
+export default class Home extends BaseVue {
   @Action('loadClips', { namespace: 'clips' })
   public loadClips!: (searchConditions: Partial<ClipSearchConditions>) => Promise<Clip[]>;
   @Action('loadNext', { namespace: 'clips' })
@@ -193,8 +187,6 @@ export default class Home extends Vue {
   public processing!: Clip[];
   @Getter('syncStatus', { namespace: 'clips' })
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
-  @Getter('settings', { namespace: 'settings' })
-  public settings!: SettingsState;
   public searchConditions: Partial<ClipSearchConditions> & {
     filters: Partial<SearchFilters>;
   } = {
@@ -308,8 +300,8 @@ export default class Home extends Vue {
       const clips = await this.uploadToDrive({});
       this.snackbarText =
         clips.length > 0
-          ? `${clips.length} items have been uploaded to Google Drive`
-          : 'Your clipboard is already synced with Google Drive';
+          ? this.$replacer(this.$translations.itemsHaveBeenUploaded, { length: clips.length })
+          : this.$translations.alreadySyncedWith;
     } else {
       this.snackbarText = 'Sign-in to sync with Google Drive';
     }

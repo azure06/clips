@@ -1,13 +1,13 @@
 <template>
   <div>
     <v-list subheader dense>
-      <v-subheader>Search type</v-subheader>
+      <v-subheader>{{ translations.searchType }}</v-subheader>
       <v-list-item>
         <v-radio-group :value="settings.storage.search.type" :mandatory="true" dense>
           <v-radio
             color="blue darken-2"
             class="caption label"
-            label="Accurate search (Fast)"
+            :label="translations.accurateSearch"
             @change="
               $emit('change-settings', {
                 ...settings,
@@ -22,8 +22,8 @@
           <v-radio
             color="blue darken-2"
             class="caption label"
-            label="Fuzzy search"
             value="fuzzy"
+            :label="translations.fuzzySearch"
             @change="
               $emit('change-settings', {
                 ...settings,
@@ -37,7 +37,7 @@
           <v-radio
             color="blue darken-2"
             class="caption label"
-            label="Advanced Fuzzy search (Slow)"
+            :label="translations.advancedFuzzySearch"
             value="advanced-fuzzy"
             @change="
               $emit('change-settings', {
@@ -52,7 +52,7 @@
         </v-radio-group>
       </v-list-item>
       <v-divider></v-divider>
-      <v-subheader>Save following formats from clipboard</v-subheader>
+      <v-subheader>{{ translations.saveFollowingFormats }}</v-subheader>
       <v-list-item>
         <v-row>
           <v-col class="pb-10 pt-0 label">
@@ -60,7 +60,7 @@
               color="blue darken-2"
               dense
               hide-details
-              label="Text"
+              :label="translations.text"
               :input-value="settings.storage.formats.plainText"
               @change="
                 $emit('change-settings', {
@@ -79,7 +79,7 @@
               color="blue darken-2"
               dense
               hide-details
-              label="Pictures"
+              :label="translations.pictures"
               :input-value="settings.storage.formats.dataURI"
               @change="
                 $emit('change-settings', {
@@ -98,7 +98,7 @@
               color="blue darken-2"
               dense
               hide-details
-              label="Rich Text"
+              :label="translations.richText"
               :input-value="settings.storage.formats.richText"
               @change="
                 $emit('change-settings', {
@@ -117,7 +117,7 @@
               color="blue darken-2"
               dense
               hide-details
-              label="Html Text"
+              :label="translations.htmlText"
               :input-value="settings.storage.formats.htmlText"
               @change="
                 $emit('change-settings', {
@@ -136,18 +136,18 @@
         </v-row>
       </v-list-item>
       <v-divider></v-divider>
-      <v-subheader>Automatic Cleanup</v-subheader>
-      <v-subheader
-        class="pt-2 pl-4"
-        style="height: unset"
-      >・Automatically remove unused items from DB</v-subheader>
-      <v-subheader class="pl-4" style="height: unset">・Starred items will be ignored</v-subheader>
-      <v-subheader class="pl-4" style="height: unset">・Helps to improve search performance</v-subheader>
+      <v-subheader>{{ translations.automaticCleanup }}</v-subheader>
+      <v-subheader class="pt-2 pl-4" style="height: unset">{{
+        translations.cleanupDesc1
+      }}</v-subheader>
+      <v-subheader class="pl-4" style="height: unset">{{ translations.cleanupDesc2 }}</v-subheader>
+      <v-subheader class="pl-4" style="height: unset">{{ translations.cleanupDesc3 }}</v-subheader>
       <v-subheader class="pl-4" style="height: unset">
-        ・[Attention] This is based on your system Date/Time configuration. Changes in your
-        configuration might give unexpected results.
+        {{ translations.cleanupDesc4 }}
       </v-subheader>
-      <v-subheader class="pt-2 pb-2" style="height: unset">Remove unused items older then:</v-subheader>
+      <v-subheader class="pt-2 pb-2" style="height: unset">{{
+        translations.removeUnusedItemsOlderThen
+      }}</v-subheader>
       <v-list-item>
         <v-select
           :items="Object.values(cycle)"
@@ -178,6 +178,8 @@ import { of } from 'rxjs';
 export default class General extends Vue {
   @Prop({ required: true })
   public settings!: SettingsState;
+  @Prop({ required: true })
+  public translations!: any;
 
   public get hourInMillis() {
     return 3600000;
@@ -220,11 +222,11 @@ export default class General extends Vue {
 
   public get cycle() {
     return {
-      oneHour: '1 hour',
-      twentyfourHours: '24 hours',
-      sevenDays: '7 days',
-      fourWeeks: '4 weeks',
-      never: 'Never',
+      oneHour: this.translations.oneHour,
+      twentyfourHours: this.translations.twentyFourHours,
+      sevenDays: this.translations.sevenDays,
+      fourWeeks: this.translations.fourWeeks,
+      never: this.translations.never,
     };
   }
 }

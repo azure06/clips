@@ -28,7 +28,7 @@
               </v-list-item-content>
             </v-list-item>
           </template>
-          <span>General</span>
+          <span>{{ $translations.general }}</span>
         </v-tooltip>
 
         <v-tooltip top>
@@ -44,7 +44,7 @@
               </v-list-item-content>
             </v-list-item>
           </template>
-          <span>Advanced</span>
+          <span>{{ $translations.advanced }}</span>
         </v-tooltip>
 
         <v-tooltip top>
@@ -58,7 +58,7 @@
               </v-list-item-content>
             </v-list-item>
           </template>
-          <span>Language</span>
+          <span>{{ $translations.language }}</span>
         </v-tooltip>
       </v-list>
 
@@ -85,7 +85,7 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <span>About</span>
+            <span>{{ $translations.about }}</span>
           </v-tooltip>
         </v-list>
       </template>
@@ -98,7 +98,7 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
 
-        <v-toolbar-title>Settings</v-toolbar-title>
+        <v-toolbar-title>{{ $translations.settings }}</v-toolbar-title>
         <v-spacer></v-spacer>
       </v-toolbar>
       <v-divider></v-divider>
@@ -107,6 +107,7 @@
       <div class="content">
         <router-view
           :settings="settings"
+          :translations="$translations"
           @change-settings="(payload) => changeSettings({ vuetify: $vuetify, payload })"
           @change-shortcut="(payload) => changeShortcut({ vuetify: $vuetify, payload })"
           @change-startup="(payload) => changeStartup({ vuetify: $vuetify, payload })"
@@ -118,7 +119,7 @@
       <v-dialog v-model="dialog_" hide-overlay persistent width="300">
         <v-card color="blue darken-2" dark>
           <v-card-text>
-            Please stand by
+            {{ $translations.mightTakeSeveralMinutes }}
             <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear>
           </v-card-text>
         </v-card>
@@ -128,15 +129,14 @@
 </template>
 
 <script lang="ts">
+import { BaseVue } from '@/utils/base-vue';
 import { Component, Vue, Mixins } from 'vue-property-decorator';
 import { Clip, SettingsState } from '@/store/types';
 import { Getter, Mutation, Action } from 'vuex-class';
 import moment from 'moment';
 
 @Component
-export default class Settings extends Vue {
-  @Getter('settings', { namespace: 'settings' })
-  public settings!: SettingsState;
+export default class Settings extends BaseVue {
   @Mutation('changeSettings', { namespace: 'settings' })
   public changeSettings!: (args: { vuetify: any; payload: SettingsState }) => void;
   @Mutation('restoreSettings', { namespace: 'settings' })

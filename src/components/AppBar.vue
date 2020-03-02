@@ -2,11 +2,11 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title class="subtitle-2 font-weight-medium" style="user-select: none;"
-        >Clipboard
+        >{{ translations.clipboard }}
 
         <v-subheader
           class="text-capitalize font-weight-bold pa-0 pt-1 pb-1 ma-0"
-          style="height: 10px; font-size: 10px;"
+          style="height: 12px; font-size: 10px;"
           inset
           >{{ moment(time).format('MMMM DD, YYYY') }}</v-subheader
         >
@@ -15,7 +15,7 @@
 
       <div style="display: flex; align-items: baseline; user-select: none;">
         <div class="subtitle-2 pa-1 font-weight-bold">{{ count }}</div>
-        <div class="caption pa-1 font-weight-regular">Items</div>
+        <div class="caption pa-1 font-weight-regular">{{ translations.items }}</div>
       </div>
     </v-toolbar>
     <v-divider class="inset"></v-divider>
@@ -23,13 +23,16 @@
 </template>
 
 <script lang="ts">
+import { BaseVue } from '@/utils/base-vue';
 import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
 import moment from 'moment';
 
 @Component
-export default class AppBar extends Vue {
+export default class AppBar extends BaseVue {
   @Prop()
   public time!: number;
+  @Prop({ required: true })
+  public translations!: any;
   @Prop()
   public count?: number;
 

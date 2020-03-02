@@ -73,7 +73,7 @@
       <v-toolbar-items :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`">
         <v-text-field
           class="pa-2"
-          label="Insert a valid Token..."
+          :label="$translations.insertValidToken"
           prepend-inner-icon="mdi-google"
           autofocus
           clearable
@@ -95,6 +95,7 @@ import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
 import moment from 'moment';
 import { GaxiosResponse, GaxiosError } from 'gaxios';
+import { BaseVue } from '@/utils/base-vue';
 
 type SchemaChange = { [token: string]: drive_v3.Schema$Change[] };
 type AurthError = {
@@ -106,7 +107,7 @@ type AurthError = {
 type GaxiosErrorEx = { error: GaxiosError | AurthError | any };
 
 @Component
-export default class GoogleDrive extends Vue {
+export default class GoogleDrive extends BaseVue {
   @Action('signOut', { namespace: 'user' })
   public signOut!: () => Promise<void>;
   @Getter('user', { namespace: 'user' })

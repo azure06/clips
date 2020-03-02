@@ -21,7 +21,7 @@
             </v-list-item-content>
           </v-list-item>
         </template>
-        <span>Home</span>
+        <span>{{ $translations.home }}</span>
       </v-tooltip>
 
       <v-tooltip top>
@@ -41,7 +41,7 @@
             </v-list-item-content>
           </v-list-item>
         </template>
-        <span>Drive folder</span>
+        <span>{{ $translations.driveFolder }}</span>
       </v-tooltip>
 
       <v-tooltip top>
@@ -55,7 +55,7 @@
             </v-list-item-content>
           </v-list-item>
         </template>
-        <span>Account</span>
+        <span>{{ $translations.account }}</span>
       </v-tooltip>
 
       <v-list-item v-if="false" class="mt-1 pa-1" link :to="{ name: 'about' }">
@@ -91,7 +91,7 @@
               </v-list-item-content>
             </v-list-item>
           </template>
-          <span>Settings</span>
+          <span>{{ $translations.settings }}</span>
         </v-tooltip>
       </v-list>
     </template>
@@ -100,12 +100,13 @@
 
 <script lang="ts">
 // @ is an alias to /src
+import { BaseVue } from '@/utils/base-vue';
 import { Component, Vue, Mixins } from 'vue-property-decorator';
 import { Getter } from 'vuex-class';
 import { User } from '@/store/types';
 
 @Component
-export default class NavDrawer extends Vue {
+export default class NavDrawer extends BaseVue {
   @Getter('loading', { namespace: 'clips' })
   public loading!: boolean;
   @Getter('user', { namespace: 'user' })

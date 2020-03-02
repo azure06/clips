@@ -5,7 +5,7 @@
         :value="searchQuery"
         @input="(value) => $emit('query-change', value)"
         class="pa-2"
-        label="Search..."
+        :label="translations.search + '...'"
         prepend-inner-icon="mdi-magnify"
         autofocus
         clearable
@@ -29,7 +29,13 @@
             <v-icon v-if="type === 'image'">mdi-panorama</v-icon>
           </v-btn>
         </template>
-        <span>{{ !type ? 'All Types' : type === 'text' ? 'Only Text' : 'Only Images' }}</span>
+        <span>{{
+          !type
+            ? translations.allTypes
+            : type === 'text'
+            ? translations.onlyText
+            : translations.onlyImages
+        }}</span>
       </v-tooltip>
 
       <v-tooltip top>
@@ -43,7 +49,9 @@
             <v-icon>mdi-star</v-icon>
           </v-btn>
         </template>
-        <span>{{ category === 'starred' ? 'Only Starred' : 'All Categories' }}</span>
+        <span>{{
+          category === 'starred' ? translations.onlyStarred : translations.allCategories
+        }}</span>
       </v-tooltip>
 
       <v-tooltip top>
@@ -52,7 +60,7 @@
             <v-icon>mdi-delete-circle</v-icon>
           </v-btn>
         </template>
-        <span>Remove</span>
+        <span>{{ translations.remove }} </span>
       </v-tooltip>
 
       <v-tooltip top>
@@ -67,7 +75,7 @@
             <v-icon>mdi-check</v-icon>
           </v-btn>
         </template>
-        <span>Confirm</span>
+        <span>{{ translations.confirm }}</span>
       </v-tooltip>
 
       <v-tooltip top>
@@ -82,7 +90,7 @@
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>
-        <span>Cancel</span>
+        <span>{{ translations.cancel }}</span>
       </v-tooltip>
 
       <v-tooltip top>
@@ -91,11 +99,12 @@
             <v-icon
               v-if="syncStatus !== 'rejected'"
               :class="syncStatus === 'pending' ? 'infinite-spinning' : ''"
-            >mdi-sync</v-icon>
+              >mdi-sync</v-icon
+            >
             <v-icon color="amber darken-1" v-else>mdi-sync-alert</v-icon>
           </v-btn>
         </template>
-        <span>Sync with Drive</span>
+        <span>{{ translations.syncWithDrive }}</span>
       </v-tooltip>
 
       <v-menu
@@ -116,7 +125,7 @@
               <v-icon v-text="`mdi-upload`" dense></v-icon>
             </v-list-item-avatar>
             <v-list-item-content>
-              <v-list-item-title>Upload Items</v-list-item-title>
+              <v-list-item-title>{{ translations.uploadItems }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-item link @click="$emit('download-json')">
@@ -124,7 +133,7 @@
               <v-icon v-text="`mdi-download`" dense></v-icon>
             </v-list-item-avatar>
             <v-list-item-content>
-              <v-list-item-title>Download Items</v-list-item-title>
+              <v-list-item-title>{{ translations.downloadItems }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-item link :to="{ name: 'about' }">
@@ -132,7 +141,7 @@
               <v-icon v-text="`mdi-information`" dense></v-icon>
             </v-list-item-avatar>
             <v-list-item-content>
-              <v-list-item-title>About Clips</v-list-item-title>
+              <v-list-item-title>{{ translations.aboutClips }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -157,6 +166,8 @@ export default class SearchBar extends Vue {
   public searchQuery!: 'string';
   @Prop()
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
+  @Prop({ required: true })
+  public translations!: any;
 }
 </script>
 
