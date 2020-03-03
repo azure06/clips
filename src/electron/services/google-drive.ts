@@ -84,4 +84,31 @@ export class GoogleDriveService {
       )
       .toPromise();
   }
+
+  public retrieveFile(fileId: string) {
+    const bufferChunks = [] as Uint8Array[];
+    return new Promise(async (resolve, reject) => {
+      return this.drive.files
+        .get({ fileId, alt: 'media' }, { responseType: 'stream' })
+        .then((response) => {
+          (response.data as any)
+            .on('end', () => {
+              try {
+                const data =
+                  bufferChunks.length > 0
+                    ? JSON.parse(Buffer.concat(bufferChunks).toString('utf8'))
+                    : [];
+                resolve(data);
+              } catch (error) {
+                reject(error);
+              }
+            })
+            .on('error', (error: any) => {
+              reject(error);
+            })
+            .on('data', (data: Uint8Array) => bufferChunks.push(data));
+        })
+        .catch(reject);
+    });
+  }
 }

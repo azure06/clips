@@ -50,7 +50,10 @@
                   </v-list-item-content>
 
                   <v-list-item-action>
-                    <v-btn icon>
+                    <v-btn v-if="!change.removed" icon @click="retrieveFile(change)">
+                      <v-icon color="grey lighten-1">mdi-download</v-icon>
+                    </v-btn>
+                    <v-btn v-else>
                       <v-icon color="grey lighten-1">mdi-information</v-icon>
                     </v-btn>
                   </v-list-item-action>
@@ -74,6 +77,7 @@
         <v-text-field
           class="pa-2"
           :label="$translations.insertValidToken"
+          v-model="inputToken"
           prepend-inner-icon="mdi-google"
           autofocus
           clearable
@@ -81,8 +85,20 @@
           flat
           solo
           filled
-        ></v-text-field> </v-toolbar-items
-    ></v-toolbar>
+        ></v-text-field>
+      </v-toolbar-items>
+      <v-btn depressed text @click="changeToken(inputToken)">{{ $translations.confirm }}</v-btn>
+    </v-toolbar>
+
+    <!-- Dialog -->
+    <v-dialog v-model="fetching" hide-overlay persistent width="300">
+      <v-card color="blue darken-2" dark>
+        <v-card-text>
+          Downloading...
+          <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -110,12 +126,17 @@ type GaxiosErrorEx = { error: GaxiosError | AurthError | any };
 export default class GoogleDrive extends BaseVue {
   @Action('signOut', { namespace: 'user' })
   public signOut!: () => Promise<void>;
+  @Action('downloadJson', { namespace: 'clips' })
+  public downloadJson!: (clip: Clip[]) => Promise<void>;
   @Getter('user', { namespace: 'user' })
+  public processing!: boolean;
   public user!: () => Promise<User>;
   public driveChanges: Array<[string, drive_v3.Schema$Change[]]> = [];
-  public loading: boolean = true;
   public snackbar = false;
   public errorMsg = '';
+  public loading = false;
+  public fetching = false;
+  public inputToken: string = '';
 
   public get moment() {
     return moment;
@@ -125,9 +146,48 @@ export default class GoogleDrive extends BaseVue {
     return 'error' in response;
   }
 
-  public async mounted() {
-    const response: SchemaChange | GaxiosErrorEx = await ipcRenderer.invoke('list-files');
+  public async changeToken(token: string) {
+    if (token && Number.isInteger(+token)) this.loadData(token);
+    else {
+      this.errorMsg = 'A token should be a numeric value.';
+      this.snackbar = true;
+    }
+  }
+
+  public async retrieveFile(change: drive_v3.Schema$Change) {
+    // FIXME move to action?
+    this.fetching = true;
+    const response = await ipcRenderer.invoke('retrieve-file', change.fileId);
+    this.fetching = false;
+    if (this.isGaxiosError(response)) {
+      this.errorHandler(response);
+    } else {
+      this.downloadJson(response);
+    }
+  }
+
+  public errorHandler(gaxiosError: GaxiosErrorEx) {
+    this.errorMsg = (() => {
+      switch (gaxiosError.error.code) {
+        case 401:
+          return this.$translations.invalidCredentials;
+        case 402:
+          return this.$translations.invalidCredentials;
+        case 'ENOTFOUND':
+          return this.$translations.networkError;
+        default:
+          return this.$translations.somethingWentWrong;
+      }
+    })();
+    this.snackbar = true;
+  }
+
+  public async loadData(token?: string) {
+    // FIXME move to action?
+    this.loading = true;
+    const response: SchemaChange | GaxiosErrorEx = await ipcRenderer.invoke('list-files', token);
     this.loading = false;
+
     this.driveChanges = !this.isGaxiosError(response)
       ? (Object.entries(response)
           .reverse()
@@ -141,15 +201,12 @@ export default class GoogleDrive extends BaseVue {
       : [];
 
     if (this.isGaxiosError(response)) {
-      if (response.error.code == 401 || response.error.code == 400) {
-        this.errorMsg = 'Invalid credentials';
-        this.snackbar = true;
-        await this.signOut();
-      } else {
-        this.errorMsg = 'Something went wrong.';
-        this.snackbar = true;
-      }
+      this.errorHandler(response);
     }
+  }
+
+  public async mounted() {
+    return this.loadData();
   }
 }
 </script>

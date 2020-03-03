@@ -2,7 +2,7 @@ import { Translation } from './types';
 
 export const en: Translation = {
   account: 'Account',
-  clipboard: 'Clipboard',
+  clipboard: 'Clips',
   items: 'Items',
   uploadItems: 'Upload items',
   downloadItems: 'Download items',
@@ -36,7 +36,7 @@ export const en: Translation = {
   syncEvery: 'Sync every {threshold} items have been added to clipboard',
   system: 'System',
   runAtStartup: 'Run at startup',
-  startOnSystemStartup: 'Start the app on system startup',
+  startOnSystemStartup: 'Run Clips on system startup',
   hideOnBlur: 'Hide on blur',
   appHiddenOnBlur: 'The app will be hidden on blur event',
   privacyAndSecurity: 'Privacy and security',
@@ -75,4 +75,13 @@ export const en: Translation = {
   signInToSync: 'Sign-in to sync with Google Drive',
   files: 'Files',
   mightTakeSeveralMinutes: 'This might take several minutes...',
+  tokenShouldBeNumeric: 'A token should be a numeric value.',
+  signIn: 'Sign-in',
+  signOut: 'Sign-out',
+  downloading: 'Downloading',
+  invalidCredentials: 'Invalid Credentials',
+  somethingWentWrong: 'Something went wrong',
+  networkError: 'Network error',
+  allowSynWithMultiple: 'Allow syncing with multiple devices',
+  signInWithGoogle: 'Sign-in with Google',
 };

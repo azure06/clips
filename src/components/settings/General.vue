@@ -62,7 +62,7 @@
     </v-list>
     <v-divider></v-divider>
     <v-list subheader dense>
-      <v-subheader>Theme</v-subheader>
+      <v-subheader>{{ translations.theme }}</v-subheader>
       <v-list-item>
         <v-list-item-action>
           <v-switch

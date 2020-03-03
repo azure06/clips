@@ -23,36 +23,73 @@
 
           <v-list-item-content>
             <v-list-item-title
-              v-if="clip.type === 'text'"
+              v-if="displayType[clip.id].availableTypes[displayType[clip.id].index] === 'plainText'"
               v-text="clip.preview"
             ></v-list-item-title>
             <v-img
-              v-else-if="clip.dataURI"
+              v-else-if="
+                displayType[clip.id].availableTypes[displayType[clip.id].index] === 'dataURI'
+              "
               style="border-radius: 5px; max-height: 80px;"
               :src="clip.dataURI"
               :alt="clip.preview"
             ></v-img>
             <v-list-item-title v-else>
-              <div v-html="clip.htmlText" style="border-radius: 5px; max-height: 80px;"></div>
+              <div
+                v-dompurify-html="clip.htmlText"
+                style="border-radius: 5px; max-height: 80px;"
+              ></div>
             </v-list-item-title>
             <v-list-item-subtitle v-text="clip.fromNow"></v-list-item-subtitle>
           </v-list-item-content>
 
           <v-list-item-action class="pa-0 pl-2 ma-0" v-if="mode !== 'select'">
-            <v-btn icon @click="onStarClick($event, clip)">
-              <v-icon
-                :color="
-                  `${
-                    clip.category === 'starred'
-                      ? clip.type === 'text'
-                        ? 'blue darken-2'
-                        : 'cyan darken-2'
-                      : 'blue-gray'
-                  }`
-                "
-                >mdi-star</v-icon
+            <div>
+              <v-btn
+                v-if="displayType[clip.id].availableTypes.length > 1"
+                icon
+                @click="goNext($event, clip.id)"
               >
-            </v-btn>
+                <v-icon
+                  v-if="
+                    displayType[clip.id].availableTypes[displayType[clip.id].index] === 'plainText'
+                  "
+                  >mdi-card-text</v-icon
+                >
+                <v-icon
+                  v-if="
+                    displayType[clip.id].availableTypes[displayType[clip.id].index] === 'htmlText'
+                  "
+                  >mdi-language-html5</v-icon
+                >
+                <v-icon
+                  v-if="
+                    displayType[clip.id].availableTypes[displayType[clip.id].index] === 'richText'
+                  "
+                  >mdi-card-text-outline</v-icon
+                >
+                <v-icon
+                  v-if="
+                    displayType[clip.id].availableTypes[displayType[clip.id].index] === 'dataURI'
+                  "
+                  >mdi-image-area</v-icon
+                >
+              </v-btn>
+              <v-btn icon @click="onStarClick($event, clip)">
+                <v-icon
+                  :color="
+                    `${
+                      clip.category === 'starred'
+                        ? clip.type === 'text'
+                          ? 'blue darken-2'
+                          : 'cyan darken-2'
+                        : 'blue-gray'
+                    }`
+                  "
+                  >mdi-star</v-icon
+                >
+              </v-btn>
+            </div>
           </v-list-item-action>
           <v-list-item-action class="pa-0 pl-2 pr-2 ma-0" v-else>
             <v-checkbox
@@ -105,7 +142,7 @@
       @change-category="onChangeCategory"
       @remove-items="onRemoveItems"
       @query-change="search"
-      @download-json="downloadJson"
+      @download-json="fromDump().then(downloadJson)"
       @upload-json="uploadJson"
       @sync-with-drive="syncWithDrive"
       :translations="$translations"
@@ -129,7 +166,15 @@ import { utils } from '@/rxdb';
 import { BaseVue } from '@/utils/base-vue';
 import moment from 'moment';
 import electron from 'electron';
-import { map, filter, concatMap, delay, distinctUntilChanged, debounceTime } from 'rxjs/operators';
+import {
+  map,
+  filter,
+  concatMap,
+  delay,
+  distinctUntilChanged,
+  debounceTime,
+  tap,
+} from 'rxjs/operators';
 
 type ClipEx = Clip & { fromNow?: string; preview?: string };
 
@@ -138,7 +183,32 @@ type ClipEx = Clip & { fromNow?: string; preview?: string };
   subscriptions() {
     return {
       clipsObserver: this.$watchAsObservable('clips').pipe(
-        map(({ oldValue, newValue }: { oldValue: ClipEx[]; newValue: ClipEx[] }) => {
+        tap(({ oldValue, newValue }: { oldValue: ClipEx[]; newValue: ClipEx[] }) => {
+          const { displayType } = this as any;
+          newValue.forEach((clip) => {
+            if (!displayType[clip.id]) {
+              displayType[clip.id] = {
+                availableTypes: (clip.type === 'text'
+                  ? [
+                      clip.plainText ? 'plainText' : undefined,
+                      clip.richText ? 'richText' : undefined,
+                      clip.htmlText ? 'htmlText' : undefined,
+                      clip.dataURI ? 'dataURI' : undefined,
+                    ]
+                  : [
+                      clip.dataURI ? 'dataURI' : undefined,
+                      clip.htmlText ? 'htmlText' : undefined,
+                      clip.richText ? 'richText' : undefined,
+                      clip.plainText ? 'plainText' : undefined,
+                    ]
+                ).filter((value) => !!value),
+                index: 0,
+              };
+            }
+          });
+          displayType;
+        }),
+        map(({ oldValue, newValue }) => {
           return newValue.map((clip, index) => ({
             ...clip,
             icon: clip.type === 'text' ? 'mdi-clipboard-text' : 'mdi-image-area',
@@ -164,11 +234,13 @@ export default class Home extends BaseVue {
   @Action('removeClips', { namespace: 'clips' })
   public removeClips!: (ids: string[]) => Promise<Clip[]>;
   @Action('copyToClipboard', { namespace: 'clips' })
-  public copyToClipboard!: (clip: Clip) => Promise<void>;
+  public copyToClipboard!: (args: { type: 'text' | 'image'; payload: string }) => Promise<void>;
   @Action('uploadJson', { namespace: 'clips' })
   public uploadJson!: () => Promise<Clip[]>;
+  @Action('fromDump', { namespace: 'clips' })
+  public fromDump!: () => Promise<Clip[]>;
   @Action('downloadJson', { namespace: 'clips' })
-  public downloadJson!: () => Promise<Clip[]>;
+  public downloadJson!: (clips: Clip[]) => Promise<Clip[]>;
   @Action('uploadToDrive', { namespace: 'clips' })
   public uploadToDrive!: ({
     clip,
@@ -196,6 +268,12 @@ export default class Home extends BaseVue {
   };
   public mode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
+  public displayType: {
+    [id: string]: {
+      availableTypes: Array<'plainText' | 'richText' | 'dataURI' | 'htmlText'>;
+      index: number;
+    };
+  } = {};
   public dateTime: number = Date.now();
 
   public snackbar = false;
@@ -209,8 +287,22 @@ export default class Home extends BaseVue {
     this.dateTime = clip.updatedAt;
   }
 
+  public goNext(event: Event, id: string) {
+    event.stopPropagation();
+    const target = this.displayType[id];
+    this.displayType = {
+      ...this.displayType,
+      [id]: {
+        availableTypes: target.availableTypes,
+        index: target.index + 1 < target.availableTypes.length ? target.index + 1 : 0,
+      },
+    };
+  }
+
   public async onClipClick(clip: Clip) {
-    this.copyToClipboard(clip);
+    const target = this.displayType[clip.id];
+    const type = target.availableTypes[target.index];
+    this.copyToClipboard({ type: type === 'dataURI' ? 'image' : 'text', payload: clip[type] });
     const mainWindow = electron.remote.getCurrentWindow();
     if (mainWindow.isVisible() && this.settings.system.blur) {
       mainWindow.hide();
@@ -329,14 +421,14 @@ export default class Home extends BaseVue {
     this.$subscribeTo(
       this.infiniteScroll().pipe(concatMap(() => this.loadNext(this.searchConditions))),
       (value) => {
-        const target = this.$refs['scroll-target'] as Element;
-        if (value.length === 0) {
-          const scrollTop = Math.floor(target.scrollTop * 0.9);
-          const threshold = 1000;
-          target.scrollTo({
-            top: scrollTop > threshold ? scrollTop : threshold,
-          });
-        }
+        // const target = this.$refs['scroll-target'] as Element;
+        // if (value.length === 0) {
+        //   const scrollTop = Math.floor(target.scrollTop * 0.9);
+        //   const threshold = 1000;
+        //   target.scrollTo({
+        //     top: scrollTop > threshold ? scrollTop : threshold,
+        //   });
+        // }
       }
     );
   }

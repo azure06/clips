@@ -61,8 +61,23 @@ function googleSubscriptions(mainWindow: BrowserWindow) {
     return authService.revokeCredentials().catch(Sentry.captureException);
   });
 
-  ipcMain.handle('list-files', (_) => {
-    return driveService.listFiles().catch((error) => {
+  ipcMain.handle('list-files', (_, token: string | undefined) => {
+    if (token) driveService.setPageToken(token);
+    return driveService
+      .listFiles()
+      .then((response) => {
+        /** Store token if succeed */
+        if (token) storeService.setPageToken(token);
+        return response;
+      })
+      .catch((error) => {
+        Sentry.captureException(error);
+        return { error };
+      });
+  });
+
+  ipcMain.handle('retrieve-file', (_, data: string) => {
+    return driveService.retrieveFile(data).catch((error) => {
       Sentry.captureException(error);
       return { error };
     });

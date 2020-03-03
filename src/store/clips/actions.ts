@@ -57,7 +57,7 @@ const actions: ActionTree<ClipsState, RootState> = {
           from(
             methods
               .findClips({
-                filters: { plainText: clip.plainText },
+                filters: clip.dataURI ? { dataURI: clip.dataURI } : { plainText: clip.plainText },
               })
               .then(async ([targetClip]) => {
                 clip = !targetClip
@@ -153,14 +153,11 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise(),
-  copyToClipboard: async ({ commit }, clip: Clip) =>
-    from(
-      ipcRenderer.invoke(
-        'copy-to-clipboard',
-        clip.dataURI ? 'base64' : 'text',
-        clip.type === 'image' ? clip.dataURI || clip.htmlText : clip.plainText
-      )
-    )
+  copyToClipboard: async (
+    { commit },
+    { type, payload }: { type: 'text' | 'base64'; payload: string }
+  ) =>
+    from(ipcRenderer.invoke('copy-to-clipboard', type, payload))
       .pipe(catchError((error) => Sentry.captureException(error)))
       .pipe(take(1))
       .toPromise(),
@@ -182,13 +179,27 @@ const actions: ActionTree<ClipsState, RootState> = {
     }
     return clips;
   },
-  downloadJson: async ({ commit }) =>
+  fromDump: async ({ commit }) =>
     collection()
       .pipe(tap((_) => commit('setProcessingStatus', true)))
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(concatMap((methods) => methods.dumpCollection()))
       .pipe(
-        concatMap(async (clips) => {
+        catchError((error) => {
+          Sentry.captureException(error);
+          return of([]);
+        })
+      )
+      .pipe(tap((_) => commit('setProcessingStatus', false)))
+      .pipe(tap((_) => commit('setLoadingStatus', false)))
+      .pipe(take(1))
+      .toPromise(),
+  downloadJson: async ({ commit }, clips: Clip[]) =>
+    collection()
+      .pipe(tap((_) => commit('setProcessingStatus', true)))
+      .pipe(tap((_) => commit('setLoadingStatus', true)))
+      .pipe(
+        concatMap(async () => {
           const { filePath } = await remote.dialog.showSaveDialog({
             defaultPath: 'untitled',
             filters: [{ name: 'Json File', extensions: ['json'] }],

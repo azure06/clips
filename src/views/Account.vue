@@ -5,25 +5,25 @@
         <v-col cols="12">
           <v-row align="center" justify="center" class="pa-3">
             <v-avatar width="90" height="90">
-              <v-icon x-large>mdi-login</v-icon>
+              <v-icon x-large color="blue darken-2">mdi-google</v-icon>
             </v-avatar>
           </v-row>
 
           <v-row align="center" justify="center">
             <v-card-title class="pa-0 ma-0">
-              <div class="subtitle-1 font-weight-bold">Sign-in with Google</div>
+              <div class="subtitle-1 font-weight-bold">{{ $translations.signInWithGoogle }}</div>
             </v-card-title>
           </v-row>
 
           <v-row align="center" justify="center">
             <v-card-subtitle class="pa-0 ma-0">
-              <div>Allow syncing with multiple computers</div>
+              <div>{{ $translations.allowSynWithMultiple }}</div>
             </v-card-subtitle>
           </v-row>
 
           <v-row align="center" justify="center" class="ma-2">
             <v-btn text large tile @click="signIn">
-              Sign-in
+              {{ $translations.signIn }}
             </v-btn>
           </v-row>
         </v-col>
@@ -54,7 +54,7 @@
 
           <v-row align="center" justify="center" class="ma-2">
             <v-btn text large tile @click="signOut">
-              Sign-out
+              {{ $translations.signOut }}
             </v-btn>
           </v-row>
 
@@ -71,10 +71,11 @@ import Observable, { fromEvent, Subject, merge } from 'rxjs';
 import { Clip, User } from '@/store/types';
 import { Getter, Mutation, Action } from 'vuex-class';
 import { ipcRenderer } from 'electron';
+import { BaseVue } from '@/utils/base-vue';
 import { drive_v3 } from 'googleapis';
 
 @Component
-export default class Account extends Vue {
+export default class Account extends BaseVue {
   @Action('signIn', { namespace: 'user' })
   public signIn!: () => Promise<void>;
   @Action('signOut', { namespace: 'user' })

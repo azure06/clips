@@ -46,7 +46,7 @@ export interface SettingsState {
     startup: boolean;
     blur: boolean;
     shortcut: MacOSFuzzy | WindowsOSFuzzy;
-    language: 'Auto' | 'English' | 'Italiano' | '日本語' | '中文';
+    language: 'Auto' | 'English' | 'Italiano' | '日本語' | '中文' | '繁體';
   };
 }
 

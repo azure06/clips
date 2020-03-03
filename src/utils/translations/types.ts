@@ -72,4 +72,13 @@ export interface Translation {
   insertValidToken: string;
   files: string;
   mightTakeSeveralMinutes: string;
+  signIn: string;
+  signOut: string;
+  tokenShouldBeNumeric: string;
+  downloading: string;
+  invalidCredentials: string;
+  somethingWentWrong: string;
+  networkError: string;
+  signInWithGoogle: string;
+  allowSynWithMultiple: string;
 }

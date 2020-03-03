@@ -12,10 +12,16 @@ import { environment } from './environment';
 import { interval, from } from 'rxjs';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { Clip, SettingsState } from './store/types';
+import VueDOMPurifyHTML from 'vue-dompurify-html';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
 Vue.use(VueRx);
+Vue.use(VueDOMPurifyHTML, {
+  default: {
+    FORBID_TAGS: ['a'],
+  },
+});
 
 const vm = new Vue({
   router,
@@ -67,14 +73,7 @@ const vm = new Vue({
       subscriptions.clipboardChange
         .pipe(map((clip) => this.filterClip(clip)))
         .pipe(
-          filter(
-            (clip) =>
-              !(clip.type === 'image' && !clip.dataURI) ||
-              !!clip.dataURI ||
-              !!clip.plainText ||
-              !!clip.htmlText ||
-              !!clip.richText
-          )
+          filter((clip) => !!clip.dataURI || !!clip.plainText || !!clip.htmlText || !!clip.richText)
         )
         .pipe(
           tap((clip) => {

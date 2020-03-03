@@ -6,5 +6,6 @@ export const environment = {
   },
   sentry: {
     dsn: process.env.VUE_APP_SENTRY_DSN,
+    environment: process.env.NODE_ENV,
   },
 };
