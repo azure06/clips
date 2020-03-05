@@ -12,6 +12,8 @@ import { environment } from './environment';
 import { interval, from } from 'rxjs';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { Clip, SettingsState } from './store/types';
+import './firebase';
+
 import VueDOMPurifyHTML from 'vue-dompurify-html';
 
 Vue.config.productionTip = false;

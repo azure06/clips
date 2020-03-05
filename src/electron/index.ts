@@ -13,6 +13,7 @@ import { storeService } from './services/electron-store';
 import { initEvents } from './helpers/events';
 import { initShortcuts } from './helpers/shortcuts';
 import { initAutoLauncher } from './helpers/autolauncher';
+import { setup as setupPushReceiver } from 'electron-push-receiver';
 
 Sentry.init(environment.sentry);
 
@@ -134,6 +135,7 @@ export function onReady() {
   const win = mainWindow.create();
   const _ = tray.create(win);
 
+  setupPushReceiver(win.webContents);
   initEvents(win);
   initShortcuts(win);
   initAutoLauncher();
