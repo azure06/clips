@@ -23,3 +23,8 @@ yarn-error.log*
 
 #Electron-builder output
 /dist_electron
+
+# Due to webpack __dirname has a different path, (electron-push-receiver)
+/public/android_checkin.proto
+/public/checkin.proto
+/public/mcs.proto

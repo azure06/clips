@@ -104,15 +104,15 @@
       <!-- Loading circle -->
 
       <transition name="fade">
-        <div v-show="loading">
-          <v-row align="center" justify="center" style="margin-top: 1.5rem; margin-bottom: 1rem;">
+        <div style="height: 120px" class="py-4" flat tile>
+          <v-row v-if="loading" align="center" justify="center">
             <v-progress-circular
               indeterminate
               color="cyan darken-2"
               size="50"
             ></v-progress-circular>
           </v-row>
-          <v-row align="center" justify="center" class="text-center">
+          <v-row v-if="loading" align="center" justify="center" class="text-center">
             <v-subheader class="text-center overline">Loading more data...</v-subheader>
           </v-row>
         </div>
@@ -305,7 +305,7 @@ export default class Home extends BaseVue {
     this.copyToClipboard({ type: type === 'dataURI' ? 'image' : 'text', payload: clip[type] });
     const mainWindow = electron.remote.getCurrentWindow();
     if (mainWindow.isVisible() && this.settings.system.blur) {
-      mainWindow.hide();
+      setTimeout(mainWindow.hide, 0);
     }
   }
 

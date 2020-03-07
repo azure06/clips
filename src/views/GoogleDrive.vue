@@ -18,9 +18,9 @@
               <div>
                 <v-chip label link>
                   <v-icon left small>mdi-google</v-icon>
-                  <span class="caption text-lowercase font-weight-medium">
-                    sync with
-                    <span class="caption text-capitalize font-weight-light"> Token </span>
+                  <span class="caption text-capitalize font-weight-medium">
+                    Sync
+                    <span class="caption text-lowercase font-weight-light"> token </span>
                     {{ token }}
                   </span>
                 </v-chip>
@@ -53,7 +53,7 @@
                     <v-btn v-if="!change.removed" icon @click="retrieveFile(change)">
                       <v-icon color="grey lighten-1">mdi-download</v-icon>
                     </v-btn>
-                    <v-btn v-else>
+                    <v-btn v-else icon>
                       <v-icon color="grey lighten-1">mdi-information</v-icon>
                     </v-btn>
                   </v-list-item-action>
@@ -87,7 +87,15 @@
           filled
         ></v-text-field>
       </v-toolbar-items>
-      <v-btn depressed text @click="changeToken(inputToken)">{{ $translations.confirm }}</v-btn>
+      <v-btn depressed text @click="updatePageToken(inputToken)">{{ $translations.confirm }}</v-btn>
+      <v-spacer></v-spacer>
+      <v-chip v-if="storedToken" label close link @click:close="resetPageToken">
+        <v-icon left small>mdi-google</v-icon>
+        <span class="caption font-weight-medium">
+          Token:
+          <span class="caption font-weight-light"> {{ storedToken }} </span>
+        </span>
+      </v-chip>
     </v-toolbar>
 
     <!-- Dialog -->
@@ -112,6 +120,7 @@ import { drive_v3 } from 'googleapis';
 import moment from 'moment';
 import { GaxiosResponse, GaxiosError } from 'gaxios';
 import { BaseVue } from '@/utils/base-vue';
+import { storeService } from '@/electron/services/electron-store';
 
 type SchemaChange = { [token: string]: drive_v3.Schema$Change[] };
 type AurthError = {
@@ -137,6 +146,7 @@ export default class GoogleDrive extends BaseVue {
   public loading = false;
   public fetching = false;
   public inputToken: string = '';
+  public storedToken = '';
 
   public get moment() {
     return moment;
@@ -146,10 +156,17 @@ export default class GoogleDrive extends BaseVue {
     return 'error' in response;
   }
 
-  public async changeToken(token: string) {
-    if (token && Number.isInteger(+token)) this.loadData(token);
-    else {
-      this.errorMsg = 'A token should be a numeric value.';
+  public async resetPageToken() {
+    const pageToken = await ipcRenderer.invoke('change-page-token');
+    storeService.setPageToken(pageToken);
+    this.retrieveData();
+  }
+
+  public async updatePageToken(token: string) {
+    if (token && Number.isInteger(+token)) {
+      this.retrieveData(token);
+    } else {
+      this.errorMsg = this.$translations.tokenShouldBeNumeric;
       this.snackbar = true;
     }
   }
@@ -163,6 +180,30 @@ export default class GoogleDrive extends BaseVue {
       this.errorHandler(response);
     } else {
       this.downloadJson(response);
+    }
+  }
+
+  public async retrieveData(token?: string) {
+    this.loading = true;
+    if (token) {
+      const newToken = await ipcRenderer.invoke('change-page-token', token);
+      storeService.setPageToken(newToken);
+    }
+    this.storedToken = storeService.getPageToken('');
+    const response: SchemaChange | GaxiosErrorEx = await ipcRenderer.invoke('list-files');
+    this.loading = false;
+    if (!this.isGaxiosError(response)) {
+      this.driveChanges = Object.entries(response)
+        .reverse()
+        .map(([token, changes]) => [
+          token,
+          changes.sort(
+            (a, b) => new Date(b.time || '').getTime() - new Date(a.time || '').getTime()
+          ),
+        ])
+        .filter(([_, changes]) => changes.length > 0) as [string, drive_v3.Schema$Change[]][];
+    } else {
+      this.errorHandler(response);
     }
   }
 
@@ -182,31 +223,8 @@ export default class GoogleDrive extends BaseVue {
     this.snackbar = true;
   }
 
-  public async loadData(token?: string) {
-    // FIXME move to action?
-    this.loading = true;
-    const response: SchemaChange | GaxiosErrorEx = await ipcRenderer.invoke('list-files', token);
-    this.loading = false;
-
-    this.driveChanges = !this.isGaxiosError(response)
-      ? (Object.entries(response)
-          .reverse()
-          .map(([token, changes]) => [
-            token,
-            changes.sort(
-              (a, b) => new Date(b.time || '').getTime() - new Date(a.time || '').getTime()
-            ),
-          ])
-          .filter(([_, changes]) => changes.length > 0) as [string, drive_v3.Schema$Change[]][])
-      : [];
-
-    if (this.isGaxiosError(response)) {
-      this.errorHandler(response);
-    }
-  }
-
   public async mounted() {
-    return this.loadData();
+    return this.retrieveData();
   }
 }
 </script>

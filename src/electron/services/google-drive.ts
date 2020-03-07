@@ -24,7 +24,7 @@ export class GoogleDriveService {
     });
   }
 
-  private async getStartPageToken() {
+  public async getStartPageToken() {
     return (await this.drive.changes.getStartPageToken()).data.startPageToken;
   }
 

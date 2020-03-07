@@ -4,7 +4,7 @@
 
 **Clips** is a free, open source hybrid clipboard application available for Windows and macOS.
 
-**Clips** powered by Google Drive synchronize your clipboard with multiple devices, and allows you to quickly search throw you clipboard history.
+**Clips** powered by Google Drive synchronize your clipboard with multiple devices, and allows you to quickly search throw your clipboard history.
 
 **Clips** is [MIT licensed](LICENSE).
 
@@ -32,7 +32,7 @@ $ cd clips
 $ touch .env
 ```
 
-add a valid sentry DSN in `.env` file (this part should be absolutely revisited！ 💢).
+add a valid sentry DSN in `.env` file (needs some fixes... 💢).
 
 ```env
 VUE_APP_SENTRY_DSN=Any valid sentry dsn in .env file

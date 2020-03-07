@@ -8,7 +8,7 @@ import fs from 'fs';
 import { environment } from './environment';
 import { mainWindow } from './helpers/main-win';
 import { tray } from './helpers/tray';
-import Sentry from './sentry';
+import Sentry from './helpers/sentry-electron';
 import { storeService } from './services/electron-store';
 import { initEvents } from './helpers/events';
 import { initShortcuts } from './helpers/shortcuts';
@@ -62,34 +62,41 @@ function googleSubscriptions(mainWindow: BrowserWindow) {
     return authService.revokeCredentials().catch(Sentry.captureException);
   });
 
-  ipcMain.handle('list-files', (_, token: string | undefined) => {
-    if (token) driveService.setPageToken(token);
-    return driveService
-      .listFiles()
-      .then((response) => {
-        /** Store token if succeed */
-        if (token) storeService.setPageToken(token);
-        return response;
-      })
-      .catch((error) => {
-        Sentry.captureException(error);
-        return { error };
-      });
-  });
+  ipcMain.handle('change-page-token', async (_, pageToken: string | undefined) =>
+    pageToken
+      ? (() => {
+          driveService.setPageToken(pageToken);
+          return pageToken;
+        })()
+      : driveService
+          .getStartPageToken()
+          .then((token) => {
+            if (token) driveService.setPageToken(token);
+            return token;
+          })
+          .catch((_) => '')
+  );
 
-  ipcMain.handle('retrieve-file', (_, data: string) => {
-    return driveService.retrieveFile(data).catch((error) => {
+  ipcMain.handle('list-files', (_) =>
+    driveService.listFiles().catch((error) => {
       Sentry.captureException(error);
       return { error };
-    });
-  });
+    })
+  );
 
-  ipcMain.handle('upload-to-drive', (_, data: any[]) => {
-    return driveService.addFile(data).catch((error) => {
+  ipcMain.handle('retrieve-file', (_, data: string) =>
+    driveService.retrieveFile(data).catch((error) => {
       Sentry.captureException(error);
       return { error };
-    });
-  });
+    })
+  );
+
+  ipcMain.handle('upload-to-drive', (_, data: any[]) =>
+    driveService.addFile(data).catch((error) => {
+      Sentry.captureException(error);
+      return { error };
+    })
+  );
 }
 
 function clipboardSubscriptions(mainWindow: BrowserWindow) {

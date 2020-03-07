@@ -21,7 +21,8 @@ export async function createDB() {
   const clipsDB: ClipsDatabase = await RxDB.create<ClipsDatabaseCollection>({
     name: 'clips', // <- name
     adapter: 'idb', // <- storage-adapter
-    multiInstance: true, // <- multiInstance (optional, default: true)
+    ignoreDuplicate: true,
+    multiInstance: false, // <- multiInstance (optional, default: true)
     queryChangeDetection: true, // <- queryChangeDetection (optional, default: false)
   });
 

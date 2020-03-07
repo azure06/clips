@@ -1,29 +1,37 @@
 import Vue from 'vue';
 import VueRx from 'vue-rx';
 import App from './App.vue';
-import './registerServiceWorker';
 import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
 import subscriptions from './subscriptions';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
-import * as Sentry from '@sentry/electron';
+import Sentry from '@/sentry-vue';
 import { environment } from './environment';
 import { interval, from } from 'rxjs';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { Clip, SettingsState } from './store/types';
 import './firebase';
-
+import VueGtag from 'vue-gtag';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
+
 Vue.use(VueRx);
 Vue.use(VueDOMPurifyHTML, {
   default: {
     FORBID_TAGS: ['a'],
   },
 });
+
+Vue.use(
+  VueGtag,
+  {
+    config: { id: environment.firebaseConfig.measurementId },
+  },
+  router
+);
 
 const vm = new Vue({
   router,
