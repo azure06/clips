@@ -1,6 +1,33 @@
 <template>
   <div>
-    <v-list subheader dense>
+    <v-list v-if="!premium" subheader dense>
+      <v-progress-linear v-if="fetching" indeterminate color="cyan"></v-progress-linear>
+      <v-subheader class="font-weight-bold">Premium features</v-subheader>
+      <v-card flat class="px-6">
+        <v-form>
+          <v-subheader>
+            Please provide a license key. If you don't have a license key you can find more
+            information at inifniticlips.com
+          </v-subheader>
+
+          <v-text-field
+            prepend-inner-icon="mdi-numeric"
+            label="Insert your code"
+            outlined
+            @change="(value) => $emit('change-licensekey', value)"
+            dense
+          >
+          </v-text-field>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="primary" depressed @click="$emit('activate-premium', licenseKey)">
+              Activate
+            </v-btn>
+          </v-card-actions>
+        </v-form>
+      </v-card>
+    </v-list>
+    <v-list v-else subheader dense>
       <v-subheader>{{ translations.searchType }}</v-subheader>
       <v-list-item>
         <v-radio-group :value="settings.storage.search.type" :mandatory="true" dense>
@@ -173,6 +200,7 @@
 import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
 import { SettingsState } from '../../store/types';
 import { of } from 'rxjs';
+import { shell } from 'electron';
 
 @Component
 export default class General extends Vue {
@@ -180,6 +208,12 @@ export default class General extends Vue {
   public settings!: SettingsState;
   @Prop({ required: true })
   public translations!: any;
+  @Prop({ required: true })
+  public premium!: boolean;
+  @Prop({ required: true })
+  public fetching!: boolean;
+  @Prop({ required: true })
+  public licenseKey!: string;
 
   public get hourInMillis() {
     return 3600000;

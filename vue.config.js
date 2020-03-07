@@ -3,35 +3,35 @@ const gitRevisionPlugin = new GitRevisionPlugin();
 const CopyPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
-
 module.exports = {
   transpileDependencies: ['vuetify'],
   pluginOptions: {
     electronBuilder: {
       builderOptions: {
         productName: 'Clips',
+        publish: ['github'],
       },
       chainWebpackMainProcess: (config) => {
+        const dest = process.env.NODE_ENV === 'development' ? 'dist_electron' : 'public';
         config.plugin('copy').use(CopyPlugin, [
           [
             {
-              // For dev-environment seems working
               from: 'node_modules/push-receiver/src/gcm/checkin.proto',
-              to: path.resolve(__dirname, 'dist_electron', 'checkin.proto'),
+              to: path.resolve(__dirname, dest, 'checkin.proto'),
               toType: 'file',
             },
             {
               from: 'node_modules/push-receiver/src/gcm/android_checkin.proto',
-              to: path.resolve(__dirname, 'dist_electron', 'android_checkin.proto'),
+              to: path.resolve(__dirname, dest, 'android_checkin.proto'),
               toType: 'file',
             },
             {
               from: 'node_modules/push-receiver/src/mcs.proto',
-              to: path.resolve(__dirname, 'dist_electron', 'mcs.proto'),
+              to: path.resolve(__dirname, dest, 'mcs.proto'),
               toType: 'file',
-            }
+            },
           ],
-        ])
+        ]);
       },
       chainWebpackRendererProcess: (config) => {
         config.plugin('define').tap((definitions) => {

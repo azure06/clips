@@ -1,5 +1,5 @@
 import AutoLaunch from 'auto-launch';
-import Sentry from '../sentry';
+import Sentry from './sentry-electron';
 import { ipcMain } from 'electron';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';

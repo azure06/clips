@@ -1,16 +1,25 @@
 import { SettingsState, Clip, User } from '../../store/types';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
+import uuidv4 from 'uuid/v4';
 import Store from 'electron-store';
 
 const store = new Store();
 
 const indexes = {
+  userId: 'app-user-id',
   appSettings: 'app-settings',
   credentials: 'credentials',
   pageToken: 'page-token',
   clips: 'clips',
   user: 'user',
+  premium: 'premium',
 };
+
+function getUserId() {
+  const userId: string = store.get(indexes.userId, uuidv4());
+  store.set(indexes.userId, userId);
+  return userId;
+}
 
 function getUser(defaultValue?: User) {
   return store.get(indexes.user, defaultValue);
@@ -30,6 +39,10 @@ function getCredentials(defaultValue?: Credentials) {
 
 function getAppSettings(defaultValue?: SettingsState) {
   return store.get(indexes.appSettings, defaultValue);
+}
+
+function getPremium() {
+  return store.get(indexes.premium, false);
 }
 
 function setUser(value: User) {
@@ -52,6 +65,10 @@ function setAppSettings(value: SettingsState) {
   return store.set(indexes.appSettings, value);
 }
 
+function setPremium(value: Boolean) {
+  return store.set(indexes.premium, value);
+}
+
 function removeUser() {
   return store.delete(indexes.user);
 }
@@ -69,6 +86,7 @@ function clear() {
 }
 
 interface StoreService {
+  getUserId(): string;
   getUser(): User | undefined;
   getUser(defaultValue: User): User;
   getClips(defaultValue?: Clip[]): Clip[];
@@ -78,11 +96,13 @@ interface StoreService {
   getCredentials(defaultValue: Credentials): Credentials;
   getAppSettings(): SettingsState | undefined;
   getAppSettings(defaultValue: SettingsState): SettingsState;
+  getPremium(): boolean;
   setUser(defaultValue: User): void;
   setClips(value: Clip[]): void;
   setPageToken(value: string): void;
   setCredentials(value: Credentials): void;
   setAppSettings(value: SettingsState): void;
+  setPremium(value: boolean): void;
   removeUser(): void;
   removeClips(): void;
   removeCredentials(): void;
@@ -90,16 +110,19 @@ interface StoreService {
 }
 
 export const storeService: StoreService = {
+  getUserId,
   getUser,
   getClips,
   getPageToken,
   getCredentials,
   getAppSettings,
+  getPremium,
   setUser,
   setClips,
   setPageToken,
   setCredentials,
   setAppSettings,
+  setPremium,
   removeUser,
   removeClips,
   removeCredentials,

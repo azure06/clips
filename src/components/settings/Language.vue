@@ -14,24 +14,24 @@
           dense
         ></v-text-field>
         <v-text-field
-          style="max-width: 40px;"
+          :style="`max-width: ${isDarwin ? 40 : 60}px;`"
           class="mr-2"
           flat
           solo
           filled
           disabled
           dense
-          value="⌘"
-          label="⌘"
+          :value="key1"
+          :label="key1"
         ></v-text-field>
         <v-text-field
           style="max-width: 60px;"
           class="mr-2"
           flat
           solo
-          value="shift"
           filled
-          label="shift"
+          :value="key2"
+          :label="key2"
           disabled
           dense
         ></v-text-field>
@@ -130,6 +130,18 @@ export default class Shortcuts extends Vue {
     'Y',
     'Z',
   ];
+
+  get isDarwin() {
+    return process.platform === 'darwin';
+  }
+
+  get key1() {
+    return this.isDarwin ? '⌘' : 'Ctrl';
+  }
+
+  get key2() {
+    return this.isDarwin ? 'shift' : 'Alt';
+  }
 
   get languages() {
     return Object.values(language);

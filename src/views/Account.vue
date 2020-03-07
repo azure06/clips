@@ -5,7 +5,7 @@
         <v-col cols="12">
           <v-row align="center" justify="center" class="pa-3">
             <v-avatar width="90" height="90">
-              <v-icon x-large color="blue darken-2">mdi-google</v-icon>
+              <v-icon x-large>mdi-account-circle</v-icon>
             </v-avatar>
           </v-row>
 

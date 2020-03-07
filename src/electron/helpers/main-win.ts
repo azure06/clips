@@ -2,6 +2,7 @@ import { BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import { storeService } from '../services/electron-store';
 import path from 'path';
+import { startAutoUpdater } from './auto-updater';
 
 declare const __static: string;
 
@@ -47,6 +48,8 @@ function create() {
     createProtocol('app');
     // Load the index.html when not in development
     win.loadURL('app://./index.html');
+    // Start auto-updater
+    startAutoUpdater();
   }
   win.on('closed', () => {
     win = null;

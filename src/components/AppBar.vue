@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="-webkit-app-region: drag">
     <v-toolbar flat>
       <v-toolbar-title class="subtitle-2 font-weight-medium" style="user-select: none;"
         >{{ translations.clipboard }}
