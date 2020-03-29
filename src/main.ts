@@ -12,8 +12,8 @@ import { interval, from } from 'rxjs';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { Clip, SettingsState } from './store/types';
 import './firebase';
-import VueGtag from 'vue-gtag';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
+import { initAnalytics } from './analytics-vue';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -25,13 +25,7 @@ Vue.use(VueDOMPurifyHTML, {
   },
 });
 
-Vue.use(
-  VueGtag,
-  {
-    config: { id: environment.firebaseConfig.measurementId },
-  },
-  router
-);
+const _ = initAnalytics(router);
 
 const vm = new Vue({
   router,

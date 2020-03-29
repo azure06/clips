@@ -8,4 +8,7 @@ export const environment = {
     dsn: process.env.VUE_APP_SENTRY_DSN,
     environment: process.env.NODE_ENV,
   },
+  analytics: {
+    accountId: process.env.VUE_APP_ANALYTICS_ACCOUNT_ID!,
+  },
 };

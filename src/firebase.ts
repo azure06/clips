@@ -19,12 +19,7 @@ interface Notification<T = any> {
 }
 
 firebase.initializeApp(environment.firebaseConfig);
-
-const functions = firebase.functions();
 const firestore = firebase.firestore();
-const analytics = firebase.analytics();
-analytics.setUserId(storeService.getUserId());
-analytics.logEvent('app-start');
 
 const updateToken = async (userId: string, token: string) => {
   log.info(userId, token);

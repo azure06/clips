@@ -14,6 +14,7 @@ import { initEvents } from './helpers/events';
 import { initShortcuts } from './helpers/shortcuts';
 import { initAutoLauncher } from './helpers/autolauncher';
 import { setup as setupPushReceiver } from 'electron-push-receiver';
+import './helpers/analytics';
 
 Sentry.init(environment.sentry);
 
