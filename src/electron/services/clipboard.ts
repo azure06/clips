@@ -2,6 +2,7 @@ import { clipboard, nativeImage, NativeImage } from 'electron';
 import { interval } from 'rxjs';
 import { map, scan, filter } from 'rxjs/operators';
 import { ClipDoc } from '../../rxdb/clips.models';
+import { checkSize } from '@/utils/clipsize';
 
 interface Clipboard {
   plainText: string;
@@ -59,7 +60,9 @@ const clipboardAsObservable = interval(1000).pipe(
       }
 
       const fromDataURL = (value: string) =>
-        /^data:image\/.*;base64,$/gi.test(value) ? '' : value;
+        current.image.isEmpty() || /^data:image\/.*;base64,$/gi.test(value) || !checkSize(value)
+          ? ''
+          : value;
 
       return {
         plainText: current.plainText,

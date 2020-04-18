@@ -2,6 +2,8 @@ import { SettingsState, Clip, User } from '../../store/types';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import uuidv4 from 'uuid/v4';
 import Store from 'electron-store';
+import { isSpaceAvailable } from '@/utils/clipsize';
+import log from 'electron-log';
 
 const store = new Store();
 
@@ -50,7 +52,9 @@ function setUser(value: User) {
 }
 
 function setClips(value: Clip[]) {
-  return store.set(indexes.clips, value);
+  // Check size of the file. Ignore action if soace
+  if (isSpaceAvailable(value)) store.set(indexes.clips, value);
+  else log.warn('File size exceeds the limit allowed and cannot be saved');
 }
 
 function setPageToken(value: string) {
