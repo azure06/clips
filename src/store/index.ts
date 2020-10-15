@@ -4,18 +4,20 @@ import { RootState } from './types';
 import { clips } from './clips/index';
 import { user } from './user/index';
 import { settings } from './settings/index';
+import { network } from './network/index';
+
+declare const __DATE__: number;
+declare const __COMMITHASH__: string;
+declare const __VERSION__: string;
+declare const __BRANCH__: string;
 
 Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
   state: {
-    // @ts-ignore
     date: __DATE__,
-    // @ts-ignore
     commit: __COMMITHASH__,
-    // @ts-ignore
     version: __VERSION__,
-    // @ts-ignore
     branch: __BRANCH__,
   },
   getters: {
@@ -25,6 +27,7 @@ const store: StoreOptions<RootState> = {
     clips,
     user,
     settings,
+    network,
   },
 };
 

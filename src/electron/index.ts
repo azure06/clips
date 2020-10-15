@@ -14,6 +14,7 @@ import { initEvents } from './helpers/events';
 import { initShortcuts } from './helpers/shortcuts';
 import { initAutoLauncher } from './helpers/autolauncher';
 import { setup as setupPushReceiver } from 'electron-push-receiver';
+import * as socketIoService from './services/socket.io';
 import './helpers/analytics';
 
 Sentry.init(environment.sentry);
@@ -25,7 +26,7 @@ Sentry.init(environment.sentry);
  *
  * @param mainWindow BrowserWindows
  */
-function googleSubscriptions(mainWindow: BrowserWindow) {
+function subscribeToGoogle(mainWindow: BrowserWindow) {
   const authService = new GoogleOAuth2Service(environment.googleOAuth2);
   const driveService = new GoogleDriveService(authService.getOAuth2Client());
   const credentials = storeService.getCredentials();
@@ -60,7 +61,10 @@ function googleSubscriptions(mainWindow: BrowserWindow) {
 
   ipcMain.handle('sign-out', () => {
     storeService.removeCredentials();
-    return authService.revokeCredentials().catch(Sentry.captureException);
+    return authService
+      .revokeCredentials()
+      .then((value) => value.data)
+      .catch(Sentry.captureException);
   });
 
   ipcMain.handle(
@@ -119,7 +123,7 @@ function googleSubscriptions(mainWindow: BrowserWindow) {
   );
 }
 
-function clipboardSubscriptions(mainWindow: BrowserWindow) {
+function subscribeToClipboard(mainWindow: BrowserWindow) {
   const {
     clipboardAsObservable: clipboard,
     copyToClipboard,
@@ -161,6 +165,11 @@ function clipboardSubscriptions(mainWindow: BrowserWindow) {
   });
 }
 
+function subscribeToSocketIo(mainWindow: BrowserWindow) {
+  ipcMain.handle('my-ip', (event, type, content) => socketIoService.ip.address);
+  socketIoService.init();
+}
+
 export function onReady() {
   const win = mainWindow.create();
   const _ = tray.create(win);
@@ -171,8 +180,9 @@ export function onReady() {
   initAutoLauncher();
 
   /** Subscribe to all services */
-  clipboardSubscriptions(win);
-  googleSubscriptions(win);
+  subscribeToClipboard(win);
+  subscribeToGoogle(win);
+  subscribeToSocketIo(win);
 }
 
 export function onActivate() {

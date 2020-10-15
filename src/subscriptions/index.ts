@@ -1,6 +1,6 @@
 import electron, { Rectangle } from 'electron';
 import { Subject, merge, timer } from 'rxjs';
-import { ClipDoc } from '@/rxdb/clips.models';
+import { ClipDoc } from '@/rxdb/clips/model';
 import { debounce, map } from 'rxjs/operators';
 
 const mainWindow = electron.remote.getCurrentWindow();

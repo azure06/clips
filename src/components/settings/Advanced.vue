@@ -208,6 +208,8 @@
           filled
           label="Cycle"
           dense
+          background-color="background"
+          item-color="blue"
         ></v-select>
       </v-list-item>
     </v-list>

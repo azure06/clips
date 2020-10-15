@@ -1,8 +1,8 @@
 import { ActionTree } from 'vuex';
 import { ClipsState, Clip, RootState } from '@/store/types';
-import { createDatabase } from '@/rxdb';
+import { createClipsRxDB, destroyClipsRxDB, getCollection } from '@/rxdb';
 import { from, EMPTY, of } from 'rxjs';
-import { ClipSearchConditions } from '@/rxdb/clips.models';
+import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { map, concatMap, tap, take, catchError } from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
 import { ipcRenderer } from 'electron';
@@ -10,9 +10,7 @@ import { isDriveResponse } from '@/utils/drive';
 import { storeService } from '@/electron/services/electron-store';
 import { remote } from 'electron';
 
-let clipsDB = from(createDatabase());
-
-const collection = () => clipsDB.pipe(map((db) => db.clips));
+const collection = () => getCollection('clips');
 
 const actions: ActionTree<ClipsState, RootState> = {
   loadClips: async (
@@ -154,16 +152,13 @@ const actions: ActionTree<ClipsState, RootState> = {
     collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(concatMap((methods) => methods.restore()))
-      .pipe()
+      .pipe(concatMap((_) => destroyClipsRxDB()))
       .pipe(
         tap((result) => {
-          if (result) {
-            clipsDB = from(createDatabase());
-            commit('loadClips', { clips: [] });
-          }
-          return result;
+          if (result) commit('loadClips', { clips: [] });
         })
       )
+      .pipe(concatMap(() => createClipsRxDB()))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise(),

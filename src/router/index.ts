@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
 import Account from '../views/Account.vue';
 import GoogleDrive from '../views/GoogleDrive.vue';
+import Share from '../views/Share.vue';
 import Settings from '../views/Settings.vue';
 import General from '../components/settings/General.vue';
 import Language from '../components/settings/Language.vue';
@@ -29,6 +30,11 @@ const routes = [
     path: '/google-drive',
     name: 'google-drive',
     component: GoogleDrive,
+  },
+  {
+    path: '/share',
+    name: 'share',
+    component: Share,
   },
   {
     path: '/settings',
@@ -59,7 +65,8 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
+    component: () =>
+      import(/* webpackChunkName: "about" */ '../views/About.vue'),
   },
 ];
 

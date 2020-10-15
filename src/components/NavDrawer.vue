@@ -57,6 +57,28 @@
         <span>{{ $translations.driveFolder }}</span>
       </v-tooltip>
 
+      <!-- Lan -->
+      <v-tooltip top>
+        <template v-slot:activator="{ on }">
+          <v-list-item
+            v-on="on"
+            class="px-3"
+            link
+            :to="{ name: 'share' }"
+            style="-webkit-app-region: no-drag"
+          >
+            <v-list-item-icon>
+              <v-icon>mdi-account-multiple-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>Lan share</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <span>{{ $translations.share }}</span>
+      </v-tooltip>
+
+    <!-- Account -->
       <v-tooltip top>
         <template v-slot:activator="{ on }">
           <v-list-item

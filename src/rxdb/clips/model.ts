@@ -1,8 +1,6 @@
 // eslint-disable-next-line object-curly-newline
 import { RxCollection, RxDatabase, RxDocument, RxJsonSchema } from 'rxdb';
 
-export type ClipsDatabase = RxDatabase<ClipsDatabaseCollection>;
-
 export interface ClipsDatabaseCollection {
   clips: ClipsCollection;
 }

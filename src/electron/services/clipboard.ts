@@ -1,7 +1,7 @@
 import { clipboard, nativeImage, NativeImage } from 'electron';
 import { interval } from 'rxjs';
 import { map, scan, filter } from 'rxjs/operators';
-import { ClipDoc } from '../../rxdb/clips.models';
+import { ClipDoc } from '../../rxdb/clips/model';
 import { checkSize } from '@/utils/clipsize';
 
 interface Clipboard {

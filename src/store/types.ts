@@ -1,4 +1,22 @@
-import { ClipDoc as Clip } from '@/rxdb/clips.models';
+import { ClipDoc as Clip } from '@/rxdb/clips/model';
+import { MessageDoc } from '@/rxdb/message/model';
+import { RoomDoc } from '@/rxdb/room/model';
+import { UserDoc } from '@/rxdb/user/model';
+import findLocalDevices from 'local-devices';
+
+export type IDevice = findLocalDevices.IDevice & {
+  username: string;
+  color: string;
+};
+
+export type Room = RoomDoc & { messages: MessageDoc[] };
+
+export interface NetworkState {
+  thisUser?: UserDoc;
+  users: UserDoc[];
+  rooms: Array<Room>;
+  fetching: boolean;
+}
 
 interface Display {
   height: number;
@@ -84,4 +102,4 @@ export interface RootState {
   version: string;
 }
 
-export { ClipDoc as Clip } from '@/rxdb/clips.models';
+export { ClipDoc as Clip } from '@/rxdb/clips/model';

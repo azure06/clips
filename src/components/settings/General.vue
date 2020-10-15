@@ -142,6 +142,7 @@
         max="200"
         hide-details
         thumb-label
+        color="blue"
         @input="
           (value) => {
             $emit('change-settings', {
