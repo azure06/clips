@@ -10,23 +10,25 @@ import {
 const roomDocMethods: RoomDocMethods = {};
 
 const roomCollectionsMethods: RoomCollectionMethods = {
-  async addRoom(this: RoomCollection, room): Promise<RoomDoc> {
+  async addRoom(room) {
     return this.atomicUpsert({
-      id: uuid(),
       ...room,
+      id: uuid(),
       updatedAt: Date.now(),
       createdAt: Date.now(),
     }).then((room) => room.toJSON());
   },
-  async retrieveRooms(this: RoomCollection): Promise<RoomDoc[]> {
+  async findRooms() {
     return this.find()
       .exec()
       .then((rooms) => rooms.map((room) => room.toJSON()));
   },
-  async removeRooms(
-    this: RoomCollection,
-    roomIds: string[]
-  ): Promise<RoomDoc[]> {
+  async findRoomsByUserIds(userIds: string[]): Promise<RoomDoc[]> {
+    return this.find({ selector: { userIds: { $all: userIds } } })
+      .exec()
+      .then((rooms) => rooms.map((room) => room.toJSON()));
+  },
+  async removeRooms(roomIds) {
     return this.find()
       .where('id')
       .in(roomIds)

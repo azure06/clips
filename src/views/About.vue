@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto pt-10" tile height="100%" color="primary">
+  <v-card class="mx-auto pt-10" tile height="100%" color="surfaceVariant">
     <v-img src="./../assets/icons/clip.png" contain height="150"></v-img>
     <div class="text-center pt-10">
       <span class="title text-center font-weight-bold">Clips</span>

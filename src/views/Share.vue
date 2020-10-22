@@ -1,7 +1,17 @@
 <template>
   <div>
     <div v-if="selectedRoom">
-      <Room :room="roomDictionary[selectedRoom]" />
+      <Room
+        :room="roomDictionary[selectedRoom]"
+        :message="messageDict[selectedRoom]"
+        :loadingMessages="loading.message"
+        :sendingMessage="loading.sending"
+        @close="selectedRoom = ''"
+        @keydown="onKeyDown"
+        @change-message="onChangeMessage"
+        @send-message="onSendMessage"
+        @load-messages="(roomId, options) => loadMessages({ roomId, options })"
+      />
     </div>
     <div v-else>
       <!-- Container -->
@@ -13,12 +23,12 @@
         "
         fluid
       >
-        <v-list subheader color="primary" width="100%">
+        <v-list subheader color="surfaceVariant" width="100%">
           <v-subheader>Users</v-subheader>
           <v-list-item
             v-for="user in users"
             :key="user.id"
-            @click="onUserClick(user)"
+            @click="openRoom(user)"
           >
             <v-list-item-avatar>
               <v-icon :class="user.color" dark v-text="'mdi-account'"></v-icon>
@@ -47,7 +57,7 @@
           <v-subheader class="overline">User Info</v-subheader>
           <v-list-item>
             <v-list-item-avatar>
-              <v-icon dark v-text="'mdi-account'"></v-icon>
+              <v-icon v-text="'mdi-account'"></v-icon>
             </v-list-item-avatar>
             <v-list-item-content class="px-2">
               <v-list-item-title
@@ -71,38 +81,50 @@
         </v-list>
       </v-dialog>
 
-      <!-- Toolbar -->
-      <v-toolbar bottom color="primary">
-        <v-toolbar-items
-          :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
-        >
-        </v-toolbar-items>
-        <v-card
-          color="primary"
-          class="ma-0 ml-6 pa-0"
-          tile
-          flat
-          dark
-          :height="$vuetify.breakpoint.smAndDown ? 56 : 64"
-        >
-          <v-card-text v-if="fetching" class="ma-0 pa-3" @click="() => {}">
-            <div class="overline text-center">SEARCHING</div>
+      <!-- Dialog -->
+      <v-dialog :value="loading.room || loading.message" persistent width="360">
+        <v-card color="blue darken-2">
+          <v-card-text>
+            Loading...
             <v-progress-linear
-              stream
-              buffer-value="0"
+              indeterminate
               color="white"
               class="mb-0"
             ></v-progress-linear>
           </v-card-text>
         </v-card>
+      </v-dialog>
+
+      <!-- Toolbar -->
+      <v-toolbar bottom color="surfaceVariant">
+        <v-toolbar-items
+          :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
+        >
+        </v-toolbar-items>
+
+        <!-- Scanning... -->
+        <v-card
+          class="ma-0 ml-4 pa-0 flash"
+          color="surfaceVariant"
+          tile
+          flat
+          :height="$vuetify.breakpoint.smAndDown ? 56 : 64"
+        >
+          <v-card-text v-if="loading.user" class="ma-0 pa-3" @click="() => {}">
+            <div class="overline text-center" style="user-select: none">
+              SCANNING...
+            </div>
+          </v-card-text>
+        </v-card>
+
         <v-spacer></v-spacer>
         <v-btn
           class="overline"
-          color="primary"
           depressed
-          :loading="fetching"
-          :disabled="fetching"
-          @click="findUsers"
+          :loading="loading.user"
+          :disabled="loading.user"
+          @click="discoverUsers"
+          color="surfaceVariant"
         >
           <v-icon left>
             mdi-account-search
@@ -110,7 +132,7 @@
           Find
           <template v-slot:loader>
             <span class="custom-loader">
-              <v-icon dark>mdi-cached</v-icon>
+              <v-icon>mdi-cached</v-icon>
             </span>
           </template>
         </v-btn>
@@ -131,11 +153,12 @@ import { UserDoc } from '@/rxdb/user/model';
 import { MessageDoc } from '@/rxdb/message/model';
 import { RoomDoc } from '@/rxdb/room/model';
 import { Dictionary } from 'vue-router/types/router';
+import { IDevice } from '@/electron/services/socket.io/types';
 
 @Component({ components: { Room } })
 export default class Share extends ExtendedVue {
-  @Getter('fetching', { namespace: 'network' })
-  public fetching!: Boolean;
+  @Getter('loading', { namespace: 'network' })
+  public loading!: { user: boolean; room: boolean; message: boolean };
 
   @Getter('thisUser', { namespace: 'network' })
   public thisUser?: UserDoc;
@@ -150,39 +173,90 @@ export default class Share extends ExtendedVue {
   @Getter('roomDictionary', { namespace: 'network' })
   public roomDictionary!: Dictionary<RoomType>;
 
-  @Action('findUsers', { namespace: 'network' })
-  public findUsers!: () => Promise<void>;
-  @Action('retrieveRooms', { namespace: 'network' })
-  public retrieveRooms!: () => Promise<RoomType[]>;
-  @Action('retrieveMessages', { namespace: 'network' })
-  public retrieveMessages!: (roomId: string) => Promise<MessageDoc[]>;
-  @Action('addRoom', { namespace: 'network' })
-  public addRoom!: (
-    args: Omit<RoomDoc, 'id' | 'createdAt' | 'updatedAt'>
-  ) => Promise<RoomType>;
+  @Action('discoverUsers', { namespace: 'network' })
+  public discoverUsers!: () => Promise<void>;
+  @Action('findUser', { namespace: 'network' })
+  public findUser!: (userId: string) => Promise<UserDoc | undefined>;
+
+  @Action('loadRooms', { namespace: 'network' })
+  public loadRooms!: () => Promise<RoomType[]>;
+  @Action('loadMessages', { namespace: 'network' })
+  public loadMessages!: (data: {
+    roomId: string;
+    options?: { limit: number; skip: number };
+  }) => Promise<MessageDoc[]>;
+  @Action('findRoom', { namespace: 'network' })
+  public findRoom!: (userId: string) => Promise<RoomType[]>;
+
+  @Action('findRoomFromUserOrCreate', { namespace: 'network' })
+  public findRoomFromUserOrCreate!: (user: UserDoc) => Promise<RoomType>;
+  @Action('sendMessage', { namespace: 'network' })
+  public sendMessage!: (args: {
+    sender?: IDevice;
+    receiver: IDevice;
+    message: Omit<
+      MessageDoc,
+      'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
+    > & { senderId?: string };
+  }) => Promise<MessageDoc>;
 
   public selectedUser: string = '';
   public selectedRoom: string = '';
+  public messageDict: { [roomId: string]: string | undefined } = {};
+
+  public changeRoomMessage(roomId: string, value = '') {
+    this.messageDict = { ...this.messageDict, [roomId]: value };
+    return roomId;
+  }
+
+  public getRoomMessage(roomId: string) {
+    return this.messageDict[roomId] || '';
+  }
+
+  public async openRoom(user: UserDoc) {
+    const room = await this.findRoomFromUserOrCreate(user);
+    await this.loadMessages({
+      roomId: room.id,
+      options: { skip: room.messages.length, limit: 15 },
+    });
+    this.selectedRoom = this.changeRoomMessage(room.id);
+  }
+
+  public onKeyDown(room: RoomType, event: KeyboardEvent) {
+    if (event.code === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.onSendMessage(room, this.getRoomMessage(room.id));
+    }
+  }
+
+  public async onChangeMessage(room: RoomType, message: string) {
+    this.changeRoomMessage(room.id, message);
+  }
+
+  public async onSendMessage(room: RoomType, message: string) {
+    const receiver = await this.findUser(room.userIds[0]);
+    if (!receiver || message.trim() === '') return; // TODO Handle receiver absent exception
+    this.changeRoomMessage(room.id); // Remove message
+    this.sendMessage({
+      // Actually we don't need the username of the receiver
+      receiver: { ...receiver.device, username: receiver.username },
+      sender: this.thisUser
+        ? {
+            ...this.thisUser.device,
+            username: this.thisUser.username,
+          }
+        : undefined,
+      message: {
+        roomId: room.id,
+        senderId: this.thisUser?.id,
+        content: message,
+        type: 'text',
+      },
+    });
+  }
 
   public async created() {
-    if (this.users.length === 0) this.findUsers();
-  }
-
-  public mounted() {
-    console.warn(this.userDictionary);
-  }
-
-  public async onUserClick(user: UserDoc) {
-    const room = await ((room_: RoomType | undefined): Promise<RoomType> => {
-      return room_
-        ? Promise.resolve(room_)
-        : this.addRoom({
-            roomName: user.username,
-            userIds: [user.device.mac],
-          });
-    })(toDictionary(await this.retrieveRooms())[user.device.mac]);
-    console.warn(room);
-    this.selectedRoom = room.id;
+    Promise.all([this.loadRooms(), this.discoverUsers()]);
   }
 }
 </script>
@@ -199,13 +273,20 @@ export default class Share extends ExtendedVue {
   animation: loader 1s infinite;
   display: flex;
 }
-
+.flash {
+  animation: flash 2s infinite;
+}
 @keyframes loader {
   from {
     transform: rotate(0);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+@keyframes flash {
+  50% {
+    opacity: 0;
   }
 }
 </style>

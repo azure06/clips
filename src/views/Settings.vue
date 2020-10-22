@@ -12,7 +12,7 @@
       permanent
       app
       style="-webkit-app-region: drag"
-      color="primary"
+      color="surfaceVariant"
     >
       <v-list dense nav>
         <v-list-item class="px-1">
@@ -129,7 +129,7 @@
 
     <div class="ma-0 pa-0 container">
       <!-- Toolbar -->
-      <v-toolbar flat color="primary">
+      <v-toolbar flat color="surfaceVariant">
         <v-btn icon @click="onClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>

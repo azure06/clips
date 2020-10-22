@@ -4,16 +4,20 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
-import subscriptions from './subscriptions';
+import * as subscriptions from './subscriptions';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
 import Sentry from '@/sentry-vue';
 import { environment } from './environment';
 import { interval, from } from 'rxjs';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
-import { Clip, SettingsState } from './store/types';
+import { Clip, Room, SettingsState } from './store/types';
 import './firebase';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
 import { initAnalytics } from './analytics-vue';
+import { MessageDoc } from './rxdb/message/model';
+import { UserDoc } from './rxdb/user/model';
+import { ipcRenderer } from 'electron';
+import { IDevice } from './electron/services/socket.io/types';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -48,6 +52,12 @@ const vm = new Vue({
       addClip: 'addClip',
       removeClipsLte: 'removeClipsLte',
       uploadToDrive: 'uploadToDrive',
+    }),
+    ...mapActions('network', {
+      loadRooms: 'loadRooms',
+      findRoomFromUserOrCreate: 'findRoomFromUserOrCreate',
+      addOrUpdateMessage: 'addOrUpdateMessage',
+      upsertUser: 'upsertUser',
     }),
     ...mapMutations('user', {
       loadUser: 'loadUser',
@@ -153,6 +163,34 @@ const vm = new Vue({
 
     this.$subscribeTo(subscriptions.onNavigate, (location) =>
       this.$router.push(location)
+    );
+
+    // onMessage received (onAuthorize is in App.vue)
+    this.$subscribeTo(
+      subscriptions.onMessage,
+      async ({ message, sender }: { sender: IDevice; message: MessageDoc }) => {
+        const room = (await this.findRoomFromUserOrCreate({
+          id: sender.mac,
+          username: sender.username,
+        })) as Room;
+
+        // TODO Find user or create if necessary
+
+        // Update the roomId inside the message (Currently is the sender roomId)
+        await this.addOrUpdateMessage({
+          ...message,
+          status: 'sent',
+          roomId: room.id,
+        } as MessageDoc);
+
+        // TODO
+        console.warn(
+          'Notify~ And create new user if necessary (Maybe ask the user)',
+          message
+        );
+
+        // TODO Notify for new message!!
+      }
     );
   },
 }).$mount('#app');

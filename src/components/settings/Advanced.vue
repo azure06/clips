@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-list v-if="!premium" subheader dense color="primary">
+    <v-list v-if="!premium" subheader dense color="surfaceVariant">
       <v-progress-linear
         v-if="fetching"
         indeterminate
-        color="cyan"
+        color="cyan darken-2"
       ></v-progress-linear>
       <v-subheader class="font-weight-bold">Premium features</v-subheader>
       <v-card flat class="px-6">
@@ -20,12 +20,14 @@
             outlined
             @change="(value) => $emit('change-licensekey', value)"
             dense
+            color="blue darken-2"
           >
           </v-text-field>
           <v-card-actions>
             <v-spacer />
             <v-btn
-              color="primary"
+              color="blue darken-2"
+              dark
               depressed
               @click="$emit('activate-premium', licenseKey)"
             >
@@ -35,7 +37,7 @@
         </v-form>
       </v-card>
     </v-list>
-    <v-list v-else subheader dense color="primary">
+    <v-list v-else subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.searchType }}</v-subheader>
       <v-list-item>
         <v-radio-group

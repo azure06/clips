@@ -1,7 +1,7 @@
 import { ActionTree } from 'vuex';
 import { ClipsState, Clip, RootState } from '@/store/types';
-import { createClipsRxDB, destroyClipsRxDB, getCollection } from '@/rxdb';
-import { from, EMPTY, of } from 'rxjs';
+import { createClipsRxDB, removeClipsRxDB, getCollection } from '@/rxdb';
+import { from, EMPTY, of, range } from 'rxjs';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { map, concatMap, tap, take, catchError } from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
@@ -149,18 +149,16 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(take(1))
       .toPromise(),
   restoreFactoryDefault: async ({ commit }) =>
-    collection()
+    range(1, 1)
       .pipe(tap((_) => commit('setLoadingStatus', true)))
-      .pipe(concatMap((methods) => methods.restore()))
-      .pipe(concatMap((_) => destroyClipsRxDB()))
+      .pipe(concatMap((_) => removeClipsRxDB()))
       .pipe(
         tap((result) => {
-          if (result) commit('loadClips', { clips: [] });
+          if (result.ok) commit('loadClips', { clips: [] });
         })
       )
       .pipe(concatMap(() => createClipsRxDB()))
       .pipe(tap((_) => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   copyToClipboard: async (
     { commit },

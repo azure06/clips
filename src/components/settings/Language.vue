@@ -1,5 +1,5 @@
 <template>
-  <v-list width="100%" height="100%" color="primary">
+  <v-list width="100%" height="100%" color="surfaceVariant">
     <v-subheader>{{ translations.wakeOn }}</v-subheader>
     <v-row>
       <v-col cols="12" style="display: flex;">
@@ -55,6 +55,7 @@
           "
           filled
           label="key"
+          item-color="blue darken-2"
           dense
         ></v-select>
       </v-col>
@@ -88,7 +89,7 @@
           filled
           style="max-width: 220px;"
           label="Language"
-          item-color="blue"
+          item-color="blue darken-2"
           background-color="background"
           dense
         ></v-select>

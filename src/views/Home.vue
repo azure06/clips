@@ -9,7 +9,7 @@
       :class="`container ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
       ref="scroll-target"
     >
-      <v-list two-line subheader dense nav color="primary" class="pt-1">
+      <v-list two-line subheader dense nav color="surfaceVariant" class="pt-1">
         <v-list-item
           v-for="(clip, index) in clipsObserver"
           :key="clip.id"
@@ -203,7 +203,7 @@ import {
 
 type ClipEx = Clip & { fromNow?: string; preview?: string };
 
-@Component({
+@Component<Home>({
   components: { AppBar, SearchBar },
   subscriptions() {
     return {

@@ -28,7 +28,7 @@
           >
             <v-expansion-panel-header
               class="subtitle-2 text-uppercase"
-              color="primary"
+              color="surfaceVariant"
             >
               <div>
                 <v-chip label link>
@@ -43,8 +43,8 @@
                 </v-chip>
               </div>
             </v-expansion-panel-header>
-            <v-expansion-panel-content color="primary">
-              <v-list subheader rounded width="100%" dense color="primary">
+            <v-expansion-panel-content color="surfaceVariant">
+              <v-list subheader rounded width="100%" dense color="surfaceVariant">
                 <v-subheader inset>Files</v-subheader>
                 <v-divider inset></v-divider>
                 <v-list-item
@@ -97,7 +97,7 @@
         </v-btn>
       </v-snackbar>
     </v-container>
-    <v-toolbar bottom color="primary">
+    <v-toolbar bottom color="surfaceVariant">
       <v-toolbar-items
         :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
       >
@@ -106,7 +106,7 @@
           v-model="inputToken"
           :class="$vuetify.breakpoint.smAndDown ? 'pa-2' : 'pa-3'"
           prepend-inner-icon="mdi-google"
-          color="blue"
+          color="blue darken-2"
           background-color="background"
           autofocus
           clearable

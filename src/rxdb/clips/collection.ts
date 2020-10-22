@@ -73,10 +73,7 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
       .then((removedClips) => removedClips.map((clip) => clip.toJSON()));
   },
   async restore() {
-    await this.remove();
-    // TODO(Change interface)
-    return true;
-    // return this.destroy();
+    return this.remove();
   },
 };
 

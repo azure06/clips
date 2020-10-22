@@ -2,20 +2,21 @@ import { ClipDoc as Clip } from '@/rxdb/clips/model';
 import { MessageDoc } from '@/rxdb/message/model';
 import { RoomDoc } from '@/rxdb/room/model';
 import { UserDoc } from '@/rxdb/user/model';
-import findLocalDevices from 'local-devices';
-
-export type IDevice = findLocalDevices.IDevice & {
-  username: string;
-  color: string;
-};
 
 export type Room = RoomDoc & { messages: MessageDoc[] };
+
+export type Loading = {
+  user: boolean;
+  room: boolean;
+  message: boolean;
+  sending: boolean;
+};
 
 export interface NetworkState {
   thisUser?: UserDoc;
   users: UserDoc[];
   rooms: Array<Room>;
-  fetching: boolean;
+  loading: Loading;
 }
 
 interface Display {

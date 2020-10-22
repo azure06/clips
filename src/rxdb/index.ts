@@ -1,4 +1,9 @@
-import { createRxDatabase, addRxPlugin, RxDatabase } from 'rxdb';
+import {
+  createRxDatabase,
+  removeRxDatabase,
+  addRxPlugin,
+  RxDatabase,
+} from 'rxdb';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
@@ -10,7 +15,7 @@ import * as room from './room/collection';
 import * as message from './message/collection';
 import * as user from './user/collection';
 import { from, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 import { RoomCollection, RoomDatabaseCollection } from './room/model';
 import { MessageCollection, MessageDatabaseCollection } from './message/model';
 import { UserCollection, UserDatabaseCollection } from './user/model';
@@ -53,11 +58,11 @@ async function createRxDB() {
 
 // Initialize instance
 let clipsRxDB = from(createRxDB());
+(window as any).rxdb = clipsRxDB;
 
 export const createClipsRxDB = () => (clipsRxDB = from(createRxDB()));
 
-export const destroyClipsRxDB = () =>
-  clipsRxDB.pipe(tap((rxDB) => rxDB.destroy())).toPromise();
+export const removeClipsRxDB = () => from(removeRxDatabase('clips', 'idb'));
 
 export function getCollection<T extends 'clips' | 'room' | 'message' | 'user'>(
   collection: T

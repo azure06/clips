@@ -5,12 +5,18 @@ export interface MessageDatabaseCollection {
   message: MessageCollection;
 }
 
+type PendingStatus = 'pending';
+type ReadStatus = 'sent' | 'read';
+type RejectedStatus = 'rejected';
+export type MessageStatus = PendingStatus | ReadStatus | RejectedStatus;
+
 export interface MessageDoc {
   id: string;
   roomId: string;
-  userId: string;
+  senderId: string;
   content: string;
   type: 'text' | 'file';
+  status: MessageStatus;
   ext?: string;
   updatedAt: number;
   createdAt: number;
@@ -19,10 +25,20 @@ export interface MessageDoc {
 export type MessageDocMethods = {};
 
 export type MessageCollectionMethods = {
-  addMessage(this: MessageCollection, message: MessageDoc): Promise<MessageDoc>;
-  retrieveMessages(
+  upsertMessage(
     this: MessageCollection,
-    roomId: string
+    message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'>
+  ): Promise<MessageDoc>;
+  findMessages(
+    this: MessageCollection,
+    roomId: string,
+    options?: { limit: number; skip: number }
+  ): Promise<MessageDoc[]>;
+  findMessagesByStatus(
+    this: MessageCollection,
+    roomId: string,
+    senderId: string,
+    status: MessageStatus
   ): Promise<MessageDoc[]>;
   removeMessages(
     this: MessageCollection,
@@ -53,9 +69,11 @@ export const schema: RxJsonSchema<MessageDoc> = {
       type: 'string',
       uniqueItems: true,
     },
-    userId: {
+    senderId: {
       type: 'string',
-      uniqueItems: true,
+    },
+    status: {
+      type: 'string',
     },
     content: {
       type: 'string',
@@ -73,6 +91,22 @@ export const schema: RxJsonSchema<MessageDoc> = {
       type: 'number',
     },
   },
-  indexes: ['id', 'roomId', 'userId', 'content', 'updatedAt', 'createdAt'],
-  required: ['id', 'roomId', 'userId', 'content', 'updatedAt', 'createdAt'],
+  indexes: [
+    'id',
+    'roomId',
+    'senderId',
+    'status',
+    'content',
+    'updatedAt',
+    'createdAt',
+  ],
+  required: [
+    'id',
+    'roomId',
+    'senderId',
+    'status',
+    'content',
+    'updatedAt',
+    'createdAt',
+  ],
 };

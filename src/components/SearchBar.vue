@@ -1,5 +1,5 @@
 <template>
-  <v-toolbar bottom color="primary">
+  <v-toolbar bottom color="surfaceVariant">
     <v-toolbar-items
       :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
     >
@@ -11,7 +11,7 @@
         prepend-inner-icon="mdi-magnify"
         autofocus
         clearable
-        color="blue"
+        color="blue darken-2"
         background-color="background"
         dense
         flat

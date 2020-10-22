@@ -7,7 +7,12 @@ import mutations from './mutations';
 const state: NetworkState = {
   users: [],
   rooms: [],
-  fetching: false,
+  loading: {
+    room: false,
+    message: false,
+    user: false,
+    sending: false,
+  },
 };
 
 export const network: Module<NetworkState, RootState> = {

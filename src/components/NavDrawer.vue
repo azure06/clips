@@ -4,7 +4,7 @@
     mini-variant
     app
     permanent
-    color="primary"
+    color="surfaceVariant"
   >
     <v-list dense nav>
       <v-list-item class="px-1">

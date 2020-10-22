@@ -78,7 +78,7 @@ export type ClipsCollectionMethods = {
   modifyClip(this: ClipsCollection, clip: ClipDoc): Promise<ClipDoc>;
   removeClips(this: ClipsCollection, clipsIds: string[]): Promise<ClipDoc[]>;
   removeAllClips(this: ClipsCollection): Promise<ClipDoc[]>;
-  restore(this: ClipsCollection): Promise<boolean>;
+  restore(this: ClipsCollection): Promise<any>;
 };
 
 export type ClipsCollection = RxCollection<

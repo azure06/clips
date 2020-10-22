@@ -10,7 +10,8 @@ export interface UserDoc {
   id: string;
   username: string;
   color: string;
-  device: findLocalDevices.IDevice;
+  device: findLocalDevices.IDevice & { port: number };
+  permission: 'always' | 'once';
   updatedAt: number;
   createdAt: number;
 }
@@ -18,19 +19,19 @@ export interface UserDoc {
 export type UserDocMethods = {};
 
 export type UserCollectionMethods = {
-  addUser(
+  upsertUser(
     this: UserCollection,
-    user: Omit<UserDoc, 'id' | 'updatedAt' | 'createdAt'>
-  ): Promise<UserDoc>;
-  updateUser(
-    this: UserCollection,
-    user: Omit<UserDoc, 'updatedAt'>
+    user: Omit<UserDoc, 'id' | 'updatedAt' | 'createdAt'> & {
+      id?: string;
+      updatedAt?: number;
+      createdAt?: number;
+    }
   ): Promise<UserDoc>;
   findUser(
     this: UserCollection,
     deviceId: string
   ): Promise<UserDoc | undefined>;
-  retrieveUsers(this: UserCollection): Promise<UserDoc[]>;
+  findUsers(this: UserCollection): Promise<UserDoc[]>;
   removeUsers(this: UserCollection, userIds: string[]): Promise<UserDoc[]>;
 };
 
@@ -56,6 +57,10 @@ export const schema: RxJsonSchema<UserDoc> = {
     username: {
       type: 'string',
     },
+    permission: {
+      type: 'string',
+      default: 'once',
+    },
     color: {
       type: 'string',
     },
@@ -70,6 +75,9 @@ export const schema: RxJsonSchema<UserDoc> = {
         },
         mac: {
           type: 'string',
+        },
+        port: {
+          type: 'number',
         },
       },
     },

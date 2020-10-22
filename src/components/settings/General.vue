@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-list subheader dense color="primary">
+    <v-list subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.general }}</v-subheader>
       <v-list-item>
         <v-list-item-action>
@@ -28,7 +28,7 @@
       </v-list-item>
     </v-list>
     <v-divider></v-divider>
-    <v-list subheader dense color="primary">
+    <v-list subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.displayPosition }}</v-subheader>
       <v-list-item>
         <v-radio-group
@@ -70,7 +70,7 @@
       </v-list-item>
     </v-list>
     <v-divider></v-divider>
-    <v-list subheader dense color="primary">
+    <v-list subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.theme }}</v-subheader>
       <v-list-item>
         <v-list-item-action>
@@ -98,7 +98,7 @@
       </v-list-item>
     </v-list>
     <v-divider></v-divider>
-    <v-list subheader dense color="primary">
+    <v-list subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.googleDrive }}</v-subheader>
       <v-list-item>
         <v-list-item-action>
@@ -142,7 +142,7 @@
         max="200"
         hide-details
         thumb-label
-        color="blue"
+        color="blue darken-2"
         @input="
           (value) => {
             $emit('change-settings', {
@@ -157,7 +157,7 @@
       ></v-slider>
     </v-list>
     <v-divider></v-divider>
-    <v-list subheader dense color="primary">
+    <v-list subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.system }}</v-subheader>
       <v-list-item>
         <v-list-item-action>
@@ -199,7 +199,7 @@
     </v-list>
     <v-divider></v-divider>
 
-    <v-list subheader dense two-line color="primary">
+    <v-list subheader dense two-line color="surfaceVariant">
       <v-subheader>{{ translations.privacyAndSecurity }}</v-subheader>
       <v-list-item link @click="$emit('action', 'clear-data')">
         <v-list-item-action>

@@ -1,6 +1,6 @@
 <template>
   <div style="-webkit-app-region: drag">
-    <v-toolbar flat color="primary">
+    <v-toolbar flat color="surfaceVariant">
       <v-toolbar-title
         class="subtitle-2 font-weight-medium"
         style="user-select: none;"

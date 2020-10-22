@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="fill-height">
-    <v-card v-if="!user" class="mx-auto" min-width="460" color="primary">
+    <v-card v-if="!user" class="mx-auto" min-width="460" color="surfaceVariant">
       <v-row>
         <v-col cols="12">
           <v-row align="center" justify="center" class="pa-3">
@@ -29,7 +29,7 @@
         </v-col>
       </v-row>
     </v-card>
-    <v-card v-if="!!user" class="mx-auto" min-width="460" color="primary">
+    <v-card v-if="!!user" class="mx-auto" min-width="460" color="surfaceVariant">
       <v-row>
         <v-col cols="12">
           <v-row align="center" justify="center" class="pa-3">

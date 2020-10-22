@@ -1,3 +1,4 @@
+import { skip } from 'rxjs/operators';
 import { uuid } from 'uuidv4';
 import {
   MessageDoc,
@@ -5,6 +6,7 @@ import {
   MessageDocMethods,
   schema,
   MessageCollection,
+  MessageStatus,
 } from './model';
 
 const messageDocMethods: MessageDocMethods = {
@@ -14,21 +16,45 @@ const messageDocMethods: MessageDocMethods = {
 };
 
 const messageCollectionsMethods: MessageCollectionMethods = {
-  addMessage(message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'>) {
+  upsertMessage(
+    message: Omit<MessageDoc, 'id' | 'updatedAt'> & {
+      id?: string;
+      createdAt?: string;
+    }
+  ) {
     return this.atomicUpsert({
-      ...message,
       id: uuid(),
+      ...message,
       updatedAt: Date.now(),
-      createdAt: Date.now(),
-    }).then((clip_) => clip_.toJSON());
+      createdAt: message.createdAt || Date.now(),
+    }).then((message_) => message_.toJSON());
   },
-  retrieveMessages(
+  findMessages(
     this: MessageCollection,
-    roomId: string
+    roomId: string,
+    options?: { limit: number; skip: number }
+  ): Promise<MessageDoc[]> {
+    const query = this.find()
+      .where('roomId')
+      .eq(roomId)
+      .sort('createdAt');
+    return (!options ? query : query.skip(options.skip).limit(options.limit))
+      .exec()
+      .then((messages) => messages.map((message) => message.toJSON()));
+  },
+  findMessagesByStatus(
+    this: MessageCollection,
+    roomId: string,
+    senderId: string,
+    status: MessageStatus
   ): Promise<MessageDoc[]> {
     return this.find()
       .where('roomId')
       .eq(roomId)
+      .where('senderId')
+      .eq(senderId)
+      .where('status')
+      .eq(status)
       .exec()
       .then((messages) => messages.map((message) => message.toJSON()));
   },

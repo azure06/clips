@@ -1,20 +1,25 @@
 import { ActionTree } from 'vuex';
 import { RootState, NetworkState } from '@/store/types';
-import { from, iif, of } from 'rxjs';
+import { from, iif, of, range } from 'rxjs';
 import { catchError, concatMap, map, take, tap } from 'rxjs/operators';
 import { ipcRenderer } from 'electron';
-import { discoverDevices } from '@/electron/services/socket.io/utils/network';
-import ioClient from 'socket.io-client';
+import {
+  discoverDevices,
+  sendMessage,
+} from '@/electron/services/socket.io/client';
 import * as Sentry from '@sentry/electron';
 import { getCollection } from '@/rxdb';
-import { RoomDoc } from '@/rxdb/room/model';
-import { user } from '../user';
+import { MessageDoc } from '@/rxdb/message/model';
+import { UserDoc } from '@/rxdb/user/model';
+import { IDevice } from '@/electron/services/socket.io/types';
+
+export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 
 function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function randomColor() {
+export function randomColor() {
   switch (randomInt(0, 5)) {
     case 0:
       return 'amber lighten-1' as const;
@@ -28,11 +33,11 @@ function randomColor() {
 }
 
 const actions: ActionTree<NetworkState, RootState> = {
-  findUsers: async ({ state, commit }) =>
+  discoverUsers: async ({ state, commit, dispatch }) =>
     new Promise((resolve) =>
-      from(Promise.resolve())
-        .pipe(tap(() => commit('setFetching', true)))
+      range(1, 1)
         .pipe(
+          tap(() => commit('setLoading', { user: true })),
           concatMap(() =>
             from(ipcRenderer.invoke('my-ip') as Promise<string>).pipe(
               catchError((error) => {
@@ -40,91 +45,151 @@ const actions: ActionTree<NetworkState, RootState> = {
                 return of<undefined>();
               })
             )
-          )
-        )
-        .pipe(
+          ),
           concatMap((ip) =>
             iif(
               () => ip !== undefined,
-              discoverDevices(ip!)
-                .pipe(
-                  map((device) => ({
-                    ip: ip!,
-                    device,
-                  }))
-                )
-                .pipe(
+              discoverDevices(ip!).pipe(
+                map((device) => ({
+                  ip: ip!,
+                  device,
+                })),
+                catchError((error) => {
+                  Sentry.captureException(error);
+                  return of<undefined>();
+                })
+              ),
+              of(undefined)
+            )
+          ),
+          concatMap((data) =>
+            !data
+              ? Promise.resolve()
+              : from(
+                  dispatch('upsertUser', {
+                    device: data.device,
+                  } as UserUpsert) as Promise<UserDoc>
+                ).pipe(
                   catchError((error) => {
                     Sentry.captureException(error);
-                    return of<undefined>();
+                    return of(undefined);
+                  }),
+                  tap((user) => {
+                    if (user && data.ip === data.device.ip) {
+                      commit('setThisUser', user);
+                    }
                   })
-                ),
-              of()
-            )
-          )
-        )
-        .pipe(
-          concatMap((args) =>
-            from(
-              (async () => {
-                if (args) {
-                  const collection = await getCollection('user')
-                    .pipe(take(1))
-                    .toPromise();
-                  const user = await collection.findUser(args.device.mac);
-                  const newUser = !user
-                    ? await collection.addUser({
-                        username: args.device.username,
-                        device: args.device,
-                        color: randomColor(),
-                      })
-                    : await collection.updateUser({
-                        ...user,
-                        device: args.device,
-                      });
-                  commit(
-                    args.ip === args.device.ip ? 'setThisUser' : 'addUser',
-                    newUser
-                  );
-                  return newUser;
-                }
-              })()
-            ).pipe(
-              catchError((error) => {
-                Sentry.captureException(error);
-                return of(undefined);
-              })
-            )
+                )
           )
         )
         .subscribe({
           complete: () => {
-            commit('setFetching', false);
+            commit('setLoading', { user: false });
             resolve();
           },
         })
     ),
-  addRoom: async ({ state, commit }, room: RoomDoc) =>
-    getCollection('room')
+  findUser: async ({ state, commit }, userId: string) =>
+    getCollection('user')
+      .pipe(tap((_) => commit('setLoading', { user: true })))
       .pipe(
-        concatMap((methods) =>
-          from(methods.addRoom(room)).pipe(
+        concatMap((collection) =>
+          from(collection.findUser(userId)).pipe(
             catchError((error) => {
+              console.error('Failed to retrieve the User', error);
               Sentry.captureException(error);
-              return of(room);
+              return of(undefined);
             })
           )
         )
       )
-      .pipe(tap((room) => commit('mergeRooms', [room])))
+      .pipe(tap((_) => commit('setLoading', { user: false })))
       .pipe(take(1))
       .toPromise(),
-  retrieveRooms: async ({ state, commit }) =>
+  upsertUser: async (
+    { state, commit },
+    user: Partial<Omit<UserDoc, 'device'>> & { device: IDevice }
+  ) =>
+    getCollection('user')
+      .pipe(tap((_) => commit('setLoading', { user: true })))
+      .pipe(
+        concatMap((collection) =>
+          from(
+            (async () => {
+              const userCurrent = await collection.findUser(user.device.mac);
+              const { username, ...device } = user.device;
+              const userNew = await collection.upsertUser({
+                color: randomColor(),
+                permission: 'once',
+                username,
+                ...(userCurrent || {}),
+                ...(user || {}),
+                device, // Last as single source of truth
+              });
+              commit('addOrUpdateUser', userNew);
+              return userNew;
+            })()
+          ).pipe(
+            catchError((error) => {
+              console.error('Failed to retrieve/create User', error);
+              Sentry.captureException(error);
+              return of(undefined);
+            })
+          )
+        )
+      )
+      .pipe(tap((_) => commit('setLoading', { user: false })))
+      .pipe(take(1))
+      .toPromise(),
+  findRoomFromUserOrCreate: async (
+    { state, commit },
+    user: Pick<UserDoc, 'id' | 'username'>
+  ) =>
     getCollection('room')
-      // .pipe(tap((_) => commit('setLoadingStatus', true)))
+      .pipe(tap((_) => commit('setLoading', { room: true })))
+      .pipe(
+        concatMap((collection) =>
+          from(
+            (async () => {
+              const [room] = await collection.findRoomsByUserIds([user.id]);
+              return (
+                room ||
+                collection.addRoom({
+                  roomName: user.username,
+                  userIds: [user.id],
+                })
+              );
+            })()
+          ).pipe(
+            catchError((error) => {
+              console.error('Failed to retrieve/create room', error);
+              Sentry.captureException(error);
+              return of(undefined);
+            })
+          )
+        )
+      )
+      .pipe(
+        tap((room) => {
+          // Instead of merge just add(?)
+          if (room) commit('mergeRooms', [room]);
+        })
+      )
+      .pipe(
+        map((room) =>
+          // Once committed using 'mergeRooms', the room should contain the messages
+          room ? state.rooms.find((room_) => room_.id === room.id) : undefined
+        )
+      )
+      .pipe(tap((_) => commit('setLoading', { room: false })))
+      .pipe(take(1))
+      .toPromise(),
+  loadRooms: async ({ state, commit }) =>
+    getCollection('room')
+      .pipe(tap((_) => commit('setLoading', { room: true })))
       .pipe(
         concatMap((methods) =>
-          from(methods.retrieveRooms()).pipe(
+          from(methods.findRooms()).pipe(
             catchError((error) => {
               Sentry.captureException(error);
               return of([]);
@@ -133,15 +198,19 @@ const actions: ActionTree<NetworkState, RootState> = {
         )
       )
       .pipe(tap((rooms) => commit('mergeRooms', rooms)))
-      // .pipe(tap((clips) => commit('loadClips', { clips })))
-      // .pipe(tap((_) => commit('setLoadingStatus', false)))
+      .pipe(map((_) => state.rooms)) // At this point should contain message property
+      .pipe(tap((_) => commit('setLoading', { room: false })))
       .pipe(take(1))
       .toPromise(),
-  retrieveMessages: async ({ state, commit }, roomId: string) =>
+  loadMessages: async (
+    { state, commit },
+    data: { roomId: string; options?: { limit: number; skip: number } }
+  ) =>
     getCollection('message')
+      .pipe(tap((_) => commit('setLoading', { message: true })))
       .pipe(
-        concatMap((methods) =>
-          from(methods.retrieveMessages(roomId)).pipe(
+        concatMap((collection) =>
+          from(collection.findMessages(data.roomId, data.options)).pipe(
             catchError((error) => {
               Sentry.captureException(error);
               return of([]);
@@ -149,7 +218,94 @@ const actions: ActionTree<NetworkState, RootState> = {
           )
         )
       )
-      .pipe(tap((messages) => commit('addMessages', { roomId, messages })))
+      .pipe(
+        tap((messages) =>
+          commit('addMessages', { roomId: data.roomId, messages })
+        )
+      )
+      .pipe(tap((_) => commit('setLoading', { message: false })))
+      .pipe(take(1))
+      .toPromise(),
+  addOrUpdateMessage: async (
+    { state, commit },
+    message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
+      id?: string;
+    }
+  ) =>
+    getCollection('message')
+      .pipe(tap((_) => commit('setLoading', { message: true })))
+      .pipe(
+        concatMap((methods) =>
+          from(methods.upsertMessage(message)).pipe(
+            catchError((error) => {
+              console.error('Failed to insert/or update a new message', error);
+              Sentry.captureException(error);
+              return of(undefined);
+            })
+          )
+        )
+      )
+      .pipe(
+        tap((message) => {
+          if (message) commit('addOrUpdateMessage', message);
+        })
+      )
+      .pipe(tap((_) => commit('setLoading', { message: false })))
+      .pipe(take(1))
+      .toPromise(),
+  sendMessage: async (
+    { state, commit },
+    data: {
+      sender?: IDevice;
+      receiver: IDevice;
+      message: Omit<
+        MessageDoc,
+        'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
+      > & { senderId?: string };
+    }
+  ) =>
+    getCollection('message')
+      .pipe(tap((_) => commit('setLoading', { sending: true })))
+      .pipe(
+        concatMap((collection) =>
+          from(
+            collection
+              .upsertMessage({
+                ...data.message,
+                senderId: data.sender?.mac || 'unknown',
+                status: 'pending',
+              })
+              .then((message) =>
+                data.sender
+                  ? sendMessage(data.sender, data.receiver, {
+                      ...message,
+                      senderId: data.sender.mac,
+                    })
+                  : Promise.reject(new Error('Sender absent'))
+              )
+              .then((message) => ({
+                ...message,
+                status: 'sent' as const,
+              }))
+              .catch((error) => {
+                Sentry.captureException(error);
+                return {
+                  ...data.message,
+                  senderId: data.sender?.mac || 'unknown',
+                  status: 'rejected' as const,
+                };
+              })
+              .then((message) =>
+                collection.upsertMessage(message).catch((error) => {
+                  Sentry.captureException(error);
+                  return message;
+                })
+              )
+          )
+        )
+      )
+      .pipe(tap((message) => commit('addMessage', message)))
+      .pipe(tap((_) => commit('setLoading', { sending: false })))
       .pipe(take(1))
       .toPromise(),
 };

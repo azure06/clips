@@ -3,7 +3,7 @@ import { RootState, NetworkState } from '@/store/types';
 import { toDictionary } from '@/utils/object';
 
 const getters: GetterTree<NetworkState, RootState> = {
-  fetching: (state: NetworkState) => state.fetching,
+  loading: (state: NetworkState) => state.loading,
   thisUser: (state: NetworkState) => state.thisUser,
   users: (state: NetworkState) => state.users,
   userDictionary: (state: NetworkState) => toDictionary(state.users),

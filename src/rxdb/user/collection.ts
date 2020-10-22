@@ -1,4 +1,3 @@
-import { uuid } from 'uuidv4';
 import {
   UserCollection,
   UserCollectionMethods,
@@ -10,18 +9,12 @@ import {
 const userDocMethods: UserDocMethods = {};
 
 const userCollectionsMethods: UserCollectionMethods = {
-  async addUser(this: UserCollection, user): Promise<UserDoc> {
-    return this.atomicUpsert({
-      id: uuid(),
-      ...user,
-      updatedAt: Date.now(),
-      createdAt: Date.now(),
-    }).then((user) => user.toJSON());
-  },
-  async updateUser(this: UserCollection, user): Promise<UserDoc> {
+  async upsertUser(this: UserCollection, user): Promise<UserDoc> {
     return this.atomicUpsert({
       ...user,
+      id: user.device.mac, // Mac address is always
       updatedAt: Date.now(),
+      createdAt: user.createdAt || Date.now(),
     }).then((user) => user.toJSON());
   },
   async findUser(deviceId) {
@@ -31,7 +24,7 @@ const userCollectionsMethods: UserCollectionMethods = {
       .exec()
       .then(([user]) => user?.toJSON());
   },
-  async retrieveUsers(this: UserCollection): Promise<UserDoc[]> {
+  async findUsers(this: UserCollection): Promise<UserDoc[]> {
     return this.find()
       .exec()
       .then((users) => users.map((user) => user.toJSON()));

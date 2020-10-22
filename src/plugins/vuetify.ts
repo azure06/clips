@@ -13,12 +13,12 @@ export default new Vuetify({
     dark: false,
     themes: {
       light: {
-        primary: '#FFF',
+        surfaceVariant: '#FFF',
         surface: '#FFF',
         background: '#f6f6f8',
       },
       dark: {
-        primary: '#2b2b31',
+        surfaceVariant: '#2b2b31',
         surface: '#222226',
         background: '#1d1d20',
       },

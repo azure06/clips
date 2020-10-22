@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, screen } from 'electron';
+import { BrowserWindow, ipcMain, ipcRenderer, screen } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import { clipboardService } from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
@@ -14,8 +14,10 @@ import { initEvents } from './helpers/events';
 import { initShortcuts } from './helpers/shortcuts';
 import { initAutoLauncher } from './helpers/autolauncher';
 import { setup as setupPushReceiver } from 'electron-push-receiver';
-import * as socketIoService from './services/socket.io';
+import * as socketIoService from './services/socket.io/server';
 import './helpers/analytics';
+import { findFirstAvailablePort, ip } from './services/socket.io/utils/network';
+import { IDevice } from './services/socket.io/types';
 
 Sentry.init(environment.sentry);
 
@@ -165,9 +167,23 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
   });
 }
 
-function subscribeToSocketIo(mainWindow: BrowserWindow) {
-  ipcMain.handle('my-ip', (event, type, content) => socketIoService.ip.address);
-  socketIoService.init();
+async function subscribeToSocketIo(mainWindow: BrowserWindow) {
+  const authorize = (device: IDevice) => {
+    return new Promise<boolean>((resolve) => {
+      mainWindow.webContents.send('authorize', device);
+      ipcMain.once(`authorize:${device.mac}`, (_, result) => resolve(result));
+    });
+  };
+  ipcMain.handle('my-ip', (event, type, content) => ip.address);
+  if (ip.address) {
+    socketIoService
+      .observe(authorize, ip.address, await findFirstAvailablePort())
+      .subscribe((data) => {
+        mainWindow.webContents.send('message', data);
+      });
+  } else {
+    console.error('Maybe offline...? 🦊');
+  }
 }
 
 export function onReady() {

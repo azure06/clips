@@ -8,7 +8,7 @@ export interface RoomDatabaseCollection {
 export interface RoomDoc {
   id: string;
   roomName: string;
-  userIds: string[];
+  userIds: string[]; // This is going to be the mac-address
   updatedAt: number;
   createdAt: number;
 }
@@ -20,7 +20,11 @@ export type RoomCollectionMethods = {
     this: RoomCollection,
     room: Omit<RoomDoc, 'id' | 'updatedAt' | 'createdAt'>
   ): Promise<RoomDoc>;
-  retrieveRooms(this: RoomCollection): Promise<RoomDoc[]>;
+  findRooms(this: RoomCollection): Promise<RoomDoc[]>;
+  findRoomsByUserIds(
+    this: RoomCollection,
+    userIds: string[]
+  ): Promise<RoomDoc[]>;
   removeRooms(this: RoomCollection, roomIds: string[]): Promise<RoomDoc[]>;
 };
 
