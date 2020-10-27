@@ -7,7 +7,7 @@
         color="cyan darken-2"
       ></v-progress-linear>
       <v-subheader class="font-weight-bold">Premium features</v-subheader>
-      <v-card flat class="px-6">
+      <v-card flat class="px-6" color="transparent">
         <v-form>
           <v-subheader>
             Please provide a license key. If you don't have a license key you

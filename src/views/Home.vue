@@ -13,8 +13,8 @@
         <v-list-item
           v-for="(clip, index) in clipsObserver"
           :key="clip.id"
-          @mouseover="onClipHover(clip)"
-          @click="onClipClick(clip)"
+          @mouseover="onClipHover(clips[index])"
+          @click="onClipClick(clips[index])"
         >
           <!-- FIXME Remove icon for now -->
           <!-- <v-list-item-avatar size="40">
@@ -89,7 +89,7 @@
                   >mdi-image-area</v-icon
                 >
               </v-btn>
-              <v-btn icon @click="onStarClick($event, clip)">
+              <v-btn icon @click="onStarClick($event, clips[index])">
                 <v-icon
                   :color="
                     `${
@@ -109,7 +109,7 @@
             <v-checkbox
               :input-value="removeTarget[clip.id]"
               color="cyan darken-2"
-              @click="onRemoveCLick($event, clip, index)"
+              @click="onRemoveCLick($event, clips[index], index)"
             ></v-checkbox>
           </v-list-item-action>
         </v-list-item>
@@ -200,6 +200,7 @@ import {
   debounceTime,
   tap,
 } from 'rxjs/operators';
+import { WatchObservable } from 'vue-rx';
 
 type ClipEx = Clip & { fromNow?: string; preview?: string };
 
@@ -207,40 +208,34 @@ type ClipEx = Clip & { fromNow?: string; preview?: string };
   components: { AppBar, SearchBar },
   subscriptions() {
     return {
-      clipsObserver: this.$watchAsObservable('clips').pipe(
-        tap(
-          ({
-            oldValue,
-            newValue,
-          }: {
-            oldValue: ClipEx[];
-            newValue: ClipEx[];
-          }) => {
-            const { displayType } = this as any;
-            newValue.forEach((clip) => {
-              if (!displayType[clip.id]) {
-                displayType[clip.id] = {
-                  availableTypes: (clip.type === 'text'
-                    ? [
-                        clip.plainText ? 'plainText' : undefined,
-                        clip.richText ? 'richText' : undefined,
-                        clip.htmlText ? 'htmlText' : undefined,
-                        clip.dataURI ? 'dataURI' : undefined,
-                      ]
-                    : [
-                        clip.dataURI ? 'dataURI' : undefined,
-                        clip.htmlText ? 'htmlText' : undefined,
-                        clip.richText ? 'richText' : undefined,
-                        clip.plainText ? 'plainText' : undefined,
-                      ]
-                  ).filter((value) => !!value),
-                  index: 0,
-                };
-              }
-            });
-            displayType;
-          }
-        ),
+      clipsObserver: this.$watchAsObservable(() => this.clips).pipe(
+        tap(({ oldValue, newValue }: WatchObservable<ClipEx[]>) => {
+          const { displayType } = this;
+          // TODO Consider to improve this implementation
+          newValue.forEach((clip) => {
+            if (!displayType[clip.id]) {
+              displayType[clip.id] = {
+                availableTypes: (clip.type === 'text'
+                  ? [
+                      clip.plainText ? ('plainText' as const) : undefined,
+                      clip.richText ? ('richText' as const) : undefined,
+                      clip.htmlText ? ('htmlText' as const) : undefined,
+                      clip.dataURI ? ('dataURI' as const) : undefined,
+                    ]
+                  : [
+                      clip.dataURI ? ('dataURI' as const) : undefined,
+                      clip.htmlText ? ('htmlText' as const) : undefined,
+                      clip.richText ? ('richText' as const) : undefined,
+                      clip.plainText ? ('plainText' as const) : undefined,
+                    ]
+                ).filter((value) => !!value) as Array<
+                  'plainText' | 'richText' | 'dataURI' | 'htmlText'
+                >,
+                index: 0,
+              };
+            }
+          });
+        }),
         map(({ oldValue, newValue }) => {
           return newValue.map((clip, index) => ({
             ...clip,

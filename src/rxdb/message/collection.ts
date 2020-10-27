@@ -37,7 +37,7 @@ const messageCollectionsMethods: MessageCollectionMethods = {
     const query = this.find()
       .where('roomId')
       .eq(roomId)
-      .sort('createdAt');
+      .sort('-createdAt');
     return (!options ? query : query.skip(options.skip).limit(options.limit))
       .exec()
       .then((messages) => messages.map((message) => message.toJSON()));

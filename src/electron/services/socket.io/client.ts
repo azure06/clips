@@ -19,15 +19,20 @@ export function sendMessage(
     socket.on('connect', () => {
       console.info(`Get authorization from  ${target}`);
       socket.emit('authorize', sender, (result: boolean) => {
-        console.info(`Authorization result: `, result);
+        console.info(
+          result
+            ? `Yeeeeeehaw!!! 🦊  Got authorization~!`
+            : 'Authorization rejected 😿'
+        );
         if (!result) {
           socket.disconnect();
-          reject(new Error(`${receiver.username} rejected you request`));
+          reject(new Error(`${receiver.username} rejected your request 🥶`));
         }
         console.info(`Sending message to ${target} 🙈🙉🙊`);
         // Send deviceInfo and message
         socket.emit('message-text', { sender, message }, () => {
           socket.disconnect();
+          console.info(`Disconnected from ${target} 👀 🎬`);
           resolve(message);
         });
       });

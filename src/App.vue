@@ -70,10 +70,9 @@ export default class App extends Vue {
         ipcRenderer.send(`authorize:${user.id}`, true);
       } else if (user.permission === 'once') {
         this.dialogText = `Accept the invitation from ${user.username}`;
-        this.dialog = true;
-
         // If pending actions just close the previous dialog
-        this.resolve('close');
+        await this.resolve('close');
+        this.dialog = true;
         const result = await new Promise<'close' | 'once' | 'always'>(
           (resolve) => {
             this.resolve = resolve;
@@ -87,12 +86,12 @@ export default class App extends Vue {
             ipcRenderer.send(`authorize:${user.id}`, true);
             break;
           case 'always':
+            ipcRenderer.send(`authorize:${user.id}`, true);
             await this.upsertUser({
               ...user,
               device: { ...user.device, username: user.username },
               permission: 'always',
             });
-            ipcRenderer.send(`authorize:${user.id}`, true);
             break;
         }
       }

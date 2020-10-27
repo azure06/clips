@@ -29,49 +29,124 @@
       fluid
     >
       <!-- Loading Circle -->
-      <transition name="fade">
-        <div
-          v-show="loadingMessages"
-          style="height: 120px; width: 100%"
-          class="py-4"
-          flat
-          tile
-        >
-          <v-row v-if="loadingMessages" justify="center" align="center">
-            <v-progress-circular
-              indeterminate
-              color="cyan darken-2"
-              size="50"
-            ></v-progress-circular>
-          </v-row>
-          <v-row
-            v-if="loadingMessages"
-            align="center"
-            justify="center"
-            class="text-center"
+
+      <div
+        v-if="loadingMessages"
+        style="height: 120px; width: 100%"
+        class="py-4"
+        flat
+        tile
+      >
+        <v-row justify="center" align="center">
+          <v-progress-circular
+            indeterminate
+            color="cyan darken-2"
+            size="50"
+          ></v-progress-circular>
+        </v-row>
+        <v-row align="center" justify="center" class="text-center">
+          <v-subheader class="text-center overline"
+            >Loading more data...</v-subheader
           >
-            <v-subheader class="text-center overline"
-              >Loading more data...</v-subheader
-            >
-          </v-row>
-        </div>
-      </transition>
+        </v-row>
+      </div>
 
       <!-- Messages -->
       <div class="pa-2  d-flex flex-column" style="width: 100%">
-        <v-card
-          v-for="message in roomObserver.messages"
-          :key="message.id"
-          flat
-          :class="
-            `my-1 ${
-              message.isThisDevice ? 'align-self-start' : 'align-self-end'
-            }`
-          "
-          :color="!message.isThisDevice ? 'surfaceVariant' : 'blue darken-2'"
-        >
-          <v-card-text class="pa-3"> {{ message.content }}</v-card-text>
-        </v-card>
+        <template v-for="(message, index) in roomObserver.messages">
+          <v-card
+            v-if="message.date"
+            flat
+            color="transparent"
+            class="caption d-flex justify-center"
+            :key="`divider-${message.id}`"
+          >
+            <div>{{ message.date }}</div>
+          </v-card>
+          <v-card
+            :key="`content-${message.id}`"
+            flat
+            :dark="message.isThisDevice"
+            :class="
+              `my-2 ${
+                message.isThisDevice ? 'align-self-start' : 'align-self-end'
+              }`
+            "
+            :color="!message.isThisDevice ? 'surfaceVariant' : 'blue darken-2'"
+          >
+            <v-card-text class="pa-2" style="white-space: pre;">
+              <div class="d-flex align-end">
+                <!-- Content -->
+                <template v-if="!message.isThisDevice">
+                  <div style="position: relative;">
+                    <div
+                      class="d-flex"
+                      style="position: absolute; right: 15px; top: -20px"
+                    >
+                      <!-- Status -->
+                      <div
+                        class="caption mr-1"
+                        v-show="
+                          message.status === 'read' || message.status === 'sent'
+                        "
+                      >
+                        ✔︎
+                      </div>
+                      <!-- Staus Error -->
+                      <div
+                        v-show="
+                          message.status === 'pending' ||
+                            message.status === 'rejected'
+                        "
+                        :class="
+                          `caption mr-1 ${
+                            message.status === 'pending'
+                              ? 'infinite-spinning'
+                              : ''
+                          } `
+                        "
+                      >
+                        <v-btn
+                          x-small
+                          icon
+                          :disabled="message.status === 'pending'"
+                          @click="
+                            $emit('resend-message', room, room.messages[index])
+                          "
+                        >
+                          <v-icon>{{
+                            message.status === 'rejected'
+                              ? 'mdi-reload-alert'
+                              : 'mdi-loading'
+                          }}</v-icon>
+                        </v-btn>
+                      </div>
+                      <!-- Time -->
+                      <div class="caption">{{ message.time }}</div>
+                    </div>
+                  </div>
+                  <div class="subtitle-2">
+                    {{ message.content }}
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="subtitle-2">
+                    {{ message.content }}
+                  </div>
+                  <div style="position: relative;">
+                    <div
+                      class="d-flex"
+                      style="position: absolute; left: 15px; top: -20px"
+                    >
+                      <!-- Time -->
+                      <div class="caption">{{ message.time }}</div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </v-card-text>
+          </v-card>
+        </template>
       </div>
     </v-container>
 
@@ -128,9 +203,12 @@ import {
   tap,
 } from 'rxjs/operators';
 import { MessageDoc } from '@/rxdb/message/model';
+import moment from 'moment';
 
 type RoomEx = Omit<RoomType, 'messages'> & {
-  messages: Array<MessageDoc & { isThisDevice?: boolean }>;
+  messages: Array<
+    MessageDoc & { isThisDevice?: boolean; time?: string; date?: string }
+  >;
 };
 type Watch<T> = { oldValue: T; newValue: T };
 
@@ -141,22 +219,53 @@ type Watch<T> = { oldValue: T; newValue: T };
         immediate: true,
       })
         .pipe(
-          map(({ oldValue, newValue }: Watch<RoomEx>) => {
-            const messages = newValue.messages.map((message) => {
-              message.isThisDevice = this.room.userIds[0] === message.senderId;
-              return message;
-            });
-            return {
-              force: oldValue === undefined, // force scroll
-              room: {
-                ...newValue,
-                messages,
-              },
-            };
-          })
+          map(({ oldValue, newValue }: Watch<RoomEx>) => ({
+            force: oldValue === undefined, // force scroll
+            room: {
+              ...newValue,
+              messages: newValue.messages.map((message, index) => ({
+                ...message,
+                isThisDevice:
+                  this.room.userIds[0] === message.senderId ||
+                  message.senderId === 'unknown',
+                time: moment(message.createdAt).format('HH:mm'),
+                date: (() => {
+                  const previousMessage = newValue.messages[index - 1];
+                  if (
+                    !previousMessage ||
+                    moment(previousMessage.createdAt).isBefore(
+                      message.createdAt,
+                      'day'
+                    )
+                  ) {
+                    const date = moment(message.createdAt);
+                    return date.isSame(moment(), 'day')
+                      ? 'Today'
+                      : date.isSame(moment(), 'week')
+                      ? moment(date).format('dddd')
+                      : moment(date).format('ddd, MMMM DD, YYYY');
+                  }
+                })(),
+              })),
+            },
+          }))
         )
         .pipe(tap(({ force }) => this.scrollToEnd({ force })))
         .pipe(map(({ room }) => room)),
+
+      unreadCountObserver: this.$watchAsObservable(() => this.unreadCount, {
+        immediate: true,
+      }).pipe(
+        filter(({ newValue }) => newValue > 0),
+        tap((count) => {
+          console.warn(count);
+          // Set messages status to read
+          this.$emit('message-read', {
+            roomId: this.room.id,
+            senderId: this.room.userIds[0],
+          });
+        })
+      ),
     };
   },
 })
@@ -169,6 +278,8 @@ export default class Room extends Vue {
   public loadingMessages!: boolean;
   @Prop({ default: false })
   public sendingMessage!: boolean;
+  @Prop({ default: 0 })
+  public unreadCount!: number;
 
   public get toolbarHeight() {
     const offset = ((): number => {
@@ -218,15 +329,6 @@ export default class Room extends Vue {
     );
   }
 
-  public mounted() {
-    this.$subscribeTo(this.infiniteScroll(), () => {
-      this.$emit('load-messages', this.room.id, {
-        skip: this.room.messages.length,
-        limit: 20,
-      });
-    });
-  }
-
   public scrollToEnd(options?: { force: boolean }) {
     this.$nextTick(() => {
       const target = this.$el.querySelector('#scroll-target') as Element;
@@ -239,6 +341,15 @@ export default class Room extends Vue {
       }
     });
   }
+
+  public mounted() {
+    this.$subscribeTo(this.infiniteScroll(), () => {
+      this.$emit('load-messages', this.room.id, {
+        skip: this.room.messages.length,
+        limit: 20,
+      });
+    });
+  }
 }
 </script>
 
@@ -247,12 +358,16 @@ export default class Room extends Vue {
 .v-textarea >>> .v-text-field__details {
   display: none;
 }
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.5s cubic-bezier(1, 0.5, 0.8, 1);
+
+.infinite-spinning {
+  animation: infinite-spinning 1s linear infinite;
 }
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
+@keyframes infinite-spinning {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

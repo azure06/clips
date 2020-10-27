@@ -25,10 +25,11 @@ const mutations: MutationTree<NetworkState> = {
     Vue.set(state, 'thisUser', user);
   },
   mergeRooms(state, rooms: RoomDoc[]) {
-    const stateRoomDict = toDictionary(state.rooms);
-    const rooms_ = rooms.map((room) => ({
-      ...room,
-      messages: stateRoomDict[room.id]?.messages || [],
+    const roomDict = toDictionary(state.rooms);
+    const mergedDict = { ...roomDict, ...toDictionary(rooms) };
+    const rooms_ = Object.values(mergedDict).map((room) => ({
+      ...mergedDict[room.id],
+      messages: roomDict[room.id]?.messages || [],
     }));
     Vue.set(state, 'rooms', rooms_);
   },
@@ -37,18 +38,51 @@ const mutations: MutationTree<NetworkState> = {
     const room = roomDictionary[data.roomId];
     const roomCopy = {
       ...room,
-      messages: [...room.messages, ...data.messages],
+      messages: [...data.messages.reverse(), ...room.messages],
     };
     const rooms = Object.values({ ...roomDictionary, [roomCopy.id]: roomCopy });
     Vue.set(state, 'rooms', rooms);
   },
-  addMessage(state, message: MessageDoc) {
+  setMessages(state, data: { roomId: string; messages: MessageDoc[] }) {
     const roomDictionary = toDictionary(state.rooms);
+    const room = roomDictionary[data.roomId];
     const roomCopy = {
-      ...roomDictionary[message.roomId],
-      messages: [...(roomDictionary[message.roomId]?.messages || []), message],
+      ...room,
+      messages: data.messages.reverse(),
     };
     const rooms = Object.values({ ...roomDictionary, [roomCopy.id]: roomCopy });
+    Vue.set(state, 'rooms', rooms);
+  },
+  setMessagesAsRead(state, roomId: string) {
+    const roomDictionary = toDictionary(state.rooms);
+    const room = roomDictionary[roomId];
+    const messages = room.messages.map((message) => ({
+      ...message,
+      status: 'read',
+    }));
+    const rooms = Object.values({
+      ...roomDictionary,
+      [room.id]: { ...room, messages },
+    });
+    Vue.set(state, 'rooms', rooms);
+  },
+  modifyOrAddMessage(state, message: MessageDoc) {
+    const roomDict = toDictionary(state.rooms);
+    const room = roomDict[message.roomId];
+    const index = room.messages.findIndex(
+      (message_) => message_.id === message.id
+    );
+    const messages =
+      index === -1
+        ? [...room.messages, message]
+        : room.messages?.map((message_, index_) =>
+            index_ === index ? message : message_
+          );
+    const roomCopy = {
+      ...room,
+      messages,
+    };
+    const rooms = Object.values({ ...roomDict, [roomCopy.id]: roomCopy });
     Vue.set(state, 'rooms', rooms);
   },
   // If absent in application state will be added otherwise updated

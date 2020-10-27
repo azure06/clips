@@ -3,14 +3,19 @@
     <div v-if="selectedRoom">
       <Room
         :room="roomDictionary[selectedRoom]"
-        :message="messageDict[selectedRoom]"
+        :message="respMessageDict[selectedRoom]"
         :loadingMessages="loading.message"
         :sendingMessage="loading.sending"
+        :unreadCount="
+          unreadMessagesByUser[roomDictionary[selectedRoom].userIds[0]].size
+        "
         @close="selectedRoom = ''"
         @keydown="onKeyDown"
         @change-message="onChangeMessage"
+        @resend-message="onResendMessage"
         @send-message="onSendMessage"
         @load-messages="(roomId, options) => loadMessages({ roomId, options })"
+        @message-read="setMessagesToRead"
       />
     </div>
     <div v-else>
@@ -33,6 +38,17 @@
             <v-list-item-avatar>
               <v-icon :class="user.color" dark v-text="'mdi-account'"></v-icon>
             </v-list-item-avatar>
+            <v-badge
+              v-if="
+                unreadMessagesByUser[user.id] &&
+                  unreadMessagesByUser[user.id].size > 0
+              "
+              :content="unreadMessagesByUser[user.id].size || 0"
+              overlap
+              offset-x="25"
+              offset-y="-5"
+            >
+            </v-badge>
             <v-list-item-content>
               <v-list-item-title v-text="user.username"></v-list-item-title>
             </v-list-item-content>
@@ -82,7 +98,12 @@
       </v-dialog>
 
       <!-- Dialog -->
-      <v-dialog :value="loading.room || loading.message" persistent width="360">
+      <v-dialog
+        :value="loading.room || loading.message"
+        persistent
+        width="360"
+        dark
+      >
         <v-card color="blue darken-2">
           <v-card-text>
             Loading...
@@ -160,6 +181,11 @@ export default class Share extends ExtendedVue {
   @Getter('loading', { namespace: 'network' })
   public loading!: { user: boolean; room: boolean; message: boolean };
 
+  @Getter('unreadMessagesByUser', { namespace: 'network' })
+  public unreadMessagesByUser!: number;
+  @Getter('unreadMessagesTotal', { namespace: 'network' })
+  public unreadMessagesTotal!: number;
+
   @Getter('thisUser', { namespace: 'network' })
   public thisUser?: UserDoc;
 
@@ -190,6 +216,11 @@ export default class Share extends ExtendedVue {
 
   @Action('findRoomFromUserOrCreate', { namespace: 'network' })
   public findRoomFromUserOrCreate!: (user: UserDoc) => Promise<RoomType>;
+  @Action('setMessagesToRead', { namespace: 'network' })
+  public setMessagesToRead!: (
+    roomId: String,
+    senderId: string
+  ) => Promise<MessageDoc[]>;
   @Action('sendMessage', { namespace: 'network' })
   public sendMessage!: (args: {
     sender?: IDevice;
@@ -202,22 +233,23 @@ export default class Share extends ExtendedVue {
 
   public selectedUser: string = '';
   public selectedRoom: string = '';
-  public messageDict: { [roomId: string]: string | undefined } = {};
+  public respMessageDict: { [roomId: string]: string | undefined } = {};
 
   public changeRoomMessage(roomId: string, value = '') {
-    this.messageDict = { ...this.messageDict, [roomId]: value };
+    this.respMessageDict = { ...this.respMessageDict, [roomId]: value };
     return roomId;
   }
 
   public getRoomMessage(roomId: string) {
-    return this.messageDict[roomId] || '';
+    return this.respMessageDict[roomId] || '';
   }
 
   public async openRoom(user: UserDoc) {
     const room = await this.findRoomFromUserOrCreate(user);
+    // Load messages from start
     await this.loadMessages({
       roomId: room.id,
-      options: { skip: room.messages.length, limit: 15 },
+      options: { skip: 0, limit: 15 },
     });
     this.selectedRoom = this.changeRoomMessage(room.id);
   }
@@ -231,6 +263,22 @@ export default class Share extends ExtendedVue {
 
   public async onChangeMessage(room: RoomType, message: string) {
     this.changeRoomMessage(room.id, message);
+  }
+
+  public async onResendMessage(room: RoomType, message: MessageDoc) {
+    const receiver = await this.findUser(room.userIds[0]);
+    if (!receiver) return; // TODO Handle receiver absent exception
+    this.sendMessage({
+      // Actually we don't need the username of the receiver
+      receiver: { ...receiver.device, username: receiver.username },
+      sender: this.thisUser
+        ? {
+            ...this.thisUser.device,
+            username: this.thisUser.username,
+          }
+        : undefined,
+      message,
+    });
   }
 
   public async onSendMessage(room: RoomType, message: string) {

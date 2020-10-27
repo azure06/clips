@@ -1,6 +1,6 @@
 import { ActionTree } from 'vuex';
 import { RootState, NetworkState } from '@/store/types';
-import { from, iif, of, range } from 'rxjs';
+import { async, from, iif, of, range } from 'rxjs';
 import { catchError, concatMap, map, take, tap } from 'rxjs/operators';
 import { ipcRenderer } from 'electron';
 import {
@@ -12,6 +12,7 @@ import { getCollection } from '@/rxdb';
 import { MessageDoc } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
+import { toDictionary } from '@/utils/object';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 
@@ -96,7 +97,6 @@ const actions: ActionTree<NetworkState, RootState> = {
         concatMap((collection) =>
           from(collection.findUser(userId)).pipe(
             catchError((error) => {
-              console.error('Failed to retrieve the User', error);
               Sentry.captureException(error);
               return of(undefined);
             })
@@ -131,7 +131,6 @@ const actions: ActionTree<NetworkState, RootState> = {
             })()
           ).pipe(
             catchError((error) => {
-              console.error('Failed to retrieve/create User', error);
               Sentry.captureException(error);
               return of(undefined);
             })
@@ -162,7 +161,6 @@ const actions: ActionTree<NetworkState, RootState> = {
             })()
           ).pipe(
             catchError((error) => {
-              console.error('Failed to retrieve/create room', error);
               Sentry.captureException(error);
               return of(undefined);
             })
@@ -220,9 +218,15 @@ const actions: ActionTree<NetworkState, RootState> = {
       )
       .pipe(
         tap((messages) =>
-          commit('addMessages', { roomId: data.roomId, messages })
+          commit(
+            !data.options || data.options.skip === 0
+              ? 'setMessages'
+              : 'addMessages',
+            { roomId: data.roomId, messages }
+          )
         )
       )
+      .pipe(map((_) => toDictionary(state.rooms)[data.roomId].messages))
       .pipe(tap((_) => commit('setLoading', { message: false })))
       .pipe(take(1))
       .toPromise(),
@@ -238,7 +242,6 @@ const actions: ActionTree<NetworkState, RootState> = {
         concatMap((methods) =>
           from(methods.upsertMessage(message)).pipe(
             catchError((error) => {
-              console.error('Failed to insert/or update a new message', error);
               Sentry.captureException(error);
               return of(undefined);
             })
@@ -250,6 +253,48 @@ const actions: ActionTree<NetworkState, RootState> = {
           if (message) commit('addOrUpdateMessage', message);
         })
       )
+      .pipe(tap((_) => commit('setLoading', { message: false })))
+      .pipe(take(1))
+      .toPromise(),
+  setMessagesToRead: async (
+    { state, commit },
+    { roomId, senderId }: { roomId: string; senderId: string }
+  ) =>
+    getCollection('message')
+      .pipe(tap((_) => commit('setLoading', { message: true })))
+      .pipe(
+        concatMap((collection) =>
+          from(
+            (async () => {
+              const messages = await collection.findMessagesByStatus(
+                roomId,
+                senderId,
+                'sent'
+              );
+              const upsert = async (
+                [head, ...tail]: MessageDoc[],
+                acc: MessageDoc[]
+              ): Promise<MessageDoc[]> =>
+                head
+                  ? upsert(tail, [
+                      ...acc,
+                      await collection.upsertMessage({
+                        ...head,
+                        status: 'read',
+                      }),
+                    ])
+                  : acc;
+              return upsert(messages, []);
+            })()
+          ).pipe(
+            catchError((error) => {
+              Sentry.captureException(error);
+              return of([]);
+            })
+          )
+        )
+      )
+      .pipe(tap((_) => commit('setMessagesAsRead', roomId)))
       .pipe(tap((_) => commit('setLoading', { message: false })))
       .pipe(take(1))
       .toPromise(),
@@ -275,25 +320,20 @@ const actions: ActionTree<NetworkState, RootState> = {
                 senderId: data.sender?.mac || 'unknown',
                 status: 'pending',
               })
-              .then((message) =>
-                data.sender
-                  ? sendMessage(data.sender, data.receiver, {
+              .then(async (message) => {
+                commit('modifyOrAddMessage', message);
+                const sentResult = data.sender
+                  ? sendMessage(data.sender, data.receiver, message)
+                  : Promise.reject(new Error('Sender absent'));
+                return sentResult
+                  .then((_) => ({ ...message, status: 'sent' as const }))
+                  .catch((error) => {
+                    Sentry.captureException(error);
+                    return {
                       ...message,
-                      senderId: data.sender.mac,
-                    })
-                  : Promise.reject(new Error('Sender absent'))
-              )
-              .then((message) => ({
-                ...message,
-                status: 'sent' as const,
-              }))
-              .catch((error) => {
-                Sentry.captureException(error);
-                return {
-                  ...data.message,
-                  senderId: data.sender?.mac || 'unknown',
-                  status: 'rejected' as const,
-                };
+                      status: 'rejected' as const,
+                    };
+                  });
               })
               .then((message) =>
                 collection.upsertMessage(message).catch((error) => {
@@ -304,7 +344,7 @@ const actions: ActionTree<NetworkState, RootState> = {
           )
         )
       )
-      .pipe(tap((message) => commit('addMessage', message)))
+      .pipe(tap((message) => commit('modifyOrAddMessage', message)))
       .pipe(tap((_) => commit('setLoading', { sending: false })))
       .pipe(take(1))
       .toPromise(),

@@ -40,7 +40,7 @@ export function observe(
       // For security reason check the identity is correct
       if (sender.ip !== socket.handshake.address) authorize(false);
       console.info(
-        `Asking for authorization... ${socket.handshake.address} 👾`
+        `Asking for authorization... ${socket.handshake.address} 🗣`
       );
       authorize(await getAuthorization(sender));
       socket.on('message', function(state: State, resolve) {

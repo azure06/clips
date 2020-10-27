@@ -169,12 +169,11 @@ const vm = new Vue({
     this.$subscribeTo(
       subscriptions.onMessage,
       async ({ message, sender }: { sender: IDevice; message: MessageDoc }) => {
+        //  Find user or create if necessary
         const room = (await this.findRoomFromUserOrCreate({
           id: sender.mac,
           username: sender.username,
         })) as Room;
-
-        // TODO Find user or create if necessary
 
         // Update the roomId inside the message (Currently is the sender roomId)
         await this.addOrUpdateMessage({
@@ -183,13 +182,7 @@ const vm = new Vue({
           roomId: room.id,
         } as MessageDoc);
 
-        // TODO
-        console.warn(
-          'Notify~ And create new user if necessary (Maybe ask the user)',
-          message
-        );
-
-        // TODO Notify for new message!!
+        console.info('Message received correctly!!! 🎉😼', message);
       }
     );
   },

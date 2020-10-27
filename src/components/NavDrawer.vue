@@ -69,6 +69,7 @@
           >
             <v-list-item-icon>
               <v-icon>mdi-account-multiple-outline</v-icon>
+              <v-badge v-if="unreadMessagesTotal > 0" dot> </v-badge>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>Lan share</v-list-item-title>
@@ -78,7 +79,7 @@
         <span>{{ $translations.share }}</span>
       </v-tooltip>
 
-    <!-- Account -->
+      <!-- Account -->
       <v-tooltip top>
         <template v-slot:activator="{ on }">
           <v-list-item
@@ -99,6 +100,7 @@
         <span>{{ $translations.account }}</span>
       </v-tooltip>
 
+      <!-- if = false -->
       <v-list-item
         v-if="false"
         class="px-3"
@@ -164,6 +166,9 @@ export default class NavDrawer extends ExtendedVue {
   @Getter('user', { namespace: 'user' })
   public user!: any;
   public drawer = true;
+
+  @Getter('unreadMessagesTotal', { namespace: 'network' })
+  public unreadMessagesTotal!: number;
 }
 </script>
 

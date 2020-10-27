@@ -53,12 +53,10 @@
               style="-webkit-app-region: no-drag"
             >
               <v-list-item-icon>
-                <v-badge
-                  v-if="!premium"
-                  color="cyan darken-2"
-                  icon="mdi-lock"
-                  overlap
-                >
+                <v-badge v-if="!premium" color="cyan darken-2" overlap>
+                  <template v-slot:badge>
+                    <v-icon x-small>mdi-lock</v-icon>
+                  </template>
                   <v-icon>mdi-view-grid-plus</v-icon>
                 </v-badge>
                 <v-icon v-else>mdi-view-grid-plus</v-icon>

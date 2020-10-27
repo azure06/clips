@@ -182,7 +182,7 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
         mainWindow.webContents.send('message', data);
       });
   } else {
-    console.error('Maybe offline...? 🦊');
+    console.info('Maybe offline...? 🦊');
   }
 }
 

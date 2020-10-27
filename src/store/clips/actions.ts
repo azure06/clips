@@ -59,9 +59,9 @@ const actions: ActionTree<ClipsState, RootState> = {
     collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
       .pipe(
-        concatMap((methods) =>
+        concatMap((concat) =>
           from(
-            methods
+            concat
               .findClips({
                 filters: clip.dataURI
                   ? { dataURI: clip.dataURI }
@@ -69,8 +69,8 @@ const actions: ActionTree<ClipsState, RootState> = {
               })
               .then(async ([targetClip]) => {
                 clip = !targetClip
-                  ? await methods.insertClip(clip)
-                  : await methods.modifyClip(targetClip);
+                  ? await concat.insertClip(clip)
+                  : await concat.modifyClip(targetClip);
                 return { action: targetClip ? 'modifyClip' : 'addClip', clip };
               })
           ).pipe(
@@ -91,9 +91,10 @@ const actions: ActionTree<ClipsState, RootState> = {
   ) =>
     collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
+      .pipe(tap((_) => console.log(clip)))
       .pipe(
-        concatMap((methods) =>
-          from(methods.modifyClip(clip)).pipe(
+        concatMap((collection) =>
+          from(collection.modifyClip(clip)).pipe(
             catchError((error) => {
               Sentry.captureException(error);
               return EMPTY;
