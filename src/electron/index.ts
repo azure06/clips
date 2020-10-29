@@ -16,7 +16,7 @@ import { initAutoLauncher } from './helpers/autolauncher';
 import { setup as setupPushReceiver } from 'electron-push-receiver';
 import * as socketIoService from './services/socket.io/server';
 import './helpers/analytics';
-import { findFirstAvailablePort, ip } from './services/socket.io/utils/network';
+import { findPort, ip } from './services/socket.io/utils/network';
 import { IDevice } from './services/socket.io/types';
 
 Sentry.init(environment.sentry);
@@ -168,22 +168,25 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
 }
 
 async function subscribeToSocketIo(mainWindow: BrowserWindow) {
+  ipcMain.handle('my-ip', (_) => ip.address());
   const authorize = (device: IDevice) => {
     return new Promise<boolean>((resolve) => {
       mainWindow.webContents.send('authorize', device);
       ipcMain.once(`authorize:${device.mac}`, (_, result) => resolve(result));
     });
   };
-  ipcMain.handle('my-ip', (event, type, content) => ip.address);
-  if (ip.address) {
-    socketIoService
-      .observe(authorize, ip.address, await findFirstAvailablePort())
-      .subscribe((data) => {
-        mainWindow.webContents.send('message', data);
-      });
-  } else {
-    console.info('Maybe offline...? 🦊');
-  }
+  const initServer = async (event: any, type: any) => {
+    const ipaddress = ip.address();
+    const [httpServer, socketStream] = await socketIoService.listen(
+      await findPort(),
+      ipaddress
+    );
+    socketStream(authorize, httpServer).subscribe((data) => {
+      mainWindow.webContents.send('message', data);
+    });
+  };
+  initServer('', '');
+  ipcMain.handle('init-server', initServer);
 }
 
 export function onReady() {

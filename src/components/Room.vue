@@ -5,7 +5,7 @@
       <v-btn icon @click="$emit('close')">
         <v-icon>mdi-close</v-icon>
       </v-btn>
-      <v-toolbar-title>{{ roomObserver.roomName }}</v-toolbar-title>
+      <v-toolbar-title>{{ roomStream.roomName }}</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon disabled>
         <v-icon>mdi-magnify</v-icon>
@@ -29,7 +29,6 @@
       fluid
     >
       <!-- Loading Circle -->
-
       <div
         v-if="loadingMessages"
         style="height: 120px; width: 100%"
@@ -52,8 +51,10 @@
       </div>
 
       <!-- Messages -->
+      <!-- TODO Consider to create a component -->
+
       <div class="pa-2  d-flex flex-column" style="width: 100%">
-        <template v-for="(message, index) in roomObserver.messages">
+        <template v-for="(message, index) in roomStream.messages">
           <v-card
             v-if="message.date"
             flat
@@ -155,7 +156,7 @@
     <div class="d-flex justify-space-between">
       <div class="surfaceVariant fill-height" style="width: 100%">
         <v-textarea
-          :value="message"
+          :value="draft"
           @keydown="$emit('keydown', room, $event)"
           @input="$emit('change-message', room, $event)"
           class="pa-2 pb-1"
@@ -179,7 +180,7 @@
           depressed
           dark
           :loading="sendingMessage"
-          @click="$emit('send-message', room, message)"
+          @click="$emit('send-message', room, draft)"
         >
           Send
         </v-btn>
@@ -204,22 +205,22 @@ import {
 } from 'rxjs/operators';
 import { MessageDoc } from '@/rxdb/message/model';
 import moment from 'moment';
+import { WatchObservable } from 'vue-rx';
 
 type RoomEx = Omit<RoomType, 'messages'> & {
   messages: Array<
     MessageDoc & { isThisDevice?: boolean; time?: string; date?: string }
   >;
 };
-type Watch<T> = { oldValue: T; newValue: T };
 
 @Component<Room>({
   subscriptions() {
     return {
-      roomObserver: this.$watchAsObservable(() => this.room, {
+      roomStream: this.$watchAsObservable(() => this.room, {
         immediate: true,
       })
         .pipe(
-          map(({ oldValue, newValue }: Watch<RoomEx>) => ({
+          map(({ oldValue, newValue }: WatchObservable<RoomEx>) => ({
             force: oldValue === undefined, // force scroll
             room: {
               ...newValue,
@@ -253,12 +254,11 @@ type Watch<T> = { oldValue: T; newValue: T };
         .pipe(tap(({ force }) => this.scrollToEnd({ force })))
         .pipe(map(({ room }) => room)),
 
-      unreadCountObserver: this.$watchAsObservable(() => this.unreadCount, {
+      unreadMessagesStream: this.$watchAsObservable(() => this.unreadCount, {
         immediate: true,
       }).pipe(
         filter(({ newValue }) => newValue > 0),
         tap((count) => {
-          console.warn(count);
           // Set messages status to read
           this.$emit('message-read', {
             roomId: this.room.id,
@@ -273,7 +273,7 @@ export default class Room extends Vue {
   @Prop({ required: true })
   public room!: RoomType;
   @Prop({ required: true })
-  public message!: string;
+  public draft!: string;
   @Prop({ default: false })
   public loadingMessages!: boolean;
   @Prop({ default: false })
@@ -307,7 +307,7 @@ export default class Room extends Vue {
   }
 
   public get textareaRows() {
-    const rows = this.message.split('\n').length;
+    const rows = this.draft.split('\n').length;
     return rows >= 1 && rows <= 3 ? rows : rows > 3 ? 3 : 1;
   }
 

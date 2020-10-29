@@ -91,7 +91,6 @@ const actions: ActionTree<ClipsState, RootState> = {
   ) =>
     collection()
       .pipe(tap((_) => commit('setLoadingStatus', true)))
-      .pipe(tap((_) => console.log(clip)))
       .pipe(
         concatMap((collection) =>
           from(collection.modifyClip(clip)).pipe(

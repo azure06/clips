@@ -8,6 +8,7 @@ import Settings from '../views/Settings.vue';
 import General from '../components/settings/General.vue';
 import Language from '../components/settings/Language.vue';
 import Advanced from '../components/settings/Advanced.vue';
+import Room from '../components/Room.vue';
 
 Vue.use(VueRouter);
 
@@ -35,6 +36,15 @@ const routes = [
     path: '/share',
     name: 'share',
     component: Share,
+    children: [
+      {
+        // Room will be rendered inside Share's <router-view>
+        // when /share/room:id is matched
+        name: 'room',
+        path: 'room/:roomId',
+        component: Room,
+      },
+    ],
   },
   {
     path: '/settings',

@@ -1,17 +1,17 @@
 <template>
   <div>
-    <div v-if="selectedRoom">
-      <Room
-        :room="roomDictionary[selectedRoom]"
-        :message="respMessageDict[selectedRoom]"
+    <div v-if="roomStream">
+      <router-view
+        :room="roomStream"
+        :draft="draftStream"
         :loadingMessages="loading.message"
         :sendingMessage="loading.sending"
-        :unreadCount="
-          unreadMessagesByUser[roomDictionary[selectedRoom].userIds[0]].size
+        :unreadCount="unreadMessagesByUser[roomStream.userIds[0]].size"
+        @close="$router.back()"
+        @keydown="(room, event) => onKeyDown(room, draftStream, event)"
+        @change-message="
+          (room, draft) => onDraftChange.next({ roomId: room.id, draft })
         "
-        @close="selectedRoom = ''"
-        @keydown="onKeyDown"
-        @change-message="onChangeMessage"
         @resend-message="onResendMessage"
         @send-message="onSendMessage"
         @load-messages="(roomId, options) => loadMessages({ roomId, options })"
@@ -53,7 +53,7 @@
               <v-list-item-title v-text="user.username"></v-list-item-title>
             </v-list-item-content>
             <v-list-item-action>
-              <v-btn icon @click.stop="selectedUser = user.id">
+              <v-btn icon @click.stop="onUserSelect.next(user.id)">
                 <v-icon color="grey lighten-1">mdi-information</v-icon>
               </v-btn>
             </v-list-item-action>
@@ -63,9 +63,9 @@
 
       <!-- Dialogue -->
       <v-dialog
-        v-if="selectedUser"
-        :value="!!selectedUser"
-        @input="selectedUser = ''"
+        v-if="userStream"
+        :value="!!userStream"
+        @input="onUserSelect.next()"
         hide-overlay
         width="360"
       >
@@ -78,18 +78,16 @@
             <v-list-item-content class="px-2">
               <v-list-item-title
                 class="pb-1 subtitle-2"
-                v-text="userDictionary[selectedUser].username"
+                v-text="userStream.username"
               ></v-list-item-title>
               <v-list-item-subtitle
                 class="caption"
-                v-text="`IP address: ${userDictionary[selectedUser].device.ip}`"
+                v-text="`IP address: ${userStream.device.ip}`"
               >
               </v-list-item-subtitle>
               <v-list-item-subtitle
                 class="caption"
-                v-text="
-                  `MAC address: ${userDictionary[selectedUser].device.mac}`
-                "
+                v-text="`MAC address: ${userStream.device.mac}`"
               >
               </v-list-item-subtitle>
             </v-list-item-content>
@@ -175,8 +173,80 @@ import { MessageDoc } from '@/rxdb/message/model';
 import { RoomDoc } from '@/rxdb/room/model';
 import { Dictionary } from 'vue-router/types/router';
 import { IDevice } from '@/electron/services/socket.io/types';
+import {
+  concatMap,
+  distinctUntilChanged,
+  filter,
+  map,
+  scan,
+  share,
+  startWith,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
+import { combineLatest, from, Subject } from 'rxjs';
 
-@Component({ components: { Room } })
+@Component<Share>({
+  components: { Room },
+  subscriptions() {
+    const roomIdStream = this.$watchAsObservable(() => this.$route.params, {
+      immediate: true,
+    }).pipe(
+      map(({ newValue }) => newValue.roomId),
+      distinctUntilChanged(),
+      concatMap((roomId) =>
+        roomId
+          ? from(
+              (async () => {
+                // Load messages from start before the user enter in the room
+                const messages = await this.loadMessages({
+                  roomId,
+                  options: { skip: 0, limit: 15 },
+                });
+                // Initialize draft
+                this.onDraftChange.next({ roomId: roomId, draft: '' });
+                return roomId;
+              })()
+            )
+          : Promise.resolve('')
+      ),
+      tap((value) => console.log('idStream')),
+      share()
+    );
+    return {
+      roomIdStream,
+      userStream: this.onUserSelect.asObservable().pipe(
+        map((userId) => (userId ? this.userDictionary[userId] : undefined)),
+        share()
+      ),
+      roomStream: combineLatest(
+        roomIdStream,
+        this.$watchAsObservable(() => this.roomDictionary, {
+          immediate: true,
+        })
+      ).pipe(
+        map(([roomId, { newValue }]) => newValue[roomId as string]),
+        tap((value) => console.log('roomStream')),
+        share()
+      ),
+      // This reppresent the draft from the current open room
+      draftStream: this.onDraftChange.asObservable().pipe(
+        scan(
+          (acc: Dictionary<string | undefined>, value) => ({
+            ...acc,
+            [value.roomId]: value.draft,
+          }),
+          {}
+        ),
+        withLatestFrom(roomIdStream),
+        map(([draft, roomId]) => (roomId ? draft[roomId] : '')),
+        startWith(''),
+        tap((value) => console.log('draftStream')),
+        share()
+      ),
+    } as const;
+  },
+})
 export default class Share extends ExtendedVue {
   @Getter('loading', { namespace: 'network' })
   public loading!: { user: boolean; room: boolean; message: boolean };
@@ -211,8 +281,6 @@ export default class Share extends ExtendedVue {
     roomId: string;
     options?: { limit: number; skip: number };
   }) => Promise<MessageDoc[]>;
-  @Action('findRoom', { namespace: 'network' })
-  public findRoom!: (userId: string) => Promise<RoomType[]>;
 
   @Action('findRoomFromUserOrCreate', { namespace: 'network' })
   public findRoomFromUserOrCreate!: (user: UserDoc) => Promise<RoomType>;
@@ -231,38 +299,23 @@ export default class Share extends ExtendedVue {
     > & { senderId?: string };
   }) => Promise<MessageDoc>;
 
-  public selectedUser: string = '';
-  public selectedRoom: string = '';
-  public respMessageDict: { [roomId: string]: string | undefined } = {};
-
-  public changeRoomMessage(roomId: string, value = '') {
-    this.respMessageDict = { ...this.respMessageDict, [roomId]: value };
-    return roomId;
-  }
-
-  public getRoomMessage(roomId: string) {
-    return this.respMessageDict[roomId] || '';
-  }
+  public onUserSelect = new Subject<string | undefined>();
+  public onDraftChange = new Subject<{ roomId: string; draft: string }>();
 
   public async openRoom(user: UserDoc) {
     const room = await this.findRoomFromUserOrCreate(user);
-    // Load messages from start
-    await this.loadMessages({
-      roomId: room.id,
-      options: { skip: 0, limit: 15 },
+    // Mode to room
+    this.$router.push({
+      name: 'room',
+      params: { roomId: room.id },
     });
-    this.selectedRoom = this.changeRoomMessage(room.id);
   }
 
-  public onKeyDown(room: RoomType, event: KeyboardEvent) {
+  public onKeyDown(room: RoomType, draft: string, event: KeyboardEvent) {
     if (event.code === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      this.onSendMessage(room, this.getRoomMessage(room.id));
+      this.onSendMessage(room, draft);
     }
-  }
-
-  public async onChangeMessage(room: RoomType, message: string) {
-    this.changeRoomMessage(room.id, message);
   }
 
   public async onResendMessage(room: RoomType, message: MessageDoc) {
@@ -284,7 +337,7 @@ export default class Share extends ExtendedVue {
   public async onSendMessage(room: RoomType, message: string) {
     const receiver = await this.findUser(room.userIds[0]);
     if (!receiver || message.trim() === '') return; // TODO Handle receiver absent exception
-    this.changeRoomMessage(room.id); // Remove message
+    this.onDraftChange.next({ roomId: room.id, draft: '' }); // Remove message
     this.sendMessage({
       // Actually we don't need the username of the receiver
       receiver: { ...receiver.device, username: receiver.username },

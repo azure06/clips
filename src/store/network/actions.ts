@@ -1,7 +1,14 @@
 import { ActionTree } from 'vuex';
 import { RootState, NetworkState } from '@/store/types';
-import { async, from, iif, of, range } from 'rxjs';
-import { catchError, concatMap, map, take, tap } from 'rxjs/operators';
+import { EMPTY, from, of, range } from 'rxjs';
+import {
+  catchError,
+  concatMap,
+  map,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs/operators';
 import { ipcRenderer } from 'electron';
 import {
   discoverDevices,
@@ -47,41 +54,34 @@ const actions: ActionTree<NetworkState, RootState> = {
               })
             )
           ),
-          concatMap((ip) =>
-            iif(
-              () => ip !== undefined,
-              discoverDevices(ip!).pipe(
-                map((device) => ({
-                  ip: ip!,
-                  device,
-                })),
-                catchError((error) => {
-                  Sentry.captureException(error);
-                  return of<undefined>();
-                })
-              ),
-              of(undefined)
-            )
-          ),
-          concatMap((data) =>
-            !data
-              ? Promise.resolve()
-              : from(
-                  dispatch('upsertUser', {
-                    device: data.device,
-                  } as UserUpsert) as Promise<UserDoc>
-                ).pipe(
+          switchMap((ip) =>
+            ip
+              ? discoverDevices(ip).pipe(
+                  concatMap((device) =>
+                    from(
+                      dispatch('upsertUser', {
+                        device,
+                      } as UserUpsert) as Promise<UserDoc>
+                    ).pipe(
+                      catchError((error) => {
+                        Sentry.captureException(error);
+                        return of(undefined);
+                      }),
+                      tap((user) => {
+                        if (user && ip === device.ip) {
+                          commit('setThisUser', user);
+                        }
+                      })
+                    )
+                  ),
                   catchError((error) => {
                     Sentry.captureException(error);
-                    return of(undefined);
-                  }),
-                  tap((user) => {
-                    if (user && data.ip === data.device.ip) {
-                      commit('setThisUser', user);
-                    }
+                    return of<undefined>();
                   })
                 )
-          )
+              : EMPTY
+          ),
+          tap((value) => console.log('my value', value))
         )
         .subscribe({
           complete: () => {

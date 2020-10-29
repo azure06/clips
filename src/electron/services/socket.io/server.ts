@@ -4,8 +4,16 @@ import fs from 'fs';
 import { State, Keep, Start, IDevice } from './types';
 import path from 'path';
 import fullName from 'fullname';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { MessageDoc } from '@/rxdb/message/model';
+import log from 'electron-log';
+
+type MessageInfo = {
+  sender: IDevice;
+  message: MessageDoc;
+};
+
+type MessageStream = Observable<MessageInfo>;
 
 const DIR_DOWNLOAD = ((dir) => path.join(dir || '~', 'Downloads/'))(
   process.env.HOME || process.env.USERPROFILE
@@ -25,24 +33,19 @@ function onConnectionKeep(data: Keep) {
   fs.appendFileSync(path.join(DIR_DOWNLOAD, data.fileName), data.buffer);
 }
 
-//  https://stackoverflow.com/questions/9018888/socket-io-connect-from-one-server-to-another
-export function observe(
-  getAuthorization: (device: IDevice) => Promise<Boolean>,
-  ip: string,
-  port: number
+function initSocket(
+  authorize_: (args: IDevice) => Promise<Boolean>,
+  httpServer: http.Server
 ) {
-  const httpServer = http.createServer();
   const ioServer = io.listen(httpServer, { serveClient: false });
-  const messageSubject = new Subject<MessageDoc>();
+  const messageSubject = new Subject<MessageInfo>();
   ioServer.sockets.on('connection', function(socket) {
     console.info(`Server connected with.. ${socket.handshake.address}🔥`);
-    socket.on('authorize', async function(sender: IDevice, authorize) {
+    socket.on('authorize', async function(sender: IDevice, authorizeReq) {
       // For security reason check the identity is correct
-      if (sender.ip !== socket.handshake.address) authorize(false);
-      console.info(
-        `Asking for authorization... ${socket.handshake.address} 🗣`
-      );
-      authorize(await getAuthorization(sender));
+      if (sender.ip !== socket.handshake.address) authorizeReq(false);
+      console.info(`Asking for authorization... ${socket.handshake.address} 🗣`);
+      authorizeReq(await authorize_(sender));
       socket.on('message', function(state: State, resolve) {
         switch (state.status) {
           case 'start':
@@ -62,7 +65,6 @@ export function observe(
         resolve();
       });
     });
-
     socket.on('recognize', async function(callback) {
       callback(await fullName());
     });
@@ -70,9 +72,22 @@ export function observe(
       console.log('Disconnected...🎬');
     });
   });
-  // Init Http server
-  httpServer.listen(port, ip, () =>
-    console.log(`Http server listening on http://${ip}:3000`)
-  );
   return messageSubject.asObservable();
+}
+
+//  https://stackoverflow.com/questions/9018888/socket-io-connect-from-one-server-to-another
+export function listen(port: number, ip: string) {
+  return new Promise<[http.Server, typeof initSocket]>((resolve_, reject_) => {
+    const httpServer = http.createServer();
+    httpServer.on('error', (error) => {
+      reject_(error);
+      log.error(error);
+    });
+    // Init Http server
+    httpServer.listen(port, ip, () => {
+      resolve_([httpServer, initSocket]);
+      console.log(`Http server listening on http://${ip}:${port}🔥`);
+    });
+    // https://dev.to/gajus/how-to-terminate-a-http-server-in-node-js-ofk
+  });
 }

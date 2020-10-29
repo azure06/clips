@@ -2,7 +2,7 @@ import ioClient from 'socket.io-client';
 import fs from 'fs';
 import path from 'path';
 import findLocalDevices from 'local-devices';
-import { Subject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 import { MessageDoc } from '@/rxdb/message/model';
 import { IDevice } from './types';
 
@@ -101,7 +101,7 @@ export function sendData(ip: string, port: number) {
  * Ex. From 192.168.11.1 ~ 192.168.11.254
  */
 export function discoverDevices(ip: string) {
-  const iDeviceSubject = new Subject<IDevice>();
+  const iDeviceReplay = new ReplaySubject<IDevice>();
   const [network1, network2, subnet] = ip.split('.').map((value) => +value);
   const ports = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   // Find available devices
@@ -111,15 +111,16 @@ export function discoverDevices(ip: string) {
     .then((devices) =>
       ports.flatMap((num) =>
         devices.map((device) =>
-          new Promise((resolve, reject) => {
+          new Promise<void>((resolve, reject) => {
             const port = +`300${num}`;
             const socket = ioClient.connect(`http://${device.ip}:${port}`, {
               reconnection: false,
             });
+            // If
             socket.on('connect_error', reject);
             socket.on('connect', () => {
               socket.emit('recognize', (username: string) => {
-                iDeviceSubject.next({ ...device, username, port });
+                iDeviceReplay.next({ ...device, username, port });
                 resolve();
                 socket.disconnect();
               });
@@ -129,6 +130,6 @@ export function discoverDevices(ip: string) {
       )
     )
     .then((devices) => Promise.all(devices))
-    .finally(() => iDeviceSubject.complete());
-  return iDeviceSubject.asObservable();
+    .finally(() => iDeviceReplay.complete());
+  return iDeviceReplay.asObservable();
 }

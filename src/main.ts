@@ -15,9 +15,8 @@ import './firebase';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
 import { initAnalytics } from './analytics-vue';
 import { MessageDoc } from './rxdb/message/model';
-import { UserDoc } from './rxdb/user/model';
-import { ipcRenderer } from 'electron';
 import { IDevice } from './electron/services/socket.io/types';
+import { ipcRenderer } from 'electron';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -182,8 +181,24 @@ const vm = new Vue({
           roomId: room.id,
         } as MessageDoc);
 
+        // Notify user
+        (() => {
+          const notification = new Notification(sender.username, {
+            timestamp: Date.now(),
+            icon: './assets/icons/clip.svg',
+            body: `– ${message.content}`,
+          });
+          notification.onclick = () => {
+            if (this.$route.params.roomId !== room.id) {
+              this.$router.push({ name: 'room', params: { roomId: room.id } });
+              console.info('Navigate to room');
+            }
+          };
+        })();
         console.info('Message received correctly!!! 🎉😼', message);
       }
     );
+
+    // ipcRenderer.invoke('downloadJson', filePath, clips);
   },
 }).$mount('#app');
