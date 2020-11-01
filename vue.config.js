@@ -14,32 +14,32 @@ module.exports = {
         productName: 'Clips',
         publish: ['github'],
       },
-      chainWebpackMainProcess: (config) => {
-        const dest =
-          process.env.NODE_ENV === 'development' ? 'dist_electron' : 'public';
-        config.plugin('copy').use(CopyPlugin, [
-          {
-            patterns: [
-              {
-                from: 'node_modules/push-receiver/src/gcm/checkin.proto',
-                to: path.resolve(__dirname, dest, 'checkin.proto'),
-                toType: 'file',
-              },
-              {
-                from:
-                  'node_modules/push-receiver/src/gcm/android_checkin.proto',
-                to: path.resolve(__dirname, dest, 'android_checkin.proto'),
-                toType: 'file',
-              },
-              {
-                from: 'node_modules/push-receiver/src/mcs.proto',
-                to: path.resolve(__dirname, dest, 'mcs.proto'),
-                toType: 'file',
-              },
-            ],
-          },
-        ]);
-      },
+      // chainWebpackMainProcess: (config) => {
+      //   const dest =
+      //     process.env.NODE_ENV === 'development' ? 'dist_electron' : 'public';
+      //   config.plugin('copy').use(CopyPlugin, [
+      //     {
+      //       patterns: [
+      //         {
+      //           from: 'node_modules/push-receiver/src/gcm/checkin.proto',
+      //           to: path.resolve(__dirname, dest, 'checkin.proto'),
+      //           toType: 'file',
+      //         },
+      //         {
+      //           from:
+      //             'node_modules/push-receiver/src/gcm/android_checkin.proto',
+      //           to: path.resolve(__dirname, dest, 'android_checkin.proto'),
+      //           toType: 'file',
+      //         },
+      //         {
+      //           from: 'node_modules/push-receiver/src/mcs.proto',
+      //           to: path.resolve(__dirname, dest, 'mcs.proto'),
+      //           toType: 'file',
+      //         },
+      //       ],
+      //     },
+      //   ]);
+      // },
       chainWebpackRendererProcess: (config) => {
         config.plugin('define').tap((definitions) => {
           definitions[0] = Object.assign(definitions[0], {

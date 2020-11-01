@@ -13,7 +13,6 @@ import { storeService } from './services/electron-store';
 import { initEvents } from './helpers/events';
 import { initShortcuts } from './helpers/shortcuts';
 import { initAutoLauncher } from './helpers/autolauncher';
-import { setup as setupPushReceiver } from 'electron-push-receiver';
 import * as socketIoService from './services/socket.io/server';
 import './helpers/analytics';
 import { findPort, ip } from './services/socket.io/utils/network';
@@ -193,7 +192,6 @@ export function onReady() {
   const win = mainWindow.create();
   const _ = tray.create(win);
 
-  setupPushReceiver(win.webContents);
   initEvents(win);
   initShortcuts(win);
   initAutoLauncher();
