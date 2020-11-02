@@ -174,17 +174,24 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
       ipcMain.once(`authorize:${device.mac}`, (_, result) => resolve(result));
     });
   };
-  const initServer = async (event: any, type: any) => {
+  const initServer = async (event: any) => {
     const ipaddress = ip.address();
-    const [httpServer, socketStream] = await socketIoService.listen(
-      await findPort(),
-      ipaddress
-    );
+    const [httpServer, socketStream, close] = await socketIoService
+      .listen(await findPort(), ipaddress)
+      .catch(Promise.reject);
     socketStream(authorize, httpServer).subscribe((data) => {
       mainWindow.webContents.send('message', data);
     });
+
+    ipcMain.handleOnce('close-server', () => {
+      httpServer.close((err) => {
+        console.warn('err', err);
+        return false;
+      });
+      return close;
+    });
+    return Promise.resolve(true);
   };
-  initServer('', '');
   ipcMain.handle('init-server', initServer);
 }
 

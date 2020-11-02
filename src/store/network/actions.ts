@@ -12,6 +12,7 @@ import {
 import { ipcRenderer } from 'electron';
 import {
   discoverDevices,
+  findDevice,
   sendMessage,
 } from '@/electron/services/socket.io/client';
 import * as Sentry from '@sentry/electron';
@@ -20,6 +21,7 @@ import { MessageDoc } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
 import { toDictionary } from '@/utils/object';
+import { readSync } from 'fs';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 
@@ -41,6 +43,43 @@ export function randomColor() {
 }
 
 const actions: ActionTree<NetworkState, RootState> = {
+  initServer: async ({ state, commit, dispatch }) =>
+    range(1, 1)
+      .pipe(
+        concatMap(() =>
+          from(
+            (async () => {
+              const ip = (await ipcRenderer.invoke('my-ip')) as string;
+              const device = await findDevice(ip);
+              const ready = device
+                ? !!device
+                : await ipcRenderer.invoke('init-server');
+              return ready;
+            })()
+          ).pipe(
+            catchError((error) => {
+              Sentry.captureException(error);
+              return of(false);
+            })
+          )
+        )
+      )
+      .pipe(take(1))
+      .toPromise(),
+  closeServer: async ({ state, commit, dispatch }) =>
+    range(1, 1)
+      .pipe(
+        concatMap(() =>
+          from(ipcRenderer.invoke('close-server')).pipe(
+            catchError((error) => {
+              Sentry.captureException(error);
+              return of(false);
+            })
+          )
+        )
+      )
+      .pipe(take(1))
+      .toPromise(),
   discoverUsers: async ({ state, commit, dispatch }) =>
     new Promise((resolve) =>
       range(1, 1)
@@ -80,8 +119,7 @@ const actions: ActionTree<NetworkState, RootState> = {
                   })
                 )
               : EMPTY
-          ),
-          tap((value) => console.log('my value', value))
+          )
         )
         .subscribe({
           complete: () => {

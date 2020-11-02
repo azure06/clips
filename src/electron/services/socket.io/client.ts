@@ -5,6 +5,9 @@ import findLocalDevices from 'local-devices';
 import { ReplaySubject } from 'rxjs';
 import { MessageDoc } from '@/rxdb/message/model';
 import { IDevice } from './types';
+// @ts-ignore
+import any from 'promise.any';
+any.shim();
 
 export function sendMessage(
   sender: IDevice,
@@ -92,6 +95,37 @@ export function sendData(ip: string, port: number) {
       console.info('Something went wrong', err);
     });
   };
+}
+
+export async function findDevice(ip: string) {
+  return findLocalDevices(ip)
+    .then((device) =>
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(
+        (num) =>
+          new Promise<IDevice | undefined>((resolve, reject) => {
+            const port = +`300${num}`;
+            const socket = ioClient.connect(
+              `http://${(device as any).ip}:${port}`,
+              {
+                reconnection: false,
+              }
+            );
+            socket.on('connect_error', reject);
+            socket.on('connect', () => {
+              socket.emit('recognize', (username: string) => {
+                resolve({
+                  ...((device as unknown) as IDevice),
+                  username,
+                  port,
+                });
+                socket.disconnect();
+              });
+            });
+          })
+      )
+    )
+    .then((p) => Promise.any(p))
+    .catch((err) => console.error(err));
 }
 
 /**

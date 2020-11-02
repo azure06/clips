@@ -57,6 +57,7 @@ const vm = new Vue({
       findRoomFromUserOrCreate: 'findRoomFromUserOrCreate',
       addOrUpdateMessage: 'addOrUpdateMessage',
       upsertUser: 'upsertUser',
+      initServer: 'initServer',
     }),
     ...mapMutations('user', {
       loadUser: 'loadUser',
@@ -198,7 +199,6 @@ const vm = new Vue({
         console.info('Message received correctly!!! 🎉😼', message);
       }
     );
-
-    // ipcRenderer.invoke('downloadJson', filePath, clips);
+    this.initServer();
   },
 }).$mount('#app');

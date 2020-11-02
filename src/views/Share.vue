@@ -141,7 +141,7 @@
           class="overline"
           depressed
           :loading="loading.user"
-          :disabled="loading.user"
+          :disabled="loading.user || serverStatusStream === 'off'"
           @click="discoverUsers"
           color="surfaceVariant"
         >
@@ -154,6 +154,20 @@
               <v-icon>mdi-cached</v-icon>
             </span>
           </template>
+        </v-btn>
+
+        <v-btn
+          class="ml-2"
+          depressed
+          color="surfaceVariant"
+          @click="
+            changeServerStatus.next(serverStatusStream === 'on' ? 'off' : 'on')
+          "
+        >
+          <v-icon left>
+            mdi-server-network
+          </v-icon>
+          {{ serverStatusStream === 'on' ? 'off' : 'on' }}
         </v-btn>
       </v-toolbar>
     </div>
@@ -174,17 +188,18 @@ import { RoomDoc } from '@/rxdb/room/model';
 import { Dictionary } from 'vue-router/types/router';
 import { IDevice } from '@/electron/services/socket.io/types';
 import {
+  catchError,
   concatMap,
   distinctUntilChanged,
-  filter,
   map,
   scan,
   share,
   startWith,
   tap,
+  throttle,
   withLatestFrom,
 } from 'rxjs/operators';
-import { combineLatest, from, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, merge, of, Subject } from 'rxjs';
 
 @Component<Share>({
   components: { Room },
@@ -244,6 +259,27 @@ import { combineLatest, from, Subject } from 'rxjs';
         tap((value) => console.log('draftStream')),
         share()
       ),
+      serverStatusStream: this.changeServerStatus
+        .asObservable()
+        .pipe(
+          throttle((action) => {
+            return from(
+              action === 'on'
+                ? this.initServer().then((result) => (result ? 'on' : 'off'))
+                : this.closeServer().then((result) => (result ? 'off' : 'on'))
+            ).pipe(
+              catchError((error) => {
+                return of(action);
+              })
+            );
+          })
+        )
+        .pipe(
+          tap((value) => console.warn("why I'm fired before throttle", value))
+        )
+        // Default should be ON in main.ts
+        .pipe(startWith('on'))
+        .pipe(share()),
     } as const;
   },
 })
@@ -298,9 +334,14 @@ export default class Share extends ExtendedVue {
       'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
     > & { senderId?: string };
   }) => Promise<MessageDoc>;
+  @Action('initServer', { namespace: 'network' })
+  public initServer!: () => Promise<boolean>;
+  @Action('closeServer', { namespace: 'network' })
+  public closeServer!: () => Promise<boolean>;
 
   public onUserSelect = new Subject<string | undefined>();
   public onDraftChange = new Subject<{ roomId: string; draft: string }>();
+  public changeServerStatus = new Subject<'on' | 'off'>();
 
   public async openRoom(user: UserDoc) {
     const room = await this.findRoomFromUserOrCreate(user);
@@ -357,7 +398,12 @@ export default class Share extends ExtendedVue {
   }
 
   public async created() {
-    Promise.all([this.loadRooms(), this.discoverUsers()]);
+    Promise.all([
+      (this as any).serverStatusStream === 'off'
+        ? Promise.resolve([])
+        : this.loadRooms(),
+      this.discoverUsers(),
+    ]);
   }
 }
 </script>

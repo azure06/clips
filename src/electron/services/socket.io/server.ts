@@ -4,7 +4,7 @@ import fs from 'fs';
 import { State, Keep, Start, IDevice } from './types';
 import path from 'path';
 import fullName from 'fullname';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { MessageDoc } from '@/rxdb/message/model';
 import log from 'electron-log';
 
@@ -12,8 +12,6 @@ type MessageInfo = {
   sender: IDevice;
   message: MessageDoc;
 };
-
-type MessageStream = Observable<MessageInfo>;
 
 const DIR_DOWNLOAD = ((dir) => path.join(dir || '~', 'Downloads/'))(
   process.env.HOME || process.env.USERPROFILE
@@ -77,17 +75,33 @@ function initSocket(
 
 //  https://stackoverflow.com/questions/9018888/socket-io-connect-from-one-server-to-another
 export function listen(port: number, ip: string) {
-  return new Promise<[http.Server, typeof initSocket]>((resolve_, reject_) => {
-    const httpServer = http.createServer();
-    httpServer.on('error', (error) => {
-      reject_(error);
-      log.error(error);
-    });
-    // Init Http server
-    httpServer.listen(port, ip, () => {
-      resolve_([httpServer, initSocket]);
-      console.log(`Http server listening on http://${ip}:${port}🔥`);
-    });
-    // https://dev.to/gajus/how-to-terminate-a-http-server-in-node-js-ofk
-  });
+  return new Promise<[http.Server, typeof initSocket, Promise<boolean>]>(
+    (resolve_, reject_) => {
+      const httpServer = http.createServer();
+      let close: () => void;
+      httpServer.on('error', (error) => {
+        reject_(error);
+        log.error(error);
+      });
+
+      // Init Http server
+      httpServer.listen(port, ip, () => {
+        resolve_([
+          httpServer,
+          initSocket,
+          new Promise((resolve) => (close = () => resolve(true))),
+        ]);
+        console.log(`Http server listening on http://${ip}:${port}🔥`);
+      });
+
+      httpServer.on('connection', (socket) => {
+        httpServer.once('close', () => {
+          socket.destroy();
+          httpServer.close();
+          close();
+        });
+      });
+      // https://dev.to/gajus/how-to-terminate-a-http-server-in-node-js-ofk
+    }
+  );
 }

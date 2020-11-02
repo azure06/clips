@@ -48,6 +48,7 @@
     "moment": "^2.29.1",
     "object-sizeof": "^1.6.1",
     "pouchdb-adapter-idb": "^7.2.2",
+    "promise.any": "^2.0.1",
     "register-service-worker": "^1.7.1",
     "rxdb": "^9.6.0",
     "rxjs": "^6.6.3",
