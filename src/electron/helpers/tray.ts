@@ -1,14 +1,17 @@
 import { app, nativeImage, Tray, Menu, BrowserWindow } from 'electron';
 import path from 'path';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 /* global __static */
 declare const __static: string;
 
 let _tray: Tray | null = null;
 
-function create(mainWindow: BrowserWindow) {
+function create(mainWindow: BrowserWindow): void {
   const nativeImg = nativeImage.createFromPath(path.join(__static, 'icon.png'));
-  _tray = new Tray(nativeImg.resize({ width: 16, height: 16, quality: 'best' }));
+  _tray = new Tray(
+    nativeImg.resize({ width: 16, height: 16, quality: 'best' })
+  );
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Clips              ',
@@ -47,7 +50,7 @@ function create(mainWindow: BrowserWindow) {
 }
 
 export const tray = {
-  get instance() {
+  get instance(): Tray | null {
     return _tray;
   },
   create,

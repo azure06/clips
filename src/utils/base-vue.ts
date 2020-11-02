@@ -1,10 +1,10 @@
-import { Vue, Component } from 'vue-property-decorator';
-import { Getter } from 'vuex-class';
-import { SettingsState } from '@/store/types';
 import { language } from './language';
 import { translations } from './translations';
 import { Translation } from './translations/types';
 import { replace } from './string';
+import { SettingsState } from '@/store/types';
+import { Getter } from 'vuex-class';
+import { Vue, Component } from 'vue-property-decorator';
 
 type Language = typeof language[keyof typeof language];
 
@@ -26,7 +26,10 @@ export class BaseVue extends Vue {
     }
   }
 
-  public $replacer(template: string, data: { [key: string]: string | number }) {
+  public $replacer(
+    template: string,
+    data: { [key: string]: string | number }
+  ): string {
     return replace(template, data);
   }
 }
@@ -36,7 +39,7 @@ export class ExtendedVue extends BaseVue {
   @Getter('settings', { namespace: 'settings' })
   public settings!: SettingsState;
 
-  public get $language() {
+  public get $language(): Language {
     return this.settings.system.language;
   }
 

@@ -1,5 +1,5 @@
 // eslint-disable-next-line object-curly-newline
-import { RxCollection, RxDatabase, RxDocument, RxJsonSchema } from 'rxdb';
+import { RxCollection, RxDocument, RxJsonSchema } from 'rxdb';
 
 export interface RoomDatabaseCollection {
   room: RoomCollection;
@@ -13,6 +13,7 @@ export interface RoomDoc {
   createdAt: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type RoomDocMethods = {};
 
 export type RoomCollectionMethods = {

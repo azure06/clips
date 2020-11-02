@@ -13,8 +13,8 @@ export const analytics = remote.getGlobal('analytics') as {
   visitor: ua.Visitor;
 };
 
-export const initAnalytics = function(router: VueRouter) {
-  router.afterEach((to, from) => {
+export const initAnalytics = function(router: VueRouter): typeof analytics {
+  router.afterEach((to) => {
     analytics.visitor.pageview(to.path, 'clips', to.name || '').send();
   });
 

@@ -190,17 +190,16 @@
 
 <script lang="ts">
 import { ExtendedVue } from '@/utils/base-vue';
-import { Component, Vue, Mixins } from 'vue-property-decorator';
-import { Clip, SettingsState } from '@/store/types';
+import { Component } from 'vue-property-decorator';
+import { SettingsState } from '@/store/types';
 import { Getter, Mutation, Action } from 'vuex-class';
 import { activatePremium } from '@/firebase';
-import moment from 'moment';
 
 @Component
 export default class Settings extends ExtendedVue {
   @Mutation('changeSettings', { namespace: 'settings' })
   public changeSettings!: (args: {
-    vuetify: any;
+    vuetify: unknown;
     payload: SettingsState;
   }) => void;
   @Mutation('restoreSettings', { namespace: 'settings' })
@@ -209,12 +208,12 @@ export default class Settings extends ExtendedVue {
   public setPremium!: (arg: boolean) => void;
   @Action('changeShortcut', { namespace: 'settings' })
   public changeShortcut!: (args: {
-    vuetify: any;
-    payload: any;
+    vuetify: unknown;
+    payload: unknown;
   }) => Promise<void>;
   @Action('changeStartup', { namespace: 'settings' })
   public changeStartup!: (args: {
-    vuetify: any;
+    vuetify: unknown;
     payload: boolean;
   }) => Promise<void>;
   @Action('restoreFactoryDefault', { namespace: 'clips' })
@@ -228,31 +227,33 @@ export default class Settings extends ExtendedVue {
   public fetching = false;
   public errorDialog = false;
 
-  public onClose() {
+  public onClose(): void {
     this.dialog = false;
     this.$nextTick(() => this.$router.push({ name: 'home' }));
   }
 
-  public async activatePremium(licenseKey: string) {
+  public async activatePremium(licenseKey: string): Promise<void> {
     if (licenseKey.trim() === '') return;
     this.fetching = true;
     const premium = await activatePremium(licenseKey)
       .then((response) => response.text())
       .then((body) => JSON.parse(body))
       .then(({ valid }) => valid)
-      .catch((_) => false);
+      .catch(() => false);
     this.fetching = false;
     this.errorDialog = !premium;
     this.setPremium(premium);
   }
 
-  public async openDialog(action: 'clear-data' | 'factory-default') {
+  public async openDialog(
+    action: 'clear-data' | 'factory-default'
+  ): Promise<void> {
     this.dialog_ = true;
     const response = confirm('Are you sure you want to continue?');
-    const _ = response
+    response
       ? await this.restoreFactoryDefault()
           .catch((_) => _)
-          .then((_) => {
+          .then(() => {
             if (action === 'factory-default') {
               this.restoreSettings();
               location.reload();
@@ -262,7 +263,7 @@ export default class Settings extends ExtendedVue {
     this.dialog_ = false;
   }
 
-  public mounted() {
+  public mounted(): void {
     this.dialog = true;
   }
 }

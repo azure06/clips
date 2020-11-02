@@ -15,7 +15,7 @@ export type Loading = {
 export interface NetworkState {
   thisUser?: UserDoc;
   users: UserDoc[];
-  rooms: Array<Room>;
+  rooms: Room[];
   loading: Loading;
 }
 

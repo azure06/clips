@@ -1,12 +1,12 @@
-import http from 'http';
-import io from 'socket.io';
-import fs from 'fs';
 import { State, Keep, Start, IDevice } from './types';
-import path from 'path';
+import io from 'socket.io';
 import fullName from 'fullname';
 import { Subject } from 'rxjs';
 import { MessageDoc } from '@/rxdb/message/model';
 import log from 'electron-log';
+import path from 'path';
+import fs from 'fs';
+import http from 'http';
 
 type MessageInfo = {
   sender: IDevice;
@@ -18,7 +18,7 @@ const DIR_DOWNLOAD = ((dir) => path.join(dir || '~', 'Downloads/'))(
 );
 
 function onConnectionStart(data: Start) {
-  const dir = process.env.HOME || process.env.USERPROFILE;
+  // const dir = process.env.HOME || process.env.USERPROFILE;
   // prettier-ignore
   const target = path.join(DIR_DOWNLOAD,data.fileName);
   fs.unlink(target, (err) => {
@@ -32,7 +32,7 @@ function onConnectionKeep(data: Keep) {
 }
 
 function initSocket(
-  authorize_: (args: IDevice) => Promise<Boolean>,
+  authorize_: (args: IDevice) => Promise<boolean>,
   httpServer: http.Server
 ) {
   const ioServer = io.listen(httpServer, { serveClient: false });
@@ -74,6 +74,7 @@ function initSocket(
 }
 
 //  https://stackoverflow.com/questions/9018888/socket-io-connect-from-one-server-to-another
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function listen(port: number, ip: string) {
   return new Promise<[http.Server, typeof initSocket, Promise<boolean>]>(
     (resolve_, reject_) => {

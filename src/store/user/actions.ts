@@ -1,9 +1,9 @@
+import { storeService } from '../../electron/services/electron-store';
 import { ActionTree } from 'vuex';
 import { UserState, User, RootState } from '@/store/types';
 import { from } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ipcRenderer } from 'electron';
-import { storeService } from '../../electron/services/electron-store';
 
 const actions: ActionTree<UserState, RootState> = {
   signIn: async ({ commit }) => {
@@ -21,7 +21,7 @@ const actions: ActionTree<UserState, RootState> = {
   signOut: async ({ commit }) => {
     from(ipcRenderer.invoke('sign-out'))
       .pipe(
-        tap((_) => {
+        tap(() => {
           storeService.removeUser();
           commit('setUser', undefined);
         })

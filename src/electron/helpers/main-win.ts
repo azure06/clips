@@ -1,8 +1,8 @@
+import { startAutoUpdater } from './auto-updater';
+import { storeService } from '../services/electron-store';
 import { BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import { storeService } from '../services/electron-store';
 import path from 'path';
-import { startAutoUpdater } from './auto-updater';
 
 declare const __static: string;
 
@@ -43,7 +43,7 @@ const flags = {
 
 let win: BrowserWindow | null = null;
 
-function create() {
+function create(): BrowserWindow {
   win = new BrowserWindow({ ...flags, ...storeFlags });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -63,7 +63,7 @@ function create() {
 }
 
 export const mainWindow = {
-  get instance() {
+  get instance(): BrowserWindow | null {
     return win;
   },
   create,

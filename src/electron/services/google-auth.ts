@@ -1,11 +1,11 @@
 import { BrowserWindow } from 'electron';
-import { EventEmitter } from 'events';
 import { OAuth2Client } from 'google-auth-library';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { google } from 'googleapis';
+import { Subject } from 'rxjs';
 import { stringify } from 'querystring';
 import * as url from 'url';
-import { Subject } from 'rxjs';
+import { EventEmitter } from 'events';
 
 /**
  * Tokens updated event
@@ -61,7 +61,7 @@ export class GoogleOAuth2Service extends EventEmitter {
    * Get google OAuth2 Client instance
    *
    */
-  public getOAuth2Client() {
+  public getOAuth2Client(): OAuth2Client {
     return this.oauth2Client;
   }
 
@@ -69,10 +69,12 @@ export class GoogleOAuth2Service extends EventEmitter {
    * Revoke all credentials
    *
    */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public revokeCredentials() {
     return this.oauth2Client.revokeCredentials();
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public credentialsAsObservable() {
     return this.credentialSubject.asObservable();
   }
@@ -83,7 +85,7 @@ export class GoogleOAuth2Service extends EventEmitter {
    *
    * @param {Credentials} tokens
    */
-  public setCredentials(tokens: Credentials) {
+  public setCredentials(tokens: Credentials): void {
     this.credentials = { ...this.credentials, ...tokens };
     this.oauth2Client.setCredentials(this.credentials);
     this.credentialSubject.next(this.credentials);
@@ -94,7 +96,9 @@ export class GoogleOAuth2Service extends EventEmitter {
    * @param {boolean} addSession
    * @returns {Promise<Credentials>}
    */
-  public async openAuthWindowAndSetCredentials(addSession?: boolean) {
+  public async openAuthWindowAndSetCredentials(
+    addSession?: boolean
+  ): Promise<void> {
     const authorizationCode = await this.getAuthorizationCode(!!addSession);
     const { tokens } = await this.oauth2Client.getToken(authorizationCode);
     this.setCredentials(tokens);
@@ -138,6 +142,7 @@ export class GoogleOAuth2Service extends EventEmitter {
       });
 
       function closeWin() {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore https://github.com/electron/electron/issues/21612
         browserWindow.removeAllListeners('closed');
         setImmediate(() => {

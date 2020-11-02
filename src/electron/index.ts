@@ -1,10 +1,8 @@
-import { BrowserWindow, ipcMain, ipcRenderer, screen } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import { clipboardService } from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
 import { GoogleDriveService } from './services/google-drive';
-import { tap } from 'rxjs/operators';
-import fs from 'fs';
 import { environment } from './environment';
 import { mainWindow } from './helpers/main-win';
 import { tray } from './helpers/tray';
@@ -17,6 +15,8 @@ import * as socketIoService from './services/socket.io/server';
 import './helpers/analytics';
 import { findPort, ip } from './services/socket.io/utils/network';
 import { IDevice } from './services/socket.io/types';
+import { tap } from 'rxjs/operators';
+import fs from 'fs';
 
 Sentry.init(environment.sentry);
 
@@ -27,7 +27,8 @@ Sentry.init(environment.sentry);
  *
  * @param mainWindow BrowserWindows
  */
-function subscribeToGoogle(mainWindow: BrowserWindow) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function subscribeToGoogle(mainWindow: BrowserWindow): void {
   const authService = new GoogleOAuth2Service(environment.googleOAuth2);
   const driveService = new GoogleDriveService(authService.getOAuth2Client());
   const credentials = storeService.getCredentials();
@@ -56,7 +57,7 @@ function subscribeToGoogle(mainWindow: BrowserWindow) {
   ipcMain.handle('sign-in', () => {
     return authService
       .openAuthWindowAndSetCredentials()
-      .then((_: any) => driveService.getUserInfo())
+      .then(() => driveService.getUserInfo())
       .catch(Sentry.captureException);
   });
 
@@ -82,10 +83,10 @@ function subscribeToGoogle(mainWindow: BrowserWindow) {
               if (token) driveService.setPageToken(token);
               return token;
             })
-            .catch((_) => '')
+            .catch(() => '')
   );
 
-  ipcMain.handle('list-files', (_) =>
+  ipcMain.handle('list-files', () =>
     driveService.listFiles().catch((error) => {
       Sentry.captureException(error);
       return { error };
@@ -99,28 +100,30 @@ function subscribeToGoogle(mainWindow: BrowserWindow) {
     })
   );
 
-  ipcMain.handle('upload-to-drive', (_, data: any[]) =>
-    driveService
-      .addFile(data)
-      .then((response) =>
-        response.status >= 200 && response.status < 400
-          ? {
-              status: response.status,
-              statusText: response.statusText,
-              data: response.data,
-            }
-          : (() => {
-              Sentry.captureException(response);
-              return {
+  ipcMain.handle(
+    'upload-to-drive',
+    (_, data: Array<{ [any: string]: unknown }>) =>
+      driveService
+        .addFile(data)
+        .then((response) =>
+          response.status >= 200 && response.status < 400
+            ? {
                 status: response.status,
                 statusText: response.statusText,
-              };
-            })()
-      )
-      .catch((error) => {
-        Sentry.captureException(error);
-        return error;
-      })
+                data: response.data,
+              }
+            : (() => {
+                Sentry.captureException(response);
+                return {
+                  status: response.status,
+                  statusText: response.statusText,
+                };
+              })()
+        )
+        .catch((error) => {
+          Sentry.captureException(error);
+          return error;
+        })
   );
 }
 
@@ -142,7 +145,7 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
   });
 
   ipcMain.handle('downloadJson', (event, path, clips) => {
-    return new Promise((resolve: any, reject: any) => {
+    return new Promise((resolve, reject) => {
       fs.writeFile(path, JSON.stringify(clips), function(err) {
         return err ? reject(err) : resolve(clips);
       });
@@ -150,7 +153,7 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
   });
 
   ipcMain.handle('uploadJson', (event, path) => {
-    return new Promise((resolve: any, reject: any) => {
+    return new Promise((resolve, reject) => {
       fs.readFile(path, 'utf-8', function(err, data) {
         return err
           ? reject(err)
@@ -167,37 +170,33 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
 }
 
 async function subscribeToSocketIo(mainWindow: BrowserWindow) {
-  ipcMain.handle('my-ip', (_) => ip.address());
+  ipcMain.handle('my-ip', () => ip.address());
   const authorize = (device: IDevice) => {
     return new Promise<boolean>((resolve) => {
       mainWindow.webContents.send('authorize', device);
       ipcMain.once(`authorize:${device.mac}`, (_, result) => resolve(result));
     });
   };
-  const initServer = async (event: any) => {
-    const ipaddress = ip.address();
-    const [httpServer, socketStream, close] = await socketIoService
-      .listen(await findPort(), ipaddress)
-      .catch(Promise.reject);
-    socketStream(authorize, httpServer).subscribe((data) => {
-      mainWindow.webContents.send('message', data);
-    });
-
-    ipcMain.handleOnce('close-server', () => {
-      httpServer.close((err) => {
-        console.warn('err', err);
-        return false;
-      });
-      return close;
-    });
-    return Promise.resolve(true);
+  const initServer = async () => {
+    return socketIoService
+      .listen(await findPort(), ip.address())
+      .then(([httpServer, socketStream, close]) => {
+        socketStream(authorize, httpServer).subscribe((data) => {
+          mainWindow.webContents.send('message', data);
+        });
+        ipcMain.handleOnce('close-server', () => {
+          httpServer.close();
+          return close;
+        });
+      })
+      .then(() => true);
   };
   ipcMain.handle('init-server', initServer);
 }
 
-export function onReady() {
+export function onReady(): void {
   const win = mainWindow.create();
-  const _ = tray.create(win);
+  tray.create(win);
 
   initEvents(win);
   initShortcuts(win);
@@ -209,8 +208,6 @@ export function onReady() {
   subscribeToSocketIo(win);
 }
 
-export function onActivate() {
-  const _ = mainWindow.instance
-    ? mainWindow.instance.show()
-    : mainWindow.create();
+export function onActivate(): void {
+  mainWindow.instance ? mainWindow.instance.show() : mainWindow.create();
 }

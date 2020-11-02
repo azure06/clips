@@ -1,6 +1,6 @@
-import ua from 'universal-analytics';
-import { storeService } from '../services/electron-store';
 import { environment } from './../environment';
+import { storeService } from '../services/electron-store';
+import ua from 'universal-analytics';
 
 const visitor = ua(environment.analytics.accountId, storeService.getUserId());
 
@@ -22,4 +22,5 @@ const trackEvent = (
     .send();
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (global as any).analytics = { trackEvent, visitor };

@@ -10,7 +10,10 @@ const mutations: MutationTree<SettingsState> = {
     Object.assign(state, mergeDeep(state, storedSettings));
     vuetify.theme.dark = state.appearance.theme.dark;
   },
-  changeSettings(state, { vuetify, payload }: { vuetify: Framework; payload: SettingsState }) {
+  changeSettings(
+    state,
+    { vuetify, payload }: { vuetify: Framework; payload: SettingsState }
+  ) {
     storeService.setAppSettings(payload);
     Object.assign(state, storeService.getAppSettings());
     vuetify.theme.dark = state.appearance.theme.dark;

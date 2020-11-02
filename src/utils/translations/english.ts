@@ -1,5 +1,3 @@
-import { Translation } from './types';
-
 export const en = {
   about: 'About',
   aboutClips: 'About Clips',

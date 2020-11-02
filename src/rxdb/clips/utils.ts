@@ -1,4 +1,4 @@
-import { ClipDoc, ClipRegExp } from './model';
+import { ClipRegExp } from './model';
 import { RxQuery } from 'rxdb';
 
 type FieldName =
@@ -16,12 +16,12 @@ type FieldName =
 const escape = (text: string) =>
   text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
-const likeSearch = (fieldName: FieldName, word: string) =>
+const likeSearch = (fieldName: FieldName, word: string): ClipRegExp =>
   ({
     [fieldName]: { $regex: new RegExp(`.*${escape(word)}.*`, 'is') },
   } as ClipRegExp);
 
-const advancedSearch = (fieldName: FieldName, words: string[]) => {
+const advancedSearch = (fieldName: FieldName, words: string[]): ClipRegExp => {
   const regex = words.reduce(
     (acc, word) => (acc += `(?=.*?(${escape(word)}))`),
     ''

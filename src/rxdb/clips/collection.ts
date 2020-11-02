@@ -1,4 +1,3 @@
-import { uuid } from 'uuidv4';
 import * as utils from './utils';
 import {
   ClipDoc,
@@ -7,6 +6,7 @@ import {
   ClipSearchConditions,
   schema,
 } from './model';
+import { uuid } from 'uuidv4';
 
 const clipsDocMethods: ClipsDocMethods = {
   scream(this: ClipDoc, what: string) {
@@ -30,6 +30,7 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
     sort,
   }: Partial<ClipSearchConditions>) {
     let query = this.find({ selector: { ...regex } });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { formats, ...rest } = filters || {};
     query = utils.query.applyFilter(query, Object.entries(rest));
     query = sort ? query.sort(sort) : query;
@@ -41,7 +42,7 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
   },
   /** Find items older then *Date* and not starred  */
   async findClipsLte(lte) {
-    let query = this.find()
+    const query = this.find()
       .where('updatedAt')
       .lte(lte)
       .where('category')

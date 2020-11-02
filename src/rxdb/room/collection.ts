@@ -1,11 +1,10 @@
-import { uuid } from 'uuidv4';
 import {
-  RoomCollection,
   RoomCollectionMethods,
   RoomDoc,
   RoomDocMethods,
   schema,
 } from './model';
+import { uuid } from 'uuidv4';
 
 const roomDocMethods: RoomDocMethods = {};
 

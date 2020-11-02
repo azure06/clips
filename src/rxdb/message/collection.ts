@@ -1,5 +1,3 @@
-import { skip } from 'rxjs/operators';
-import { uuid } from 'uuidv4';
 import {
   MessageDoc,
   MessageCollectionMethods,
@@ -8,6 +6,7 @@ import {
   MessageCollection,
   MessageStatus,
 } from './model';
+import { uuid } from 'uuidv4';
 
 const messageDocMethods: MessageDocMethods = {
   scream(this: MessageDoc, what: string) {

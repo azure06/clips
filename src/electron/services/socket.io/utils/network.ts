@@ -9,7 +9,7 @@ export const PortRange = {
 /**
  * Find an available port in the following 3000 ~ 3010
  */
-export function findPort() {
+export function findPort(): Promise<number> {
   return getPort({ port: getPort.makeRange(PortRange.From, PortRange.To) });
 }
 

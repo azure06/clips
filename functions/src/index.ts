@@ -16,6 +16,7 @@ sendGrid.setApiKey(functions.config().sendgrid.apikey);
 admin.initializeApp();
 
 export const sendContactMail = functions.https.onCall(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async (data: any, context) => {
     const { fullName, email, content, to } = data;
     const msgbody = {
@@ -33,6 +34,7 @@ export const sendContactMail = functions.https.onCall(
 );
 
 export const activatePremium = functions.https.onRequest((req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   corsHandler(req as any, res as any, async () => {
     const { licenseKey } = req.query;
     return res.send({ valid: licenseKey === 'CLIPS_PREMIUM' });
@@ -40,6 +42,7 @@ export const activatePremium = functions.https.onRequest((req, res) => {
 });
 
 exports.activateByEmail = functions.https.onRequest((req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   corsHandler(req as any, res as any, async () => {
     const { email } = req.query;
     // Push the new message into the Realtime Database using the Firebase Admin SDK.
@@ -110,7 +113,7 @@ exports.sendEmail = functions.https.onRequest((req, res) => {
     return sendGrid
       .send(msgbody)
       .then(([requestResponse]) => res.send(requestResponse.toJSON()))
-      .catch((error) => {
+      .catch(() => {
         res.status(500).send('Something went wrong...');
       });
   });

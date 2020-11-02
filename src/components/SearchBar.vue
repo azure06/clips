@@ -179,7 +179,7 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 
 @Component
 export default class SearchBar extends Vue {
@@ -194,7 +194,7 @@ export default class SearchBar extends Vue {
   @Prop()
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
   @Prop({ required: true })
-  public translations!: any;
+  public translations!: unknown;
 }
 </script>
 

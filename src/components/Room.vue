@@ -191,11 +191,10 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
-import { language } from '@/utils/language';
-import { SettingsState } from '@/store/types';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 import { Room as RoomType } from '@/store/types';
-import { fromEvent } from 'rxjs';
+
+import { fromEvent, Observable } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -258,7 +257,7 @@ type RoomEx = Omit<RoomType, 'messages'> & {
         immediate: true,
       }).pipe(
         filter(({ newValue }) => newValue > 0),
-        tap((count) => {
+        tap(() => {
           // Set messages status to read
           this.$emit('message-read', {
             roomId: this.room.id,
@@ -281,7 +280,7 @@ export default class Room extends Vue {
   @Prop({ default: 0 })
   public unreadCount!: number;
 
-  public get toolbarHeight() {
+  public get toolbarHeight(): number {
     const offset = ((): number => {
       // Not clear why the textarea behave like this
       switch (this.textareaRows) {
@@ -298,7 +297,7 @@ export default class Room extends Vue {
     return 57 + offset;
   }
 
-  public get containerStyle() {
+  public get containerStyle(): string {
     const headerHeight = this.$vuetify.breakpoint.mdAndDown ? 56 : 64;
     const progressbarHeight = this.sendingMessage ? 4 : 0;
     return `height: calc(100vh - ${this.toolbarHeight +
@@ -306,21 +305,20 @@ export default class Room extends Vue {
       progressbarHeight}px); overflow: auto;`;
   }
 
-  public get textareaRows() {
+  public get textareaRows(): number {
     const rows = this.draft.split('\n').length;
     return rows >= 1 && rows <= 3 ? rows : rows > 3 ? 3 : 1;
   }
 
-  public infiniteScroll() {
+  public infiniteScroll(): Observable<boolean> {
     return fromEvent(
       this.$el.querySelector('#scroll-target') as Element,
       'scroll'
     ).pipe(
       map((event) => {
+        const target = event.target as Element;
         return (
-          (event.target! as Element).scrollTop === 0 &&
-          (event.target! as Element).clientHeight <
-            (event.target! as Element).scrollHeight
+          target.scrollTop === 0 && target.clientHeight < target.scrollHeight
         );
       }),
       distinctUntilChanged(),
@@ -329,20 +327,19 @@ export default class Room extends Vue {
     );
   }
 
-  public scrollToEnd(options?: { force: boolean }) {
+  public scrollToEnd(options?: { force: boolean }): void {
     this.$nextTick(() => {
       const target = this.$el.querySelector('#scroll-target') as Element;
       const scrollY = target.scrollTop;
       const visiblePortion = target.clientHeight;
       const pageHeight = target.scrollHeight;
-      (window as any).target = target;
       if (options?.force || visiblePortion + scrollY >= pageHeight - 200) {
         target.scrollTop = pageHeight;
       }
     });
   }
 
-  public mounted() {
+  public mounted(): void {
     this.$subscribeTo(this.infiniteScroll(), () => {
       this.$emit('load-messages', this.room.id, {
         skip: this.room.messages.length,

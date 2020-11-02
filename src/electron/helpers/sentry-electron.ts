@@ -1,12 +1,12 @@
+import { storeService } from '../services/electron-store';
 import { init } from '@sentry/electron/dist/main';
 import * as Sentry from '@sentry/electron';
 import log from 'electron-log';
-import { storeService } from '../services/electron-store';
 
 // Use only with main.process
 export default {
   ...Sentry,
-  init: (value: Sentry.ElectronOptions) => {
+  init: (value: Sentry.ElectronOptions): void => {
     init(value);
     Sentry.configureScope(function(scope) {
       const user = storeService.getUser();
@@ -17,7 +17,7 @@ export default {
       });
     });
   },
-  captureException(error: any) {
+  captureException(error: unknown): void {
     const id = Sentry.captureException(error);
     log.error({ [id]: error });
   },

@@ -6,15 +6,15 @@ import { MessageDoc } from '@/rxdb/message/model';
 import { IDevice } from '@/electron/services/socket.io/types';
 
 const mainWindow = electron.remote.getCurrentWindow();
-const resizeSubject = new Subject<any>();
-const moveSubject = new Subject<any>();
+const resizeSubject = new Subject<unknown>();
+const moveSubject = new Subject<unknown>();
 const clipSubject = new Subject<ClipDoc>();
 const navigateSubject = new Subject<{ name: string }>();
 const messageSubject = new Subject<{ sender: IDevice; message: MessageDoc }>();
 const authorizeSubject = new Subject<IDevice>();
 
-mainWindow.on('resize', (args: any) => resizeSubject.next(args));
-mainWindow.on('move', (args: any) => resizeSubject.next(args));
+mainWindow.on('resize', (args: unknown) => resizeSubject.next(args));
+mainWindow.on('move', (args: unknown) => resizeSubject.next(args));
 electron.ipcRenderer.on('navigate', (event, args: { name: string }) =>
   navigateSubject.next(args)
 );
@@ -35,4 +35,5 @@ export const onBoundsChange = merge(
   resizeSubject.asObservable()
 )
   .pipe(debounce(() => timer(1000)))
-  .pipe(map((args) => args.sender.getBounds() as Rectangle));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  .pipe(map((args) => (args as any).sender.getBounds() as Rectangle));

@@ -1,8 +1,8 @@
-import { Module } from 'vuex';
-import { ClipsState, RootState } from '@/store/types';
 import getters from './getters';
 import actions from './actions';
 import mutations from './mutations';
+import { ClipsState, RootState } from '@/store/types';
+import { Module } from 'vuex';
 import { storeService } from '@/electron/services/electron-store';
 
 const state: ClipsState = {

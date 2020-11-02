@@ -1,8 +1,8 @@
-import { Module } from 'vuex';
-import { RootState, NetworkState } from '@/store/types';
 import getters from './getters';
 import actions from './actions';
 import mutations from './mutations';
+import { RootState, NetworkState } from '@/store/types';
+import { Module } from 'vuex';
 
 const state: NetworkState = {
   users: [],

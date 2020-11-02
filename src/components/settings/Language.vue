@@ -100,14 +100,14 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 import { language } from '@/utils/language';
 import { SettingsState } from '@/store/types';
 
 @Component
 export default class Shortcuts extends Vue {
   @Prop({ required: true })
-  public translations!: any;
+  public translations!: unknown;
   @Prop({ required: true })
   public settings!: SettingsState;
   public keys = [
@@ -139,19 +139,19 @@ export default class Shortcuts extends Vue {
     'Z',
   ];
 
-  get isDarwin() {
+  get isDarwin(): boolean {
     return process.platform === 'darwin';
   }
 
-  get key1() {
+  get key1(): '⌘' | 'Ctrl' {
     return this.isDarwin ? '⌘' : 'Ctrl';
   }
 
-  get key2() {
+  get key2(): 'shift' | 'Alt' {
     return this.isDarwin ? 'shift' : 'Alt';
   }
 
-  get languages() {
+  get languages(): string[] {
     return Object.values(language);
   }
 }

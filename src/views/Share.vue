@@ -175,17 +175,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Mixins } from 'vue-property-decorator';
-import { Getter, Mutation, Action } from 'vuex-class';
-import { ipcRenderer } from 'electron';
+import { Component } from 'vue-property-decorator';
+import { Getter, Action } from 'vuex-class';
+import { Dictionary } from 'vue-router/types/router';
 import { ExtendedVue } from '@/utils/base-vue';
 import Room from '@/components/Room.vue';
 import { Room as RoomType } from '@/store/types';
-import { toDictionary } from '@/utils/object';
 import { UserDoc } from '@/rxdb/user/model';
 import { MessageDoc } from '@/rxdb/message/model';
-import { RoomDoc } from '@/rxdb/room/model';
-import { Dictionary } from 'vue-router/types/router';
 import { IDevice } from '@/electron/services/socket.io/types';
 import {
   catchError,
@@ -194,12 +191,13 @@ import {
   map,
   scan,
   share,
+  skipUntil,
+  skipWhile,
   startWith,
   tap,
-  throttle,
   withLatestFrom,
 } from 'rxjs/operators';
-import { BehaviorSubject, combineLatest, from, merge, of, Subject } from 'rxjs';
+import { combineLatest, defer, from, of, Subject } from 'rxjs';
 
 @Component<Share>({
   components: { Room },
@@ -214,18 +212,17 @@ import { BehaviorSubject, combineLatest, from, merge, of, Subject } from 'rxjs';
           ? from(
               (async () => {
                 // Load messages from start before the user enter in the room
-                const messages = await this.loadMessages({
+                await this.loadMessages({
                   roomId,
                   options: { skip: 0, limit: 15 },
                 });
                 // Initialize draft
-                this.onDraftChange.next({ roomId: roomId, draft: '' });
+                this.onDraftChange.next({ roomId, draft: '' });
                 return roomId;
               })()
             )
           : Promise.resolve('')
       ),
-      tap((value) => console.log('idStream')),
       share()
     );
     return {
@@ -241,7 +238,6 @@ import { BehaviorSubject, combineLatest, from, merge, of, Subject } from 'rxjs';
         })
       ).pipe(
         map(([roomId, { newValue }]) => newValue[roomId as string]),
-        tap((value) => console.log('roomStream')),
         share()
       ),
       // This reppresent the draft from the current open room
@@ -256,30 +252,39 @@ import { BehaviorSubject, combineLatest, from, merge, of, Subject } from 'rxjs';
         withLatestFrom(roomIdStream),
         map(([draft, roomId]) => (roomId ? draft[roomId] : '')),
         startWith(''),
-        tap((value) => console.log('draftStream')),
         share()
       ),
-      serverStatusStream: this.changeServerStatus
-        .asObservable()
-        .pipe(
-          throttle((action) => {
-            return from(
-              action === 'on'
-                ? this.initServer().then((result) => (result ? 'on' : 'off'))
-                : this.closeServer().then((result) => (result ? 'off' : 'on'))
-            ).pipe(
-              catchError((error) => {
-                return of(action);
-              })
-            );
-          })
-        )
-        .pipe(
-          tap((value) => console.warn("why I'm fired before throttle", value))
-        )
-        // Default should be ON in main.ts
-        .pipe(startWith('on'))
-        .pipe(share()),
+      serverStatusStream: ((skip = false) =>
+        this.changeServerStatus
+          .asObservable()
+          .pipe(skipWhile(() => skip))
+          .pipe(tap((value) => console.warn('INIT', value)))
+          .pipe(tap(() => (skip = true)))
+          .pipe(tap((value) => console.warn('AFTER INIT', value)))
+          .pipe(
+            concatMap((action) =>
+              from(
+                action === 'on'
+                  ? this.initServer()
+                      .then((result) => (result ? 'on' : 'off'))
+                      .then((value) => {
+                        console.warn('ON', value);
+                        return value;
+                      })
+                  : this.closeServer()
+                      .then((result) => (result ? 'off' : 'on'))
+                      .then((value) => {
+                        console.warn('OFF', value);
+                        return value;
+                      })
+              )
+            )
+          )
+          .pipe(tap(() => (skip = false)))
+          .pipe(tap((value) => console.warn('Emitting:', value)))
+          // Default should be ON in main.ts
+          .pipe(startWith('on'))
+          .pipe(share()))(),
     } as const;
   },
 })
@@ -322,7 +327,7 @@ export default class Share extends ExtendedVue {
   public findRoomFromUserOrCreate!: (user: UserDoc) => Promise<RoomType>;
   @Action('setMessagesToRead', { namespace: 'network' })
   public setMessagesToRead!: (
-    roomId: String,
+    roomId: string,
     senderId: string
   ) => Promise<MessageDoc[]>;
   @Action('sendMessage', { namespace: 'network' })
@@ -343,7 +348,7 @@ export default class Share extends ExtendedVue {
   public onDraftChange = new Subject<{ roomId: string; draft: string }>();
   public changeServerStatus = new Subject<'on' | 'off'>();
 
-  public async openRoom(user: UserDoc) {
+  public async openRoom(user: UserDoc): Promise<void> {
     const room = await this.findRoomFromUserOrCreate(user);
     // Mode to room
     this.$router.push({
@@ -352,14 +357,17 @@ export default class Share extends ExtendedVue {
     });
   }
 
-  public onKeyDown(room: RoomType, draft: string, event: KeyboardEvent) {
+  public onKeyDown(room: RoomType, draft: string, event: KeyboardEvent): void {
     if (event.code === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.onSendMessage(room, draft);
     }
   }
 
-  public async onResendMessage(room: RoomType, message: MessageDoc) {
+  public async onResendMessage(
+    room: RoomType,
+    message: MessageDoc
+  ): Promise<void> {
     const receiver = await this.findUser(room.userIds[0]);
     if (!receiver) return; // TODO Handle receiver absent exception
     this.sendMessage({
@@ -375,7 +383,7 @@ export default class Share extends ExtendedVue {
     });
   }
 
-  public async onSendMessage(room: RoomType, message: string) {
+  public async onSendMessage(room: RoomType, message: string): Promise<void> {
     const receiver = await this.findUser(room.userIds[0]);
     if (!receiver || message.trim() === '') return; // TODO Handle receiver absent exception
     this.onDraftChange.next({ roomId: room.id, draft: '' }); // Remove message
@@ -397,8 +405,9 @@ export default class Share extends ExtendedVue {
     });
   }
 
-  public async created() {
+  public async created(): Promise<void> {
     Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this as any).serverStatusStream === 'off'
         ? Promise.resolve([])
         : this.loadRooms(),

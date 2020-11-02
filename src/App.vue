@@ -31,14 +31,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Mixins } from 'vue-property-decorator';
+import { UserDoc } from './rxdb/user/model';
+import { UserUpsert } from './store/network/actions';
+import { Component, Vue } from 'vue-property-decorator';
 import NavDrawer from '@/components/NavDrawer.vue';
 import { onAuthorize } from '@/subscriptions';
 import { ipcRenderer } from 'electron';
 import { Action } from 'vuex-class';
-import { IDevice } from 'local-devices';
-import { UserDoc } from './rxdb/user/model';
-import { UserUpsert } from './store/network/actions';
 
 @Component({ components: { NavDrawer } })
 export default class App extends Vue {
@@ -47,9 +46,10 @@ export default class App extends Vue {
 
   public dialog = false;
   public dialogText = 'Accept the invitation from';
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public resolve: (args: 'close' | 'once' | 'always') => void = () => {};
 
-  get dragActive() {
+  get dragActive(): boolean {
     switch (this.$route.name) {
       case 'general-settings':
         return false;
@@ -62,7 +62,7 @@ export default class App extends Vue {
     }
   }
 
-  public created() {
+  public created(): void {
     // Authorize
     this.$subscribeTo(onAuthorize, async (device) => {
       const user = await this.upsertUser({ device });

@@ -1,6 +1,5 @@
 import { GetterTree } from 'vuex';
 import { ClipsState, RootState } from '@/store/types';
-import { storeService } from '@/electron/services/electron-store';
 
 const getters: GetterTree<ClipsState, RootState> = {
   loading: (state: ClipsState) => {

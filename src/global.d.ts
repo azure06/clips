@@ -5,19 +5,22 @@ import { Observable } from 'rxjs';
 declare module 'vue/types/vue' {
   interface Vue {
     $observables: Observables;
-    $watchAsObservable(expr: string, options?: WatchOptions): Observable<WatchObservable<any>>;
+    $watchAsObservable<T>(
+      expr: string,
+      options?: WatchOptions
+    ): Observable<WatchObservable<T>>;
     $watchAsObservable<T>(
       fn: (this: this) => T,
       options?: WatchOptions
     ): Observable<WatchObservable<T>>;
-    $eventToObservable(event: string): Observable<{ name: string; msg: any }>;
+    $eventToObservable<T>(event: string): Observable<{ name: string; msg: T }>;
     $subscribeTo<T>(
       observable: Observable<T>,
       next: (t: T) => void,
-      error?: (e: any) => void,
+      error?: (e: Error) => void,
       complete?: () => void
     ): void;
     $fromDOMEvent(selector: string | null, event: string): Observable<Event>;
-    $createObservableMethod(methodName: string): Observable<any>;
+    $createObservableMethod<T>(methodName: string): Observable<T>;
   }
 }

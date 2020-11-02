@@ -15,11 +15,16 @@ const mutations: MutationTree<ClipsState> = {
   /**
    *  @param silently if silently is set to true the clip will be not positioned at the top
    */
-  modifyClip: (state, data: { clip: Clip; options?: { silently?: boolean } }) => {
+  modifyClip: (
+    state,
+    data: { clip: Clip; options?: { silently?: boolean } }
+  ) => {
     const silently = data.options ? !!data.options.silently : false;
     state.clips = silently
       ? (() => {
-          const index = state.clips.findIndex((clip) => clip.id === data.clip.id);
+          const index = state.clips.findIndex(
+            (clip) => clip.id === data.clip.id
+          );
           if (index !== -1) state.clips[index] = data.clip;
           return [...state.clips];
         })()

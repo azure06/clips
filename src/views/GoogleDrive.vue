@@ -44,7 +44,13 @@
               </div>
             </v-expansion-panel-header>
             <v-expansion-panel-content color="surfaceVariant">
-              <v-list subheader rounded width="100%" dense color="surfaceVariant">
+              <v-list
+                subheader
+                rounded
+                width="100%"
+                dense
+                color="surfaceVariant"
+              >
                 <v-subheader inset>Files</v-subheader>
                 <v-divider inset></v-divider>
                 <v-list-item
@@ -146,25 +152,24 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Mixins } from 'vue-property-decorator';
-import Observable, { fromEvent, Subject, merge } from 'rxjs';
+import { Component } from 'vue-property-decorator';
 import { Clip, User } from '@/store/types';
-import { Getter, Mutation, Action } from 'vuex-class';
+import { Getter, Action } from 'vuex-class';
 import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
 import moment from 'moment';
-import { GaxiosResponse, GaxiosError } from 'gaxios';
+import { GaxiosError } from 'gaxios';
 import { ExtendedVue } from '@/utils/base-vue';
 import { storeService } from '@/electron/services/electron-store';
 
 type SchemaChange = { [token: string]: drive_v3.Schema$Change[] };
 type AurthError = {
   code: number;
-  config: any;
-  errors: any[];
-  response: any;
+  config: unknown;
+  errors: unknown[];
+  response: unknown;
 };
-type GaxiosErrorEx = { error: GaxiosError | AurthError | any };
+type GaxiosErrorEx = { error: GaxiosError | AurthError | unknown };
 
 @Component
 export default class GoogleDrive extends ExtendedVue {
@@ -180,10 +185,10 @@ export default class GoogleDrive extends ExtendedVue {
   public errorMsg = '';
   public loading = false;
   public fetching = false;
-  public inputToken: string = '';
+  public inputToken = '';
   public storedToken = '';
 
-  public get moment() {
+  public get moment(): typeof moment {
     return moment;
   }
 
@@ -193,13 +198,13 @@ export default class GoogleDrive extends ExtendedVue {
     return 'error' in response;
   }
 
-  public async resetPageToken() {
+  public async resetPageToken(): Promise<void> {
     const pageToken = await ipcRenderer.invoke('change-page-token');
     storeService.setPageToken(pageToken);
     this.retrieveData();
   }
 
-  public async updatePageToken(token: string) {
+  public async updatePageToken(token: string): Promise<void> {
     if (token && Number.isInteger(+token)) {
       this.retrieveData(token);
     } else {
@@ -208,7 +213,7 @@ export default class GoogleDrive extends ExtendedVue {
     }
   }
 
-  public async retrieveFile(change: drive_v3.Schema$Change) {
+  public async retrieveFile(change: drive_v3.Schema$Change): Promise<void> {
     // FIXME move to action?
     this.fetching = true;
     const response = await ipcRenderer.invoke('retrieve-file', change.fileId);
@@ -220,7 +225,7 @@ export default class GoogleDrive extends ExtendedVue {
     }
   }
 
-  public async retrieveData(token?: string) {
+  public async retrieveData(token?: string): Promise<void> {
     this.loading = true;
     if (token) {
       const newToken = await ipcRenderer.invoke('change-page-token', token);
@@ -242,18 +247,19 @@ export default class GoogleDrive extends ExtendedVue {
               new Date(a.time || '').getTime()
           ),
         ])
-        .filter(([_, changes]) => changes.length > 0) as [
-        string,
-        drive_v3.Schema$Change[]
-      ][];
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .filter(([_, changes]) => changes.length > 0) as Array<
+        [string, drive_v3.Schema$Change[]]
+      >;
     } else {
       this.errorHandler(response);
     }
   }
 
-  public errorHandler(gaxiosError: GaxiosErrorEx) {
+  public errorHandler(gaxiosError: GaxiosErrorEx): void {
     this.errorMsg = (() => {
-      switch (gaxiosError.error.code) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      switch ((gaxiosError.error as any).code) {
         case 401:
           return this.$translations.invalidCredentials;
         case 402:
@@ -267,8 +273,8 @@ export default class GoogleDrive extends ExtendedVue {
     this.snackbar = true;
   }
 
-  public async mounted() {
-    return this.retrieveData();
+  public async mounted(): Promise<void> {
+    this.retrieveData();
   }
 }
 </script>

@@ -1,6 +1,6 @@
 // eslint-disable-next-line object-curly-newline
 import findLocalDevices from 'local-devices';
-import { RxCollection, RxDatabase, RxDocument, RxJsonSchema } from 'rxdb';
+import { RxCollection, RxDocument, RxJsonSchema } from 'rxdb';
 
 export interface UserDatabaseCollection {
   user: UserCollection;
@@ -16,6 +16,7 @@ export interface UserDoc {
   createdAt: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type UserDocMethods = {};
 
 export type UserCollectionMethods = {

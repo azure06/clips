@@ -8,31 +8,32 @@
       <div class="text-center">Version: 0.1.0</div>
       <div class="text-center">Commit: {{ rootState.commit }}</div>
       <div class="text-center">Total items: {{ itemsCount }}</div>
-      <div class="text-center">Date: {{ moment(rootState.date).format('MMMM DD, YYYY') }}</div>
+      <div class="text-center">
+        Date: {{ moment(rootState.date).format('MMMM DD, YYYY') }}
+      </div>
     </v-card-text>
   </v-card>
 </template>
 
 <script lang="ts">
-// @ is an alias to /src
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
 import moment from 'moment';
+import { Component, Vue } from 'vue-property-decorator';
 import { Action, Getter } from 'vuex-class';
 
 @Component
 export default class About extends Vue {
   @Getter('rootState')
-  public rootState!: any;
+  public rootState!: unknown;
   @Action('countClips', { namespace: 'clips' })
   public countClips!: () => Promise<number>;
 
-  public itemsCount: number = 0;
+  public itemsCount = 0;
 
-  public get moment() {
+  public get moment(): typeof moment {
     return moment;
   }
 
-  public async created() {
+  public async created(): Promise<void> {
     this.itemsCount = await this.countClips();
   }
 }

@@ -1,7 +1,7 @@
+import { ClipDoc } from '../../rxdb/clips/model';
 import { clipboard, nativeImage, NativeImage } from 'electron';
 import { interval } from 'rxjs';
 import { map, scan, filter } from 'rxjs/operators';
-import { ClipDoc } from '../../rxdb/clips/model';
 import { checkSize } from '@/utils/clipsize';
 
 interface Clipboard {
@@ -11,12 +11,6 @@ interface Clipboard {
   image: NativeImage;
   buffer: Buffer;
   formats: string[];
-}
-
-enum Types {
-  PlainText = 'text/plain',
-  HtmlText = 'text/html',
-  Image = 'image/png',
 }
 
 const clipboardAsObservable = interval(1000).pipe(
@@ -36,8 +30,12 @@ const clipboardAsObservable = interval(1000).pipe(
     {} as Partial<{ previous: Clipboard; current: Clipboard }>
   ),
   map(({ previous, current }): Omit<ClipDoc, 'id'> | undefined => {
-    const isText = current ? !!current.formats.find((format) => format.includes('text')) : false;
-    const isImage = current ? !!current.formats.find((format) => format.includes('image')) : false;
+    const isText = current
+      ? !!current.formats.find((format) => format.includes('text'))
+      : false;
+    const isImage = current
+      ? !!current.formats.find((format) => format.includes('image'))
+      : false;
     const isBoth = isImage && isText;
     const imageEq = (current: Clipboard, previous: Clipboard) =>
       current.image.getBitmap().equals(previous.buffer);
@@ -60,7 +58,9 @@ const clipboardAsObservable = interval(1000).pipe(
       }
 
       const fromDataURL = (value: string) =>
-        current.image.isEmpty() || /^data:image\/.*;base64,$/gi.test(value) || !checkSize(value)
+        current.image.isEmpty() ||
+        /^data:image\/.*;base64,$/gi.test(value) ||
+        !checkSize(value)
           ? ''
           : value;
 
@@ -80,7 +80,7 @@ const clipboardAsObservable = interval(1000).pipe(
   filter((value) => !!value)
 );
 
-const copyToClipboard = (type: 'text' | 'image', content: string) => {
+const copyToClipboard = (type: 'text' | 'image', content: string): void => {
   type === 'image'
     ? clipboard.writeImage(nativeImage.createFromDataURL(content))
     : clipboard.writeText(content);

@@ -1,19 +1,15 @@
 // https://stackoverflow.com/questions/56415826/is-it-possible-to-precisely-type-invert-in-typescript
-type AllValues<T extends Record<PropertyKey, PropertyKey>> = {
-  [P in keyof T]: { key: P; value: T[P] };
-}[keyof T];
+// type AllValues<T extends Record<PropertyKey, PropertyKey>> = {
+//   [P in keyof T]: { key: P; value: T[P] };
+// }[keyof T];
 
-type InvertResult<T extends Record<PropertyKey, PropertyKey>> = {
-  [P in AllValues<T>['value']]: Extract<AllValues<T>, { value: P }>['key'];
-};
-
-type Tuple<T extends Record<PropertyKey, PropertyKey>> = {
-  [P in keyof T]: [string, T[P]];
-}[keyof T];
+// type InvertResult<T extends Record<PropertyKey, PropertyKey>> = {
+//   [P in AllValues<T>['value']]: Extract<AllValues<T>, { value: P }>['key'];
+// };
 
 type Dictionary<T> = { [id: string]: T };
 
-export function isObject(item: any) {
+export function isObject(item: unknown): boolean {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
@@ -35,14 +31,8 @@ export function mergeDeep<T>(target: T, source: T): T {
   );
 }
 
-export function pair<T1 extends Record<PropertyKey, PropertyKey>>(
-  obj: T1
-): Tuple<T1> {
-  return Object.entries(obj) as any;
-}
-
 type StrPropOnly<T> = {
-  [K in keyof T]: T[K] extends String ? K : never;
+  [K in keyof T]: T[K] extends string ? K : never;
 }[keyof T];
 
 export function toDictionary<T extends { id: string }>(
@@ -60,7 +50,7 @@ export function toDictionary<T>(
     if (key !== undefined) {
       acc['' + value[key]] = value;
     } else if ('id' in value) {
-      // TODO(Avoid as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       acc[(value as any).id] = value;
     }
     return acc;

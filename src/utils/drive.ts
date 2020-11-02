@@ -8,11 +8,11 @@ type Successful<T> = {
 type Unsuccessful<T> = Omit<Successful<T>, 'data'>;
 
 export function isDriveResponse<T>(
-  driveResponse: any
+  driveResponse: unknown
 ): driveResponse is DriveResponse<T> {
   return (
-    !!driveResponse &&
     typeof driveResponse === 'object' &&
+    !!driveResponse &&
     'status' in driveResponse
   );
 }

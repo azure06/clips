@@ -1,3 +1,11 @@
+import { ClipsCollection, ClipsDatabaseCollection } from './clips/model';
+import * as clips from './clips/collection';
+import * as room from './room/collection';
+import * as message from './message/collection';
+import * as user from './user/collection';
+import { RoomCollection, RoomDatabaseCollection } from './room/model';
+import { MessageCollection, MessageDatabaseCollection } from './message/model';
+import { UserCollection, UserDatabaseCollection } from './user/model';
 import {
   createRxDatabase,
   removeRxDatabase,
@@ -9,17 +17,10 @@ import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
-import { ClipsCollection, ClipsDatabaseCollection } from './clips/model';
-import * as clips from './clips/collection';
-import * as room from './room/collection';
-import * as message from './message/collection';
-import * as user from './user/collection';
 import { from, Observable } from 'rxjs';
-import { map, take, tap } from 'rxjs/operators';
-import { RoomCollection, RoomDatabaseCollection } from './room/model';
-import { MessageCollection, MessageDatabaseCollection } from './message/model';
-import { UserCollection, UserDatabaseCollection } from './user/model';
+import { map } from 'rxjs/operators';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 addRxPlugin(require('pouchdb-adapter-idb')); // addRxPlugin(require('pouchdb-adapter-indexeddb'));
 addRxPlugin(RxDBValidatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -52,17 +53,17 @@ async function createRxDB() {
     clipsRxDB.collection(user.collection),
   ]);
 
-  (window as any).rxdb = clipsRxDB;
   return clipsRxDB;
 }
 
 // Initialize instance
 let clipsRxDB = from(createRxDB());
-(window as any).rxdb = clipsRxDB;
 
-export const createClipsRxDB = () => (clipsRxDB = from(createRxDB()));
+export const createClipsRxDB = (): Observable<RxDatabase<RxCollections>> =>
+  (clipsRxDB = from(createRxDB()));
 
-export const removeClipsRxDB = () => from(removeRxDatabase('clips', 'idb'));
+export const removeClipsRxDB = (): Observable<{ ok: boolean }> =>
+  from(removeRxDatabase('clips', 'idb'));
 
 export function getCollection<T extends 'clips' | 'room' | 'message' | 'user'>(
   collection: T
@@ -73,6 +74,7 @@ export function getCollection<T extends 'clips' | 'room' | 'message' | 'user'>(
   : T extends 'room'
   ? Observable<RxDatabase<RoomCollection>>
   : Observable<RxDatabase<MessageCollection>>;
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getCollection<T extends 'clips' | 'room' | 'message' | 'user'>(
   collection: T
 ) {

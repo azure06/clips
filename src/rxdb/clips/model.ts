@@ -1,5 +1,5 @@
 // eslint-disable-next-line object-curly-newline
-import { RxCollection, RxDatabase, RxDocument, RxJsonSchema } from 'rxdb';
+import { RxCollection, RxDocument, RxJsonSchema } from 'rxdb';
 
 export interface ClipsDatabaseCollection {
   clips: ClipsCollection;
@@ -61,6 +61,7 @@ export type ClipRegExp =
   | { readonly updatedAt: { $regex: RegExp } }
   | { readonly createdAt: { $regex: RegExp } };
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type ClipsDocMethods = {};
 
 export type ClipsCollectionMethods = {
@@ -78,7 +79,7 @@ export type ClipsCollectionMethods = {
   modifyClip(this: ClipsCollection, clip: ClipDoc): Promise<ClipDoc>;
   removeClips(this: ClipsCollection, clipsIds: string[]): Promise<ClipDoc[]>;
   removeAllClips(this: ClipsCollection): Promise<ClipDoc[]>;
-  restore(this: ClipsCollection): Promise<any>;
+  restore(this: ClipsCollection): Promise<unknown>;
 };
 
 export type ClipsCollection = RxCollection<

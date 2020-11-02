@@ -1,5 +1,4 @@
-// eslint-disable-next-line object-curly-newline
-import { RxCollection, RxDatabase, RxDocument, RxJsonSchema } from 'rxdb';
+import { RxCollection, RxDocument, RxJsonSchema } from 'rxdb';
 
 export interface MessageDatabaseCollection {
   message: MessageCollection;
@@ -22,6 +21,7 @@ export interface MessageDoc {
   createdAt: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type MessageDocMethods = {};
 
 export type MessageCollectionMethods = {

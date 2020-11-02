@@ -1,12 +1,13 @@
-import ioClient from 'socket.io-client';
-import fs from 'fs';
-import path from 'path';
-import findLocalDevices from 'local-devices';
-import { ReplaySubject } from 'rxjs';
-import { MessageDoc } from '@/rxdb/message/model';
 import { IDevice } from './types';
+import ioClient from 'socket.io-client';
+import findLocalDevices from 'local-devices';
+import { Observable, ReplaySubject } from 'rxjs';
+import { MessageDoc } from '@/rxdb/message/model';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import any from 'promise.any';
+import path from 'path';
+import fs from 'fs';
 any.shim();
 
 export function sendMessage(
@@ -40,7 +41,7 @@ export function sendMessage(
         });
       });
     });
-    socket.on('connect_error', function(err: any) {
+    socket.on('connect_error', function(err: unknown) {
       console.error('Something went wrong', err);
       socket.disconnect();
       reject(err);
@@ -49,13 +50,13 @@ export function sendMessage(
 }
 
 export function sendData(ip: string, port: number) {
-  return (targetPath: string) => {
+  return (targetPath: string): void => {
     console.log('Target', `http://${ip}:${port}`, targetPath);
     const socket = ioClient.connect(`http://${ip}:${port}`);
     socket.on('connect', () => {
       console.log(`Client connected with.. http://${ip}:${port}🔥`);
       const fileName = path.basename(targetPath);
-      var readStream = fs.createReadStream(targetPath);
+      const readStream = fs.createReadStream(targetPath);
       readStream.on('open', function() {
         socket.emit(
           'message',
@@ -63,6 +64,7 @@ export function sendData(ip: string, port: number) {
             fileName,
             status: 'start',
           },
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           () => {}
         );
       });
@@ -74,6 +76,7 @@ export function sendData(ip: string, port: number) {
             buffer: chunk as Buffer,
             status: 'keep',
           },
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           () => {}
         );
       });
@@ -84,6 +87,7 @@ export function sendData(ip: string, port: number) {
             fileName,
             status: 'end',
           },
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           () => {}
         );
       });
@@ -91,13 +95,13 @@ export function sendData(ip: string, port: number) {
         console.info('Something went wrong', err);
       });
     });
-    socket.on('connect_error', function(err: any) {
+    socket.on('connect_error', function(err: unknown) {
       console.info('Something went wrong', err);
     });
   };
 }
 
-export async function findDevice(ip: string) {
+export async function findDevice(ip: string): Promise<void | IDevice> {
   return findLocalDevices(ip)
     .then((device) =>
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(
@@ -105,6 +109,7 @@ export async function findDevice(ip: string) {
           new Promise<IDevice | undefined>((resolve, reject) => {
             const port = +`300${num}`;
             const socket = ioClient.connect(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               `http://${(device as any).ip}:${port}`,
               {
                 reconnection: false,
@@ -134,7 +139,7 @@ export async function findDevice(ip: string) {
  *
  * Ex. From 192.168.11.1 ~ 192.168.11.254
  */
-export function discoverDevices(ip: string) {
+export function discoverDevices(ip: string): Observable<IDevice> {
   const iDeviceReplay = new ReplaySubject<IDevice>();
   const [network1, network2, subnet] = ip.split('.').map((value) => +value);
   const ports = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];

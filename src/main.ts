@@ -5,18 +5,17 @@ import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
 import * as subscriptions from './subscriptions';
-import { mapActions, mapMutations, mapGetters } from 'vuex';
-import Sentry from '@/sentry-vue';
 import { environment } from './environment';
-import { interval, from } from 'rxjs';
-import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { Clip, Room, SettingsState } from './store/types';
 import './firebase';
-import VueDOMPurifyHTML from 'vue-dompurify-html';
 import { initAnalytics } from './analytics-vue';
 import { MessageDoc } from './rxdb/message/model';
 import { IDevice } from './electron/services/socket.io/types';
-import { ipcRenderer } from 'electron';
+import VueDOMPurifyHTML from 'vue-dompurify-html';
+import { concatMap, filter, map, tap } from 'rxjs/operators';
+import { interval, from } from 'rxjs';
+import Sentry from '@/sentry-vue';
+import { mapActions, mapMutations, mapGetters } from 'vuex';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -28,8 +27,9 @@ Vue.use(VueDOMPurifyHTML, {
   },
 });
 
-const _ = initAnalytics(router);
+initAnalytics(router);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const vm = new Vue({
   router,
   store,
@@ -122,7 +122,7 @@ const vm = new Vue({
           filter(() => !!this.user && this.settings.storage.optimize.every > 0)
         )
         .pipe(
-          concatMap((_) =>
+          concatMap(() =>
             from(
               this.removeClipsLte(
                 Date.now() - this.settings.storage.optimize.every
@@ -130,7 +130,8 @@ const vm = new Vue({
             )
           )
         ),
-      (value: Clip[]) => {}
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      () => {}
     );
 
     /**

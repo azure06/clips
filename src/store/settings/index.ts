@@ -1,8 +1,8 @@
-import { Module } from 'vuex';
-import { RootState, SettingsState } from '@/store/types';
 import getters from './getters';
 import actions from './actions';
 import mutations from './mutations';
+import { RootState, SettingsState } from '@/store/types';
+import { Module } from 'vuex';
 import { remote } from 'electron';
 
 const currentWindow = remote.getCurrentWindow();
@@ -43,7 +43,10 @@ const state: SettingsState = {
     startup: false,
     blur: false,
     language: 'Auto',
-    shortcut: remote.process.platform === 'darwin' ? ['⌘', 'shift', 'V'] : ['ctrl', 'alt', 'V'],
+    shortcut:
+      remote.process.platform === 'darwin'
+        ? ['⌘', 'shift', 'V']
+        : ['ctrl', 'alt', 'V'],
   },
 };
 

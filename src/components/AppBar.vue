@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 import moment from 'moment';
 
 @Component
@@ -35,11 +35,11 @@ export default class AppBar extends Vue {
   @Prop()
   public time!: number;
   @Prop({ required: true })
-  public translations!: any;
+  public translations!: unknown;
   @Prop()
   public count?: number;
 
-  public get moment() {
+  public get moment(): typeof moment {
     return moment;
   }
 }

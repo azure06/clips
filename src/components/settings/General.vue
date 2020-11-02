@@ -232,9 +232,8 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { ExtendedVue } from '@/utils/base-vue';
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
 import { SettingsState } from '../../store/types';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 import { replace } from '@/utils/string';
 
 @Component
@@ -242,9 +241,9 @@ export default class General extends Vue {
   @Prop({ required: true })
   public settings!: SettingsState;
   @Prop({ required: true })
-  public translations!: any;
+  public translations!: unknown;
 
-  public get replacer() {
+  public get replacer(): typeof replace {
     return replace;
   }
 }

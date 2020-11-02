@@ -6,15 +6,21 @@ const actions: ActionTree<SettingsState, RootState> = {
   async changeShortcut({ commit, state }, { vuetify, payload: shortcut }) {
     await ipcRenderer.invoke('change-shortcut', shortcut);
     commit('changeSettings', {
-      vuetify: vuetify,
-      payload: { ...state, system: { ...state.system, shortcut } } as SettingsState,
+      vuetify,
+      payload: {
+        ...state,
+        system: { ...state.system, shortcut },
+      } as SettingsState,
     });
   },
   async changeStartup({ commit, state }, { vuetify, payload: startup }) {
     await ipcRenderer.invoke('change-startup', startup);
     commit('changeSettings', {
-      vuetify: vuetify,
-      payload: { ...state, system: { ...state.system, startup } } as SettingsState,
+      vuetify,
+      payload: {
+        ...state,
+        system: { ...state.system, startup },
+      } as SettingsState,
     });
   },
 };

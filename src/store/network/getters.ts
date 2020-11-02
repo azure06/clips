@@ -9,6 +9,7 @@ const getters: GetterTree<NetworkState, RootState> = {
   userDictionary: (state: NetworkState) => toDictionary(state.users),
   roomDictionary: (state: NetworkState) => toDictionary(state.rooms),
   rooms: (state: NetworkState) => state.rooms,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unreadMessagesByUser: (state: NetworkState, getters: any) => {
     const unread = state.rooms.map((room) => ({
       id: room.userIds[0],
@@ -23,8 +24,10 @@ const getters: GetterTree<NetworkState, RootState> = {
     }));
     return toDictionary(unread);
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unreadMessagesTotal: (state: NetworkState, getters: any) =>
     Object.values(getters.unreadMessagesByUser).reduce(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (acc, value) => (value as any).size + acc,
       0
     ),

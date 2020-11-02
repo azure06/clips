@@ -155,16 +155,15 @@
 <script lang="ts">
 // @ is an alias to /src
 import { ExtendedVue } from '@/utils/base-vue';
-import { Component, Vue, Mixins } from 'vue-property-decorator';
+import { Component } from 'vue-property-decorator';
 import { Getter } from 'vuex-class';
-import { User } from '@/store/types';
 
 @Component
 export default class NavDrawer extends ExtendedVue {
   @Getter('loading', { namespace: 'clips' })
   public loading!: boolean;
   @Getter('user', { namespace: 'user' })
-  public user!: any;
+  public user!: unknown;
   public drawer = true;
 
   @Getter('unreadMessagesTotal', { namespace: 'network' })

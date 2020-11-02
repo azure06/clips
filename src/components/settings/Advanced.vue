@@ -219,18 +219,24 @@
 </template>
 
 <script lang="ts">
-// @ is an alias to /src
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
 import { SettingsState } from '../../store/types';
-import { of } from 'rxjs';
-import { shell } from 'electron';
+import { Component, Vue, Prop } from 'vue-property-decorator';
+import { Translation } from '@/utils/translations/types';
+
+type Cycle = {
+  oneHour: string;
+  twentyfourHours: string;
+  sevenDays: string;
+  fourWeeks: string;
+  never: string;
+};
 
 @Component
 export default class General extends Vue {
   @Prop({ required: true })
   public settings!: SettingsState;
   @Prop({ required: true })
-  public translations!: any;
+  public translations!: Translation;
   @Prop({ required: true })
   public premium!: boolean;
   @Prop({ required: true })
@@ -238,11 +244,11 @@ export default class General extends Vue {
   @Prop({ required: true })
   public licenseKey!: string;
 
-  public get hourInMillis() {
+  public get hourInMillis(): number {
     return 3600000;
   }
 
-  public get schedule() {
+  public get schedule(): string {
     const { every } = this.settings.storage.optimize;
     switch (every) {
       case 0:
@@ -260,7 +266,7 @@ export default class General extends Vue {
     }
   }
 
-  public toMillis(item: string) {
+  public toMillis(item: string): number {
     switch (item) {
       case this.cycle.never:
         return 0;
@@ -273,11 +279,11 @@ export default class General extends Vue {
       case this.cycle.fourWeeks:
         return this.hourInMillis * 24 * 7 * 4;
       default:
-        return this.cycle.never;
+        return 0;
     }
   }
 
-  public get cycle() {
+  public get cycle(): Cycle {
     return {
       oneHour: this.translations.oneHour,
       twentyfourHours: this.translations.twentyFourHours,

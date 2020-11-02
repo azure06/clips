@@ -11,7 +11,9 @@
 
           <v-row align="center" justify="center">
             <v-card-title class="pa-0 ma-0">
-              <div class="subtitle-1 font-weight-bold">{{ $translations.signInWithGoogle }}</div>
+              <div class="subtitle-1 font-weight-bold">
+                {{ $translations.signInWithGoogle }}
+              </div>
             </v-card-title>
           </v-row>
 
@@ -29,7 +31,12 @@
         </v-col>
       </v-row>
     </v-card>
-    <v-card v-if="!!user" class="mx-auto" min-width="460" color="surfaceVariant">
+    <v-card
+      v-if="!!user"
+      class="mx-auto"
+      min-width="460"
+      color="surfaceVariant"
+    >
       <v-row>
         <v-col cols="12">
           <v-row align="center" justify="center" class="pa-3">
@@ -40,7 +47,9 @@
 
           <v-row align="center" justify="center">
             <v-card-title class="pa-0 ma-0">
-              <div class="subtitle-1 font-weight-bold">{{ user.displayName }}</div>
+              <div class="subtitle-1 font-weight-bold">
+                {{ user.displayName }}
+              </div>
             </v-card-title>
           </v-row>
 
@@ -66,13 +75,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Mixins } from 'vue-property-decorator';
-import Observable, { fromEvent, Subject, merge } from 'rxjs';
-import { Clip, User } from '@/store/types';
-import { Getter, Mutation, Action } from 'vuex-class';
-import { ipcRenderer } from 'electron';
+import { Component } from 'vue-property-decorator';
+import { User } from '@/store/types';
+import { Getter, Action } from 'vuex-class';
 import { ExtendedVue } from '@/utils/base-vue';
-import { drive_v3 } from 'googleapis';
 
 @Component
 export default class Account extends ExtendedVue {

@@ -1,8 +1,8 @@
 'use strict';
 
-import { app, protocol, globalShortcut, BrowserWindow } from 'electron';
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import { onReady, onActivate } from './electron';
+import { app, protocol, globalShortcut } from 'electron';
+import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const appLocked = app.requestSingleInstanceLock();

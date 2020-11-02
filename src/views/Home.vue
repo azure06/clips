@@ -180,12 +180,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Mixins } from 'vue-property-decorator';
-import Observable, { fromEvent, Subject, merge } from 'rxjs';
+import { Component } from 'vue-property-decorator';
+import { fromEvent } from 'rxjs';
 import AppBar from '@/components/AppBar.vue';
 import SearchBar from '@/components/SearchBar.vue';
-import { Clip, SettingsState, User } from '@/store/types';
-import { Getter, Mutation, Action } from 'vuex-class';
+import { Clip, User } from '@/store/types';
+import { Getter, Action } from 'vuex-class';
 import { ClipSearchConditions, SearchFilters } from '@/rxdb/clips/model';
 import * as utils from '@/rxdb/clips/utils';
 import { ExtendedVue } from '@/utils/base-vue';
@@ -195,7 +195,6 @@ import {
   map,
   filter,
   concatMap,
-  delay,
   distinctUntilChanged,
   debounceTime,
   tap,
@@ -209,7 +208,7 @@ type ClipEx = Clip & { fromNow?: string; preview?: string };
   subscriptions() {
     return {
       clipsObserver: this.$watchAsObservable(() => this.clips).pipe(
-        tap(({ oldValue, newValue }: WatchObservable<ClipEx[]>) => {
+        tap(({ newValue }: WatchObservable<ClipEx[]>) => {
           const { displayType } = this;
           // TODO Consider to improve this implementation
           newValue.forEach((clip) => {
@@ -236,8 +235,8 @@ type ClipEx = Clip & { fromNow?: string; preview?: string };
             }
           });
         }),
-        map(({ oldValue, newValue }) => {
-          return newValue.map((clip, index) => ({
+        map(({ newValue }) => {
+          return newValue.map((clip) => ({
             ...clip,
             icon:
               clip.type === 'text' ? 'mdi-clipboard-text' : 'mdi-image-area',
@@ -314,17 +313,17 @@ export default class Home extends ExtendedVue {
   public snackbar = false;
   public snackbarText = '';
 
-  public get clipCount() {
+  public get clipCount(): number {
     return this.mode === 'select'
       ? Object.entries(this.removeTarget).length
       : this.clips.length;
   }
 
-  public async onClipHover(clip: ClipEx) {
+  public onClipHover(clip: ClipEx): void {
     this.dateTime = clip.updatedAt;
   }
 
-  public goNext(event: Event, id: string) {
+  public goNext(event: Event, id: string): void {
     event.stopPropagation();
     const target = this.displayType[id];
     this.displayType = {
@@ -339,7 +338,7 @@ export default class Home extends ExtendedVue {
     };
   }
 
-  public async onClipClick(clip: Clip) {
+  public onClipClick(clip: Clip): void {
     const target = this.displayType[clip.id];
     const type = target.availableTypes[target.index];
     this.copyToClipboard({
@@ -352,9 +351,9 @@ export default class Home extends ExtendedVue {
     }
   }
 
-  public async onStarClick(event: Event, clip: Clip) {
+  public async onStarClick(event: Event, clip: Clip): Promise<void> {
     event.stopPropagation();
-    const result = await this.modifyClip({
+    await this.modifyClip({
       clip: {
         ...clip,
         category: clip.category === 'starred' ? 'none' : 'starred',
@@ -363,7 +362,7 @@ export default class Home extends ExtendedVue {
     });
   }
 
-  public async onRemoveCLick(event: Event, clip: ClipEx, index: number) {
+  public async onRemoveCLick(event: Event, clip: ClipEx): Promise<void> {
     event.stopPropagation();
     this.removeTarget = {
       ...this.removeTarget,
@@ -371,22 +370,22 @@ export default class Home extends ExtendedVue {
     };
   }
 
-  public async onRemoveItems() {
+  public async onRemoveItems(): Promise<void> {
     const removeTarget = this.removeTarget;
     this.removeTarget = {};
     const ids = Object.entries(removeTarget).reduce(
       (acc, [key, value]) => (value ? [key, ...acc] : acc),
       [] as string[]
     );
-    const removed = await this.removeClips(ids);
+    await this.removeClips(ids);
     this.mode = 'normal';
   }
 
-  public onChangeMode(mode: 'normal' | 'select') {
+  public onChangeMode(mode: 'normal' | 'select'): void {
     this.mode = mode;
   }
 
-  public onChangeType(type?: 'text' | 'image') {
+  public onChangeType(type?: 'text' | 'image'): Promise<Clip[]> {
     this.searchConditions.filters = {
       ...this.searchConditions.filters,
       type,
@@ -394,7 +393,7 @@ export default class Home extends ExtendedVue {
     return this.loadClips(this.searchConditions);
   }
 
-  public onChangeCategory(category?: 'none' | 'starred') {
+  public onChangeCategory(category?: 'none' | 'starred'): Promise<Clip[]> {
     this.searchConditions.filters = {
       ...this.searchConditions.filters,
       category,
@@ -402,8 +401,9 @@ export default class Home extends ExtendedVue {
     return this.loadClips(this.searchConditions);
   }
 
+  // eslint-disable-next-line no-undef
   public timeout?: NodeJS.Timeout;
-  public search(value: string) {
+  public search(value: string): void {
     if (this.timeout) clearTimeout(this.timeout);
     this.timeout = setTimeout(async () => {
       const regex = (() => {
@@ -433,7 +433,7 @@ export default class Home extends ExtendedVue {
     }, 500);
   }
 
-  public async syncWithDrive() {
+  public async syncWithDrive(): Promise<void> {
     if (this.user) {
       const clips = await this.uploadToDrive();
       this.snackbarText =
@@ -449,12 +449,13 @@ export default class Home extends ExtendedVue {
     this.snackbar = true;
   }
 
-  public infiniteScroll() {
+  public infiniteScroll(): ReturnType<typeof fromEvent> {
     return fromEvent(this.$refs['scroll-target'] as Element, 'scroll').pipe(
       map((event) => {
-        const scrollY = (event.target! as Element).scrollTop;
-        const visiblePortion = (event.target! as Element).clientHeight;
-        const pageHeight = (event.target! as Element).scrollHeight;
+        const taregt = event?.target as Element; // TODO check for undefined
+        const scrollY = taregt.scrollTop;
+        const visiblePortion = taregt.clientHeight;
+        const pageHeight = taregt.scrollHeight;
         const isBottom = visiblePortion + scrollY >= pageHeight;
         return isBottom;
       }),
@@ -464,13 +465,13 @@ export default class Home extends ExtendedVue {
     );
   }
 
-  public async mounted() {
+  public async mounted(): Promise<void> {
     this.loadClips(this.searchConditions);
     this.$subscribeTo(
       this.infiniteScroll().pipe(
         concatMap(() => this.loadNext(this.searchConditions))
       ),
-      (value) => {
+      () => {
         // const target = this.$refs['scroll-target'] as Element;
         // if (value.length === 0) {
         //   const scrollTop = Math.floor(target.scrollTop * 0.9);
