@@ -81,9 +81,17 @@ export default class App extends Vue {
         switch (result) {
           case 'close':
             ipcRenderer.send(`authorize:${user.id}`, false);
+            await this.upsertUser({
+              ...user,
+              device: { ...user.device, username: user.username },
+            });
             break;
           case 'once':
             ipcRenderer.send(`authorize:${user.id}`, true);
+            await this.upsertUser({
+              ...user,
+              device: { ...user.device, username: user.username },
+            });
             break;
           case 'always':
             ipcRenderer.send(`authorize:${user.id}`, true);

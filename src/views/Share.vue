@@ -129,7 +129,11 @@
           flat
           :height="$vuetify.breakpoint.smAndDown ? 56 : 64"
         >
-          <v-card-text v-if="loading.user" class="ma-0 pa-3" @click="() => {}">
+          <v-card-text
+            v-if="loading.devices"
+            class="ma-0 pa-3"
+            @click="() => {}"
+          >
             <div class="overline text-center" style="user-select: none">
               SCANNING...
             </div>
@@ -140,8 +144,8 @@
         <v-btn
           class="overline"
           depressed
-          :loading="loading.user"
-          :disabled="loading.user || serverStatusStream === 'off'"
+          :loading="loading.devices"
+          :disabled="loading.devices || serverStatus === 'closed'"
           @click="discoverUsers"
           color="surfaceVariant"
         >
@@ -160,15 +164,42 @@
           class="ml-2"
           depressed
           color="surfaceVariant"
-          @click="
-            changeServerStatus.next(serverStatusStream === 'on' ? 'off' : 'on')
-          "
+          @click="handleServer(serverStatus === 'started' ? 'close' : 'start')"
         >
           <v-icon left>
             mdi-server-network
           </v-icon>
-          {{ serverStatusStream === 'on' ? 'off' : 'on' }}
+          {{ serverStatus === 'started' ? 'off' : 'on' }}
         </v-btn>
+
+        <!-- Help Dialog-->
+        <v-dialog v-model="showDialog" max-width="320">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on="on"
+              depressed
+              color="surfaceVariant"
+              @click="showDialog = !showDialog"
+            >
+              <v-icon left>
+                mdi-help-circle
+              </v-icon>
+              help
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title class="subtitle-1 overline">
+              <v-icon class="mx-2">mdi-share-variant</v-icon> Share Locally
+              (βeta)
+            </v-card-title>
+
+            <v-card-text>
+              Allows you to message or transfer video, music, files and apps
+              from one device to another in a local network.
+            </v-card-text>
+          </v-card>
+        </v-dialog>
       </v-toolbar>
     </div>
   </div>
@@ -185,19 +216,15 @@ import { UserDoc } from '@/rxdb/user/model';
 import { MessageDoc } from '@/rxdb/message/model';
 import { IDevice } from '@/electron/services/socket.io/types';
 import {
-  catchError,
   concatMap,
   distinctUntilChanged,
   map,
   scan,
   share,
-  skipUntil,
-  skipWhile,
   startWith,
-  tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import { combineLatest, defer, from, of, Subject } from 'rxjs';
+import { combineLatest, from, Subject } from 'rxjs';
 
 @Component<Share>({
   components: { Room },
@@ -254,41 +281,12 @@ import { combineLatest, defer, from, of, Subject } from 'rxjs';
         startWith(''),
         share()
       ),
-      serverStatusStream: ((skip = false) =>
-        this.changeServerStatus
-          .asObservable()
-          .pipe(skipWhile(() => skip))
-          .pipe(tap((value) => console.warn('INIT', value)))
-          .pipe(tap(() => (skip = true)))
-          .pipe(tap((value) => console.warn('AFTER INIT', value)))
-          .pipe(
-            concatMap((action) =>
-              from(
-                action === 'on'
-                  ? this.initServer()
-                      .then((result) => (result ? 'on' : 'off'))
-                      .then((value) => {
-                        console.warn('ON', value);
-                        return value;
-                      })
-                  : this.closeServer()
-                      .then((result) => (result ? 'off' : 'on'))
-                      .then((value) => {
-                        console.warn('OFF', value);
-                        return value;
-                      })
-              )
-            )
-          )
-          .pipe(tap(() => (skip = false)))
-          .pipe(tap((value) => console.warn('Emitting:', value)))
-          // Default should be ON in main.ts
-          .pipe(startWith('on'))
-          .pipe(share()))(),
     } as const;
   },
 })
 export default class Share extends ExtendedVue {
+  @Getter('serverStatus', { namespace: 'network' })
+  public serverStatus!: 'started' | 'closed';
   @Getter('loading', { namespace: 'network' })
   public loading!: { user: boolean; room: boolean; message: boolean };
 
@@ -339,14 +337,12 @@ export default class Share extends ExtendedVue {
       'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
     > & { senderId?: string };
   }) => Promise<MessageDoc>;
-  @Action('initServer', { namespace: 'network' })
-  public initServer!: () => Promise<boolean>;
-  @Action('closeServer', { namespace: 'network' })
-  public closeServer!: () => Promise<boolean>;
+  @Action('handleServer', { namespace: 'network' })
+  public handleServer!: (arg: 'start' | 'close') => Promise<boolean>;
 
   public onUserSelect = new Subject<string | undefined>();
   public onDraftChange = new Subject<{ roomId: string; draft: string }>();
-  public changeServerStatus = new Subject<'on' | 'off'>();
+  public showDialog = false;
 
   public async openRoom(user: UserDoc): Promise<void> {
     const room = await this.findRoomFromUserOrCreate(user);
@@ -407,11 +403,8 @@ export default class Share extends ExtendedVue {
 
   public async created(): Promise<void> {
     Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this as any).serverStatusStream === 'off'
-        ? Promise.resolve([])
-        : this.loadRooms(),
-      this.discoverUsers(),
+      this.serverStatus === 'closed' ? Promise.resolve() : this.discoverUsers(),
+      this.loadRooms(),
     ]);
   }
 }

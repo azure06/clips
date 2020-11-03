@@ -101,38 +101,6 @@ export function sendData(ip: string, port: number) {
   };
 }
 
-export async function findDevice(ip: string): Promise<void | IDevice> {
-  return findLocalDevices(ip)
-    .then((device) =>
-      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(
-        (num) =>
-          new Promise<IDevice | undefined>((resolve, reject) => {
-            const port = +`300${num}`;
-            const socket = ioClient.connect(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              `http://${(device as any).ip}:${port}`,
-              {
-                reconnection: false,
-              }
-            );
-            socket.on('connect_error', reject);
-            socket.on('connect', () => {
-              socket.emit('recognize', (username: string) => {
-                resolve({
-                  ...((device as unknown) as IDevice),
-                  username,
-                  port,
-                });
-                socket.disconnect();
-              });
-            });
-          })
-      )
-    )
-    .then((p) => Promise.any(p))
-    .catch((err) => console.error(err));
-}
-
 /**
  * Discover the available devices over the network
  * TODO: This implementation works only if subnetmask is 255.255.255.1
@@ -142,33 +110,44 @@ export async function findDevice(ip: string): Promise<void | IDevice> {
 export function discoverDevices(ip: string): Observable<IDevice> {
   const iDeviceReplay = new ReplaySubject<IDevice>();
   const [network1, network2, subnet] = ip.split('.').map((value) => +value);
-  const ports = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   // Find available devices
   findLocalDevices(
     `${network1}.${network2}.${subnet}.1-${network1}.${network2}.${subnet}.254`
   )
     .then((devices) =>
-      ports.flatMap((num) =>
-        devices.map((device) =>
-          new Promise<void>((resolve, reject) => {
-            const port = +`300${num}`;
-            const socket = ioClient.connect(`http://${device.ip}:${port}`, {
-              reconnection: false,
-            });
-            // If
-            socket.on('connect_error', reject);
-            socket.on('connect', () => {
-              socket.emit('recognize', (username: string) => {
-                iDeviceReplay.next({ ...device, username, port });
-                resolve();
-                socket.disconnect();
-              });
-            });
-          }).catch((error) => console.info('connect_error', error))
+      devices
+        .flatMap((device) =>
+          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({
+            ...device,
+            port: +`5615${n}`,
+          }))
         )
-      )
+        .map(
+          (device) =>
+            new Promise<void>((resolve) => {
+              const socket = ioClient.connect(
+                `http://${device.ip}:${device.port}`,
+                {
+                  reconnection: false,
+                  timeout: 1000,
+                }
+              );
+              socket.on('connect_error', (error: unknown) => {
+                console.info('connect_error', error);
+                resolve();
+              });
+              socket.on('connect', () => {
+                socket.emit('recognize', (username: string) => {
+                  iDeviceReplay.next({ ...device, username });
+                  socket.disconnect();
+                  resolve();
+                });
+              });
+            })
+        )
     )
     .then((devices) => Promise.all(devices))
     .finally(() => iDeviceReplay.complete());
+
   return iDeviceReplay.asObservable();
 }

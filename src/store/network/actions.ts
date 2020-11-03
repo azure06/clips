@@ -5,6 +5,7 @@ import {
   catchError,
   concatMap,
   map,
+  mapTo,
   switchMap,
   take,
   tap,
@@ -12,7 +13,6 @@ import {
 import { ipcRenderer } from 'electron';
 import {
   discoverDevices,
-  findDevice,
   sendMessage,
 } from '@/electron/services/socket.io/client';
 import * as Sentry from '@sentry/electron';
@@ -42,34 +42,25 @@ export function randomColor(): string {
 }
 
 const actions: ActionTree<NetworkState, RootState> = {
-  initServer: async () =>
+  handleServer: async ({ commit, dispatch }, action: 'start' | 'close') =>
     range(1, 1)
       .pipe(
         concatMap(() =>
-          from(
-            (async () => {
-              const ip = (await ipcRenderer.invoke('my-ip')) as string;
-              const device = await findDevice(ip);
-              const ready = device
-                ? !!device
-                : await ipcRenderer.invoke('init-server');
-              return ready;
-            })()
-          ).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of(false);
-            })
-          )
-        )
-      )
-      .pipe(take(1))
-      .toPromise(),
-  closeServer: async () =>
-    range(1, 1)
-      .pipe(
-        concatMap(() =>
-          from(ipcRenderer.invoke('close-server')).pipe(
+          from(ipcRenderer.invoke('handle-server', action)).pipe(
+            tap(async (device: IDevice | undefined) => {
+              commit(
+                'setServerStatus',
+                action === 'start' ? 'started' : 'closed'
+              );
+              // Set this user
+              if (device) {
+                const thisUser = await dispatch('upsertUser', {
+                  device,
+                });
+                commit('setThisUser', thisUser);
+              }
+            }),
+            mapTo(true),
             catchError((error) => {
               Sentry.captureException(error);
               return of(false);
@@ -83,34 +74,24 @@ const actions: ActionTree<NetworkState, RootState> = {
     new Promise((resolve) =>
       range(1, 1)
         .pipe(
-          tap(() => commit('setLoading', { user: true })),
+          tap(() => commit('setLoading', { devices: true })),
           concatMap(() =>
-            from(ipcRenderer.invoke('my-ip') as Promise<string>).pipe(
+            from(
+              ipcRenderer.invoke('my-device') as Promise<IDevice | undefined>
+            ).pipe(
               catchError((error) => {
                 Sentry.captureException(error);
                 return of<undefined>();
               })
             )
           ),
-          switchMap((ip) =>
-            ip
-              ? discoverDevices(ip).pipe(
+          switchMap((thisDevice) =>
+            thisDevice
+              ? discoverDevices(thisDevice.ip).pipe(
                   concatMap((device) =>
-                    from(
-                      dispatch('upsertUser', {
-                        device,
-                      } as UserUpsert) as Promise<UserDoc>
-                    ).pipe(
-                      catchError((error) => {
-                        Sentry.captureException(error);
-                        return of(undefined);
-                      }),
-                      tap((user) => {
-                        if (user && ip === device.ip) {
-                          commit('setThisUser', user);
-                        }
-                      })
-                    )
+                    dispatch('upsertUser', {
+                      device,
+                    })
                   ),
                   catchError((error) => {
                     Sentry.captureException(error);
@@ -122,7 +103,7 @@ const actions: ActionTree<NetworkState, RootState> = {
         )
         .subscribe({
           complete: () => {
-            commit('setLoading', { user: false });
+            commit('setLoading', { devices: false });
             resolve();
           },
         })

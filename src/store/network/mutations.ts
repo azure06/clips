@@ -14,6 +14,9 @@ type Loading = Partial<{
 }>;
 
 const mutations: MutationTree<NetworkState> = {
+  setServerStatus(state, status: 'started' | 'closed') {
+    Vue.set(state, 'status', status);
+  },
   setLoading(state, loading: Loading) {
     Vue.set(state, 'loading', { ...state.loading, ...loading });
   },

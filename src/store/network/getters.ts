@@ -3,23 +3,19 @@ import { RootState, NetworkState } from '@/store/types';
 import { toDictionary } from '@/utils/object';
 
 const getters: GetterTree<NetworkState, RootState> = {
+  serverStatus: (state: NetworkState) => state.status,
   loading: (state: NetworkState) => state.loading,
   thisUser: (state: NetworkState) => state.thisUser,
   users: (state: NetworkState) => state.users,
   userDictionary: (state: NetworkState) => toDictionary(state.users),
   roomDictionary: (state: NetworkState) => toDictionary(state.rooms),
   rooms: (state: NetworkState) => state.rooms,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unreadMessagesByUser: (state: NetworkState, getters: any) => {
+  unreadMessagesByUser: (state: NetworkState) => {
     const unread = state.rooms.map((room) => ({
       id: room.userIds[0],
-      size: (getters.thisUser
-        ? room.messages.filter(
-            (message) =>
-              message.senderId !== getters.thisUser.id &&
-              message.status === 'sent'
-          )
-        : []
+      size: room.messages.filter(
+        (message) =>
+          message.senderId === room.userIds[0] && message.status === 'sent'
       ).length,
     }));
     return toDictionary(unread);

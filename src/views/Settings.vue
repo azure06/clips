@@ -55,7 +55,7 @@
               <v-list-item-icon>
                 <v-badge v-if="!premium" color="cyan darken-2" overlap>
                   <template v-slot:badge>
-                    <v-icon x-small>mdi-lock</v-icon>
+                    <v-icon x-small dark>mdi-lock</v-icon>
                   </template>
                   <v-icon>mdi-view-grid-plus</v-icon>
                 </v-badge>

@@ -76,33 +76,25 @@ function initSocket(
 //  https://stackoverflow.com/questions/9018888/socket-io-connect-from-one-server-to-another
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function listen(port: number, ip: string) {
-  return new Promise<[http.Server, typeof initSocket, Promise<boolean>]>(
-    (resolve_, reject_) => {
-      const httpServer = http.createServer();
-      let close: () => void;
-      httpServer.on('error', (error) => {
-        reject_(error);
-        log.error(error);
-      });
+  return new Promise<[http.Server, typeof initSocket]>((resolve_, reject_) => {
+    const httpServer = http.createServer();
+    httpServer.on('error', (error) => {
+      reject_(error);
+      log.error(error);
+    });
 
-      // Init Http server
-      httpServer.listen(port, ip, () => {
-        resolve_([
-          httpServer,
-          initSocket,
-          new Promise((resolve) => (close = () => resolve(true))),
-        ]);
-        console.log(`Http server listening on http://${ip}:${port}🔥`);
-      });
+    // Init Http server
+    httpServer.listen(port, ip, () => {
+      resolve_([httpServer, initSocket]);
+      console.log(`Http server listening on http://${ip}:${port}🔥`);
+    });
 
-      httpServer.on('connection', (socket) => {
-        httpServer.once('close', () => {
-          socket.destroy();
-          httpServer.close();
-          close();
-        });
+    httpServer.on('connection', (socket) => {
+      httpServer.once('close', () => {
+        socket.destroy();
+        httpServer.close();
       });
-      // https://dev.to/gajus/how-to-terminate-a-http-server-in-node-js-ofk
-    }
-  );
+    });
+    // https://dev.to/gajus/how-to-terminate-a-http-server-in-node-js-ofk
+  });
 }
