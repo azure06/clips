@@ -10,9 +10,11 @@ export type Loading = {
   room: boolean;
   message: boolean;
   sending: boolean;
+  devices: boolean;
 };
 
 export interface NetworkState {
+  status: 'started' | 'closed'; // Server status
   thisUser?: UserDoc;
   users: UserDoc[];
   rooms: Room[];

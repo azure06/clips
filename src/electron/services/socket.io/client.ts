@@ -8,7 +8,17 @@ import { MessageDoc } from '@/rxdb/message/model';
 import any from 'promise.any';
 import path from 'path';
 import fs from 'fs';
+import { ports } from './utils/network';
 any.shim();
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).client = ioClient;
+
+const socketIoClientSettings = {
+  reconnection: false,
+  upgrade: false,
+  transports: ['websocket'],
+};
 
 export function sendMessage(
   sender: IDevice,
@@ -16,10 +26,8 @@ export function sendMessage(
   message: MessageDoc
 ): Promise<MessageDoc> {
   return new Promise<MessageDoc>((resolve, reject) => {
-    const target = `http://${receiver.ip}:${receiver.port}`;
-    const socket = ioClient.connect(target, {
-      reconnection: false,
-    });
+    const target = `ws://${receiver.ip}:${receiver.port}`;
+    const socket = ioClient.connect(target, socketIoClientSettings);
     socket.on('connect', () => {
       console.info(`Get authorization from  ${target}`);
       socket.emit('authorize', sender, (result: boolean) => {
@@ -52,9 +60,9 @@ export function sendMessage(
 export function sendData(ip: string, port: number) {
   return (targetPath: string): void => {
     console.log('Target', `http://${ip}:${port}`, targetPath);
-    const socket = ioClient.connect(`http://${ip}:${port}`);
+    const socket = ioClient.connect(`ws://${ip}:${port}`);
     socket.on('connect', () => {
-      console.log(`Client connected with.. http://${ip}:${port}🔥`);
+      console.log(`Client connected with.. ws://${ip}:${port}🔥`);
       const fileName = path.basename(targetPath);
       const readStream = fs.createReadStream(targetPath);
       readStream.on('open', function() {
@@ -101,38 +109,6 @@ export function sendData(ip: string, port: number) {
   };
 }
 
-export async function findDevice(ip: string): Promise<void | IDevice> {
-  return findLocalDevices(ip)
-    .then((device) =>
-      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(
-        (num) =>
-          new Promise<IDevice | undefined>((resolve, reject) => {
-            const port = +`300${num}`;
-            const socket = ioClient.connect(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              `http://${(device as any).ip}:${port}`,
-              {
-                reconnection: false,
-              }
-            );
-            socket.on('connect_error', reject);
-            socket.on('connect', () => {
-              socket.emit('recognize', (username: string) => {
-                resolve({
-                  ...((device as unknown) as IDevice),
-                  username,
-                  port,
-                });
-                socket.disconnect();
-              });
-            });
-          })
-      )
-    )
-    .then((p) => Promise.any(p))
-    .catch((err) => console.error(err));
-}
-
 /**
  * Discover the available devices over the network
  * TODO: This implementation works only if subnetmask is 255.255.255.1
@@ -142,33 +118,45 @@ export async function findDevice(ip: string): Promise<void | IDevice> {
 export function discoverDevices(ip: string): Observable<IDevice> {
   const iDeviceReplay = new ReplaySubject<IDevice>();
   const [network1, network2, subnet] = ip.split('.').map((value) => +value);
-  const ports = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   // Find available devices
   findLocalDevices(
     `${network1}.${network2}.${subnet}.1-${network1}.${network2}.${subnet}.254`
   )
     .then((devices) =>
-      ports.flatMap((num) =>
-        devices.map((device) =>
-          new Promise<void>((resolve, reject) => {
-            const port = +`300${num}`;
-            const socket = ioClient.connect(`http://${device.ip}:${port}`, {
-              reconnection: false,
-            });
-            // If
-            socket.on('connect_error', reject);
-            socket.on('connect', () => {
-              socket.emit('recognize', (username: string) => {
-                iDeviceReplay.next({ ...device, username, port });
-                resolve();
-                socket.disconnect();
-              });
-            });
-          }).catch((error) => console.info('connect_error', error))
+      devices
+        .flatMap((device) =>
+          ports.map((port) => ({
+            ...device,
+            port,
+          }))
         )
-      )
+        .map(
+          (device) =>
+            new Promise<void>((resolve) => {
+              console.warn(device);
+              const socket = ioClient.connect(
+                `ws://${device.ip}:${device.port}`,
+                {
+                  ...socketIoClientSettings,
+                  timeout: 5000,
+                }
+              );
+              socket.on('connect_error', (error: unknown) => {
+                console.info('connect_error', error);
+                resolve();
+              });
+              socket.on('connect', () => {
+                socket.emit('recognize', (username: string) => {
+                  iDeviceReplay.next({ ...device, username });
+                  socket.disconnect();
+                  resolve();
+                });
+              });
+            })
+        )
     )
     .then((devices) => Promise.all(devices))
     .finally(() => iDeviceReplay.complete());
+
   return iDeviceReplay.asObservable();
 }

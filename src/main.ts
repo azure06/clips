@@ -57,7 +57,7 @@ const vm = new Vue({
       findRoomFromUserOrCreate: 'findRoomFromUserOrCreate',
       addOrUpdateMessage: 'addOrUpdateMessage',
       upsertUser: 'upsertUser',
-      initServer: 'initServer',
+      handleServer: 'handleServer',
     }),
     ...mapMutations('user', {
       loadUser: 'loadUser',
@@ -200,6 +200,6 @@ const vm = new Vue({
         console.info('Message received correctly!!! 🎉😼', message);
       }
     );
-    this.initServer();
+    this.handleServer('start');
   },
 }).$mount('#app');

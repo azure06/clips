@@ -67,18 +67,18 @@
           <v-card
             :key="`content-${message.id}`"
             flat
-            :dark="message.isThisDevice"
+            :dark="!message.fromThisDevice"
             :class="
               `my-2 ${
-                message.isThisDevice ? 'align-self-start' : 'align-self-end'
+                !message.fromThisDevice ? 'align-self-start' : 'align-self-end'
               }`
             "
-            :color="!message.isThisDevice ? 'surfaceVariant' : 'blue darken-2'"
+            :color="message.fromThisDevice ? 'surfaceVariant' : 'blue darken-2'"
           >
             <v-card-text class="pa-2" style="white-space: pre;">
               <div class="d-flex align-end">
                 <!-- Content -->
-                <template v-if="!message.isThisDevice">
+                <template v-if="message.fromThisDevice">
                   <div style="position: relative;">
                     <div
                       class="d-flex"
@@ -208,7 +208,7 @@ import { WatchObservable } from 'vue-rx';
 
 type RoomEx = Omit<RoomType, 'messages'> & {
   messages: Array<
-    MessageDoc & { isThisDevice?: boolean; time?: string; date?: string }
+    MessageDoc & { fromThisDevice?: boolean; time?: string; date?: string }
   >;
 };
 
@@ -225,8 +225,8 @@ type RoomEx = Omit<RoomType, 'messages'> & {
               ...newValue,
               messages: newValue.messages.map((message, index) => ({
                 ...message,
-                isThisDevice:
-                  this.room.userIds[0] === message.senderId ||
+                fromThisDevice:
+                  this.room.userIds[0] !== message.senderId ||
                   message.senderId === 'unknown',
                 time: moment(message.createdAt).format('HH:mm'),
                 date: (() => {
@@ -298,7 +298,7 @@ export default class Room extends Vue {
   }
 
   public get containerStyle(): string {
-    const headerHeight = this.$vuetify.breakpoint.mdAndDown ? 56 : 64;
+    const headerHeight = this.$vuetify.breakpoint.smAndDown ? 56 : 64;
     const progressbarHeight = this.sendingMessage ? 4 : 0;
     return `height: calc(100vh - ${this.toolbarHeight +
       headerHeight +

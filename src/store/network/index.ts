@@ -5,12 +5,14 @@ import { RootState, NetworkState } from '@/store/types';
 import { Module } from 'vuex';
 
 const state: NetworkState = {
+  status: 'closed', // Server status
   users: [],
   rooms: [],
   loading: {
     room: false,
     message: false,
     user: false,
+    devices: false,
     sending: false,
   },
 };

@@ -1,14 +1,14 @@
 import { State, Keep, Start, IDevice } from './types';
 import io from 'socket.io';
 import fullName from 'fullname';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { MessageDoc } from '@/rxdb/message/model';
 import log from 'electron-log';
 import path from 'path';
 import fs from 'fs';
 import http from 'http';
 
-type MessageInfo = {
+type MessageResp = {
   sender: IDevice;
   message: MessageDoc;
 };
@@ -32,18 +32,21 @@ function onConnectionKeep(data: Keep) {
 }
 
 function initSocket(
-  authorize_: (args: IDevice) => Promise<boolean>,
+  authorize: (args: IDevice) => Promise<boolean>,
   httpServer: http.Server
 ) {
-  const ioServer = io.listen(httpServer, { serveClient: false });
-  const messageSubject = new Subject<MessageInfo>();
+  const ioServer = io.listen(httpServer, {
+    serveClient: false,
+    transports: ['websocket'],
+  });
+  const messageSubject = new Subject<MessageResp>();
   ioServer.sockets.on('connection', function(socket) {
     console.info(`Server connected with.. ${socket.handshake.address}🔥`);
     socket.on('authorize', async function(sender: IDevice, authorizeReq) {
       // For security reason check the identity is correct
       if (sender.ip !== socket.handshake.address) authorizeReq(false);
       console.info(`Asking for authorization... ${socket.handshake.address} 🗣`);
-      authorizeReq(await authorize_(sender));
+      authorizeReq(await authorize(sender));
       socket.on('message', function(state: State, resolve) {
         switch (state.status) {
           case 'start':
@@ -70,39 +73,40 @@ function initSocket(
       console.log('Disconnected...🎬');
     });
   });
+
   return messageSubject.asObservable();
 }
 
 //  https://stackoverflow.com/questions/9018888/socket-io-connect-from-one-server-to-another
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function listen(port: number, ip: string) {
-  return new Promise<[http.Server, typeof initSocket, Promise<boolean>]>(
+export function listen(
+  authorize_: (device: IDevice) => Promise<boolean>,
+  port: number,
+  ip: string
+): Promise<[http.Server, Observable<MessageResp>]> {
+  return new Promise<[http.Server, Observable<MessageResp>]>(
     (resolve_, reject_) => {
       const httpServer = http.createServer();
-      let close: () => void;
-      httpServer.on('error', (error) => {
-        reject_(error);
-        log.error(error);
-      });
-
-      // Init Http server
-      httpServer.listen(port, ip, () => {
-        resolve_([
-          httpServer,
-          initSocket,
-          new Promise((resolve) => (close = () => resolve(true))),
-        ]);
-        console.log(`Http server listening on http://${ip}:${port}🔥`);
-      });
-
       httpServer.on('connection', (socket) => {
-        httpServer.once('close', () => {
+        console.info('http:connection');
+        httpServer.once('close', (close: unknown) => {
+          console.info('http:close', close);
           socket.destroy();
           httpServer.close();
-          close();
         });
       });
-      // https://dev.to/gajus/how-to-terminate-a-http-server-in-node-js-ofk
+      httpServer.on('error', (error) => {
+        log.error(error);
+        reject_(error);
+      });
+      // Init io.socket
+      const messageStream = initSocket(authorize_, httpServer);
+      // Listen to port
+      httpServer.listen(port, ip || '0.0.0.0', () => {
+        resolve_([httpServer, messageStream]);
+        console.log(
+          `Http server listening on http://${ip || '0.0.0.0'}:${port}🔥`
+        );
+      });
     }
   );
 }

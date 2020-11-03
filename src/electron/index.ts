@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, ipcMain, IpcMainInvokeEvent } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import { clipboardService } from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
@@ -13,10 +13,12 @@ import { initShortcuts } from './helpers/shortcuts';
 import { initAutoLauncher } from './helpers/autolauncher';
 import * as socketIoService from './services/socket.io/server';
 import './helpers/analytics';
-import { findPort, ip } from './services/socket.io/utils/network';
+import { iDevice as getIDevice } from './services/socket.io/utils/network';
 import { IDevice } from './services/socket.io/types';
 import { tap } from 'rxjs/operators';
+import http from 'http';
 import fs from 'fs';
+import { Subscription } from 'rxjs';
 
 Sentry.init(environment.sentry);
 
@@ -170,28 +172,51 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
 }
 
 async function subscribeToSocketIo(mainWindow: BrowserWindow) {
-  ipcMain.handle('my-ip', () => ip.address());
+  ipcMain.handle('my-device', getIDevice);
   const authorize = (device: IDevice) => {
     return new Promise<boolean>((resolve) => {
       mainWindow.webContents.send('authorize', device);
       ipcMain.once(`authorize:${device.mac}`, (_, result) => resolve(result));
     });
   };
-  const initServer = async () => {
-    return socketIoService
-      .listen(await findPort(), ip.address())
-      .then(([httpServer, socketStream, close]) => {
-        socketStream(authorize, httpServer).subscribe((data) => {
-          mainWindow.webContents.send('message', data);
+  const handleServer = ((
+    httpServer: http.Server | null = null,
+    status: 'started' | 'closed' = 'closed',
+    subscription: Subscription = Subscription.EMPTY
+  ) => async (event: IpcMainInvokeEvent, action: 'start' | 'close') => {
+    const iDevice = await getIDevice(); //TODO Consider to use only one lib
+    // If it's started close the server
+    if (status === 'started' && httpServer) {
+      await new Promise((resolve) => {
+        httpServer?.once('close', () => {
+          status = 'closed';
+          resolve();
         });
-        ipcMain.handleOnce('close-server', () => {
-          httpServer.close();
-          return close;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        httpServer?.once('error', (err: any) => {
+          console.error('err', err);
+          resolve(); // TODO For now resolve anyway
         });
-      })
-      .then(() => true);
-  };
-  ipcMain.handle('init-server', initServer);
+        subscription.unsubscribe();
+        httpServer?.close();
+      });
+    }
+    // If address is not available maybe is offline
+    if (!iDevice) return Promise.reject('Maybe offline? 🤐');
+    if (action === 'start') {
+      return socketIoService
+        .listen(authorize, iDevice.port, iDevice.ip)
+        .then(([httpServer_, messageStream]) => {
+          httpServer = httpServer_;
+          status = 'started';
+          subscription = messageStream.subscribe((data) => {
+            mainWindow.webContents.send('message', data);
+          });
+          return iDevice;
+        });
+    }
+  })();
+  ipcMain.handle('handle-server', handleServer);
 }
 
 export function onReady(): void {
