@@ -14,6 +14,7 @@
         "
         @resend-message="onResendMessage"
         @send-message="onSendMessage"
+        @send-file="onSendFile"
         @load-messages="(roomId, options) => loadMessages({ roomId, options })"
         @message-read="setMessagesToRead"
       />
@@ -146,52 +147,69 @@
         </v-card>
 
         <v-spacer></v-spacer>
-        <v-btn
-          class="overline"
-          depressed
-          :loading="loading.devices"
-          :disabled="loading.devices || serverStatus === 'closed'"
-          @click="discoverUsers"
-          color="surfaceVariant"
-        >
-          <v-icon left>
-            mdi-account-search
-          </v-icon>
-          Find
-          <template v-slot:loader>
-            <span class="custom-loader">
-              <v-icon>mdi-cached</v-icon>
-            </span>
-          </template>
-        </v-btn>
-
-        <v-btn
-          class="ml-2"
-          depressed
-          color="surfaceVariant"
-          @click="handleServer(serverStatus === 'started' ? 'close' : 'start')"
-        >
-          <v-icon left>
-            mdi-server-network
-          </v-icon>
-          {{ serverStatus === 'started' ? 'off' : 'on' }}
-        </v-btn>
-
-        <!-- Help Dialog-->
-        <v-dialog v-model="showDialog" max-width="320">
+        <v-tooltip top>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               v-bind="attrs"
               v-on="on"
+              class="overline"
               depressed
+              :loading="loading.devices"
+              :disabled="loading.devices || serverStatus === 'closed'"
+              @click="discoverUsers"
               color="surfaceVariant"
-              @click="showDialog = !showDialog"
             >
               <v-icon left>
-                mdi-help-circle
+                mdi-account-search
               </v-icon>
-              help
+              Find
+              <template v-slot:loader>
+                <span class="custom-loader">
+                  <v-icon>mdi-cached</v-icon>
+                </span>
+              </template>
             </v-btn>
+          </template>
+          <span>Discover new devices</span>
+        </v-tooltip>
+
+        <v-tooltip top>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on="on"
+              class="ml-1"
+              depressed
+              color="surfaceVariant"
+              @click="
+                handleServer(serverStatus === 'started' ? 'close' : 'start')
+              "
+            >
+              <v-icon left>
+                {{
+                  serverStatus === 'started'
+                    ? 'mdi-server-network-off'
+                    : 'mdi-server-network'
+                }}
+              </v-icon>
+              {{ serverStatus === 'started' ? 'off' : 'on' }}
+            </v-btn>
+          </template>
+          <span>Turn ON/OFF the server</span>
+        </v-tooltip>
+
+        <!-- Help Dialog-->
+        <v-dialog v-model="showDialog" max-width="420">
+          <template v-slot:activator="{ on, attrs }">
+            <v-icon
+              class="ml-2 pa-1"
+              v-bind="attrs"
+              v-on="on"
+              size="18px"
+              @click="showDialog = !showDialog"
+            >
+              mdi-help-circle
+            </v-icon>
           </template>
           <v-card>
             <v-card-title class="subtitle-1 overline">
@@ -342,6 +360,15 @@ export default class Share extends ExtendedVue {
       'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
     > & { senderId?: string };
   }) => Promise<MessageDoc>;
+  @Action('sendFile', { namespace: 'network' })
+  public sendFile!: (args: {
+    sender?: IDevice;
+    receiver: IDevice;
+    message: Omit<
+      MessageDoc,
+      'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
+    > & { senderId?: string };
+  }) => Promise<MessageDoc>;
   @Action('handleServer', { namespace: 'network' })
   public handleServer!: (arg: 'start' | 'close') => Promise<boolean>;
 
@@ -402,6 +429,27 @@ export default class Share extends ExtendedVue {
         senderId: this.thisUser?.id,
         content: message,
         type: 'text',
+      },
+    });
+  }
+
+  public async onSendFile(room: RoomType, path: string): Promise<void> {
+    const receiver = await this.findUser(room.userIds[0]);
+    if (!receiver || path.trim() === '') return;
+    this.sendFile({
+      // Actually we don't need the username of the receiver
+      receiver: { ...receiver.device, username: receiver.username },
+      sender: this.thisUser
+        ? {
+            ...this.thisUser.device,
+            username: this.thisUser.username,
+          }
+        : undefined,
+      message: {
+        roomId: room.id,
+        senderId: this.thisUser?.id,
+        content: path,
+        type: 'file',
       },
     });
   }

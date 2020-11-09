@@ -43,32 +43,24 @@ export function randomColor(): string {
 
 const actions: ActionTree<NetworkState, RootState> = {
   handleServer: async ({ commit, dispatch }, action: 'start' | 'close') =>
-    range(1, 1)
+    from(ipcRenderer.invoke('handle-server', action))
       .pipe(
-        concatMap(() =>
-          from(ipcRenderer.invoke('handle-server', action)).pipe(
-            tap(async (device: IDevice | undefined) => {
-              commit(
-                'setServerStatus',
-                action === 'start' ? 'started' : 'closed'
-              );
-              // Set this user
-              if (device) {
-                const thisUser = await dispatch('upsertUser', {
-                  device,
-                });
-                commit('setThisUser', thisUser);
-              }
-            }),
-            mapTo(true),
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of(false);
-            })
-          )
-        )
+        tap(async (device: IDevice | undefined) => {
+          commit('setServerStatus', action === 'start' ? 'started' : 'closed');
+          // Set this user
+          if (device) {
+            const thisUser = await dispatch('upsertUser', {
+              device,
+            });
+            commit('setThisUser', thisUser);
+          }
+        }),
+        mapTo(true),
+        catchError((error) => {
+          Sentry.captureException(error);
+          return of(false);
+        })
       )
-      .pipe(take(1))
       .toPromise(),
   discoverUsers: async ({ commit, dispatch }) =>
     new Promise((resolve) =>
@@ -363,6 +355,46 @@ const actions: ActionTree<NetworkState, RootState> = {
         )
       )
       .pipe(tap((message) => commit('modifyOrAddMessage', message)))
+      .pipe(tap(() => commit('setLoading', { sending: false })))
+      .pipe(take(1))
+      .toPromise(),
+  sendFile: async (
+    { commit },
+    data: {
+      sender?: IDevice;
+      receiver: IDevice;
+      message: Omit<
+        MessageDoc,
+        'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
+      > & { senderId?: string };
+    }
+  ) =>
+    getCollection('message')
+      .pipe(tap(() => commit('setLoading', { sending: true })))
+      .pipe(
+        concatMap((collection) =>
+          from(
+            collection
+              .upsertMessage({
+                ...data.message,
+                senderId: data.sender?.mac || 'unknown',
+                status: 'pending',
+              })
+              .then(async (message) => {
+                commit('modifyOrAddMessage', message);
+                return data.sender
+                  ? (ipcRenderer.invoke(
+                      'send-file',
+                      data.sender,
+                      data.receiver,
+                      data.message
+                    ) as Promise<void>)
+                  : Promise.reject(new Error('Sender absent'));
+              })
+              .catch((error) => Sentry.captureException(error))
+          )
+        )
+      )
       .pipe(tap(() => commit('setLoading', { sending: false })))
       .pipe(take(1))
       .toPromise(),

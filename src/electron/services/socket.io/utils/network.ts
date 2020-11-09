@@ -25,7 +25,6 @@ function findPort(): Promise<number> {
 
 export const iDevice = async (): Promise<IDevice | undefined> => {
   const ip = await internalIp.v4();
-  console.warn('This device mac address:', await macaddress.one());
   return ip
     ? {
         name: '?',

@@ -25,8 +25,8 @@
     <v-container
       id="scroll-target"
       class="fill-height ma-0 pa-0 align-start"
-      :style="containerStyle"
       fluid
+      :style="containerStyle"
     >
       <!-- Loading Circle -->
       <div
@@ -50,10 +50,32 @@
         </v-row>
       </div>
 
-      <!-- Messages -->
-      <!-- TODO Consider to create a component -->
+      <!-- Container DragArea & Messages -->
+      <div
+        class="pa-2  d-flex flex-column"
+        style="width: 100%; position: relative;"
+        @dragenter.prevent="dropHandlerSubject.next(['dragenter', $event])"
+        @dragleave.prevent="dropHandlerSubject.next(['dragleave', $event])"
+        @dragover.prevent="dropHandlerSubject.next(['dragover', $event])"
+        @drop.prevent="dropHandlerSubject.next(['drop', $event])"
+      >
+        <div
+          v-show="draggingStream"
+          style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index:10;"
+        >
+          <div
+            class="d-flex flex-column justify-center align-center"
+            :style="dropContainerStyle"
+          >
+            <div class="overline">Drop Here</div>
+            <div class="drop-animation">
+              <v-icon large>mdi-cloud-upload</v-icon>
+            </div>
+          </div>
+        </div>
 
-      <div class="pa-2  d-flex flex-column" style="width: 100%">
+        <!-- Messages -->
+        <!-- TODO Consider to create a component -->
         <template v-for="(message, index) in roomStream.messages">
           <v-card
             v-if="message.date"
@@ -194,12 +216,14 @@
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { Room as RoomType } from '@/store/types';
 
-import { fromEvent, Observable } from 'rxjs';
+import { fromEvent, Observable, Subject } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
+  scan,
+  startWith,
   tap,
 } from 'rxjs/operators';
 import { MessageDoc } from '@/rxdb/message/model';
@@ -211,6 +235,8 @@ type RoomEx = Omit<RoomType, 'messages'> & {
     MessageDoc & { fromThisDevice?: boolean; time?: string; date?: string }
   >;
 };
+
+type EventName = 'drop' | 'dragenter' | 'dragleave' | 'dragover';
 
 @Component<Room>({
   subscriptions() {
@@ -252,7 +278,6 @@ type RoomEx = Omit<RoomType, 'messages'> & {
         )
         .pipe(tap(({ force }) => this.scrollToEnd({ force })))
         .pipe(map(({ room }) => room)),
-
       unreadMessagesStream: this.$watchAsObservable(() => this.unreadCount, {
         immediate: true,
       }).pipe(
@@ -264,6 +289,31 @@ type RoomEx = Omit<RoomType, 'messages'> & {
             senderId: this.room.userIds[0],
           });
         })
+      ),
+      draggingStream: this.dropHandlerSubject.asObservable().pipe(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        tap(([eventNm, event]) => {
+          if (eventNm === 'drop' && event.dataTransfer) {
+            this.$emit(
+              'send-file',
+              this.room,
+              event.dataTransfer.files[0].path
+            );
+          }
+        }),
+        map(([head]) => head),
+        scan(
+          (acc, event) =>
+            event !== 'drop'
+              ? {
+                  ...acc,
+                  [event]: (acc[event] || 0) + 1,
+                }
+              : ({} as { [P in EventName]: number }),
+          {} as { [P in EventName]: number }
+        ),
+        map((event) => event.dragenter !== event.dragleave),
+        startWith(false)
       ),
     };
   },
@@ -279,6 +329,8 @@ export default class Room extends Vue {
   public sendingMessage!: boolean;
   @Prop({ default: 0 })
   public unreadCount!: number;
+
+  public dropHandlerSubject = new Subject<[EventName, DragEvent]>();
 
   public get toolbarHeight(): number {
     const offset = ((): number => {
@@ -297,12 +349,27 @@ export default class Room extends Vue {
     return 57 + offset;
   }
 
-  public get containerStyle(): string {
-    const headerHeight = this.$vuetify.breakpoint.smAndDown ? 56 : 64;
-    const progressbarHeight = this.sendingMessage ? 4 : 0;
+  public get headerHeight(): number {
+    return this.$vuetify.breakpoint.smAndDown ? 56 : 64;
+  }
+
+  public get progressbarHeight(): number {
+    return this.sendingMessage ? 4 : 0;
+  }
+
+  public get containerCssHeight(): string {
     return `height: calc(100vh - ${this.toolbarHeight +
-      headerHeight +
-      progressbarHeight}px); overflow: auto;`;
+      this.headerHeight +
+      this.progressbarHeight}px`;
+  }
+
+  public get containerStyle(): string {
+    return `${this.containerCssHeight}; overflow: auto;`;
+  }
+
+  public get dropContainerStyle(): string {
+    const color = this.$vuetify.theme.currentTheme.accent;
+    return `position: sticky; top: 0; ${this.containerCssHeight}; border: 3px solid ${color};`;
   }
 
   public get textareaRows(): number {
@@ -365,6 +432,24 @@ export default class Room extends Vue {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+.drop-animation {
+  animation: drop-animation 2s infinite;
+}
+@keyframes drop-animation {
+  0% {
+    opacity: 0;
+    transform: translate(0, 1rem);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 1rem);
   }
 }
 </style>

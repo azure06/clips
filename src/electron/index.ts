@@ -19,6 +19,8 @@ import { tap } from 'rxjs/operators';
 import http from 'http';
 import fs from 'fs';
 import { Subscription } from 'rxjs';
+import { sendFile } from './services/socket.io/client';
+import { MessageDoc } from '@/rxdb/message/model';
 
 Sentry.init(environment.sentry);
 
@@ -216,7 +218,43 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
         });
     }
   })();
+  const handleSendFile = async (
+    _: unknown,
+    sender: IDevice,
+    receiver: IDevice,
+    message: MessageDoc
+  ) => {
+    sendFile(sender, receiver, message).subscribe({
+      next: (progress) => {
+        mainWindow.webContents.send(
+          'status',
+          'next',
+          receiver.mac,
+          message.id,
+          progress
+        );
+      },
+      error: (error) => {
+        console.info(error);
+        mainWindow.webContents.send(
+          'status',
+          'error',
+          receiver.mac,
+          message.id
+        );
+      },
+      complete: () => {
+        mainWindow.webContents.send(
+          'status',
+          'complete',
+          receiver.mac,
+          message.id
+        );
+      },
+    });
+  };
   ipcMain.handle('handle-server', handleServer);
+  ipcMain.handle('send-file', handleSendFile);
 }
 
 export function onReady(): void {

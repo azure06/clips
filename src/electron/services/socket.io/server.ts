@@ -8,7 +8,7 @@ import path from 'path';
 import fs from 'fs';
 import http from 'http';
 
-type MessageResp = {
+type Response = {
   sender: IDevice;
   message: MessageDoc;
 };
@@ -39,7 +39,7 @@ function initSocket(
     serveClient: false,
     transports: ['websocket'],
   });
-  const messageSubject = new Subject<MessageResp>();
+  const messageSubject = new Subject<Response>();
   ioServer.sockets.on('connection', function(socket) {
     console.info(`Server connected with.. ${socket.handshake.address}🔥`);
     socket.on('authorize', async function(sender: IDevice, authorizeReq) {
@@ -56,7 +56,6 @@ function initSocket(
             onConnectionKeep(state);
             break;
           case 'end':
-            socket.disconnect();
             break;
         }
         resolve();
@@ -82,8 +81,8 @@ export function listen(
   authorize_: (device: IDevice) => Promise<boolean>,
   port: number,
   ip: string
-): Promise<[http.Server, Observable<MessageResp>]> {
-  return new Promise<[http.Server, Observable<MessageResp>]>(
+): Promise<[http.Server, Observable<Response>]> {
+  return new Promise<[http.Server, Observable<Response>]>(
     (resolve_, reject_) => {
       const httpServer = http.createServer();
       httpServer.on('connection', (socket) => {

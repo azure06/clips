@@ -193,13 +193,17 @@ const vm = new Vue({
           notification.onclick = () => {
             if (this.$route.params.roomId !== room.id) {
               this.$router.push({ name: 'room', params: { roomId: room.id } });
-              console.info('Navigate to room');
             }
           };
         })();
-        console.info('Message received correctly!!! 🎉😼', message);
+        console.info('Message Received! 🎉😼', message);
       }
     );
+
+    this.$subscribeTo(subscriptions.onProgress, (data) => {
+      console.warn(data);
+    });
+
     this.handleServer('start');
   },
 }).$mount('#app');

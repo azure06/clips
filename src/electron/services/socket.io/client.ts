@@ -6,13 +6,12 @@ import { MessageDoc } from '@/rxdb/message/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import any from 'promise.any';
-import path from 'path';
+import pathNode from 'path';
 import fs from 'fs';
 import { ports } from './utils/network';
-any.shim();
+import progress, { Progress } from 'progress-stream';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).client = ioClient;
+any.shim();
 
 const socketIoClientSettings = {
   reconnection: false,
@@ -20,93 +19,125 @@ const socketIoClientSettings = {
   transports: ['websocket'],
 };
 
-export function sendMessage(
-  sender: IDevice,
-  receiver: IDevice,
-  message: MessageDoc
-): Promise<MessageDoc> {
-  return new Promise<MessageDoc>((resolve, reject) => {
-    const target = `ws://${receiver.ip}:${receiver.port}`;
-    const socket = ioClient.connect(target, socketIoClientSettings);
-    socket.on('connect', () => {
-      console.info(`Get authorization from  ${target}`);
-      socket.emit('authorize', sender, (result: boolean) => {
-        console.info(
-          result
-            ? `Yeeeeeehaw!!! 🦊  Got authorization~!`
-            : 'Authorization rejected 😿'
-        );
-        if (!result) {
-          socket.disconnect();
-          reject(new Error(`${receiver.username} rejected your request 🥶`));
-        }
-        console.info(`Sending message to ${target} 🙈🙉🙊`);
-        // Send deviceInfo and message
-        socket.emit('message-text', { sender, message }, () => {
-          socket.disconnect();
-          console.info(`Disconnected from ${target} 👀 🎬`);
-          resolve(message);
-        });
-      });
+const style =
+  'color: white; padding: 2px; border-radius: 5px; font-weight: 700';
+
+function connect(ip: string, port: number): Promise<SocketIOClient.Socket> {
+  return new Promise<SocketIOClient.Socket>((resolve, reject) => {
+    const address = `ws://${ip}:${port}`;
+    const socket = ioClient.connect(address, socketIoClientSettings);
+    socket.on('connect', async () => {
+      // prettier-ignore
+      console.info(`%cConnected with ${address} 😈`,`background: rgb(0,140,180); ${style}`);
+      resolve(socket);
     });
-    socket.on('connect_error', function(err: unknown) {
-      console.error('Something went wrong', err);
+    socket.on('connect_error', function(error: unknown) {
+      console.error('Something went wrong...', error);
+      reject(error);
       socket.disconnect();
-      reject(err);
     });
   });
 }
 
-export function sendData(ip: string, port: number) {
-  return (targetPath: string): void => {
-    console.log('Target', `http://${ip}:${port}`, targetPath);
-    const socket = ioClient.connect(`ws://${ip}:${port}`);
-    socket.on('connect', () => {
-      console.log(`Client connected with.. ws://${ip}:${port}🔥`);
-      const fileName = path.basename(targetPath);
-      const readStream = fs.createReadStream(targetPath);
-      readStream.on('open', function() {
-        socket.emit(
-          'message',
-          {
-            fileName,
-            status: 'start',
-          },
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          () => {}
-        );
-      });
-      readStream.on('data', function(chunk) {
-        socket.emit(
-          'message',
-          {
-            fileName,
-            buffer: chunk as Buffer,
-            status: 'keep',
-          },
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          () => {}
-        );
-      });
-      readStream.on('end', function() {
-        socket.emit(
-          'message',
-          {
-            fileName,
-            status: 'end',
-          },
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          () => {}
-        );
-      });
-      readStream.on('error', function(err) {
-        console.info('Something went wrong', err);
-      });
+// prettier-ignore
+function authorize(socket: SocketIOClient.Socket, sender: IDevice, receiver: IDevice): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    socket.emit('authorize', sender, (result: boolean) => {
+      console.info(`Asking authorization from ${receiver.username} 💻`);
+      return !result
+        ? (() => {
+            const message = `%c${receiver.username} rejected your request ⚠️`;
+            console.info(message, `background: rgb(255,0,60); ${style}`);
+            reject(new Error(message));
+            socket.disconnect();
+          })()
+        : (() => {
+            // prettier-ignore
+            console.info(`%cYeeeeeehaw!!! 🌈🦊 Authorized~!`,`background: rgb(0,110,230); ${style}`);
+            resolve();
+          })();
     });
-    socket.on('connect_error', function(err: unknown) {
+  });
+}
+
+// prettier-ignore
+export async function sendMessage(sender: IDevice, receiver: IDevice, message: MessageDoc): Promise<MessageDoc> {
+  const socket = await connect(receiver.ip, receiver.port);
+  await authorize(socket, sender, receiver);
+  // prettier-ignore
+  console.info(`%cSending message to ${receiver.username} 🙈🙉🙊`,`background: rgb(235,0,135); ${style}`);
+  return new Promise<MessageDoc>((resolve) => {
+    socket.emit('message-text', { sender, message }, () => {
+      console.info(`Disconnecting from ${receiver.username} 👀 🎬`);
+      socket.disconnect();
+      resolve(message);
+    });
+  });
+}
+
+export function sendFile(
+  sender: IDevice,
+  receiver: IDevice,
+  message: MessageDoc
+): Observable<Progress> {
+  const replaySubject = new ReplaySubject<Progress>();
+  (async () => {
+    const socket = await connect(receiver.ip, receiver.port);
+    await authorize(socket, sender, receiver);
+    const filename = pathNode.basename(message.content);
+    const stat = fs.statSync(message.content);
+    const str = progress({
+      length: stat.size,
+      time: 100 /* ms */,
+    });
+    str.on('progress', function(progress) {
+      console.info(progress);
+      replaySubject.next(progress);
+    });
+    const readStream = fs.createReadStream(message.content).pipe(str);
+    readStream.on('open', function() {
+      socket.emit(
+        'message',
+        {
+          fileName: filename,
+          status: 'start',
+        },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      );
+    });
+    readStream.on('data', function(chunk) {
+      socket.emit(
+        'message',
+        {
+          fileName: filename,
+          buffer: chunk as Buffer,
+          status: 'keep',
+        },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      );
+    });
+    readStream.on('end', function() {
+      socket.emit(
+        'message',
+        {
+          fileName: filename,
+          status: 'end',
+        },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {
+          socket.disconnect();
+          replaySubject.complete();
+        }
+      );
+    });
+    readStream.on('error', function(err) {
       console.info('Something went wrong', err);
+      replaySubject.error(err);
     });
-  };
+  })();
+  return replaySubject.asObservable();
 }
 
 /**
@@ -133,7 +164,6 @@ export function discoverDevices(ip: string): Observable<IDevice> {
         .map(
           (device) =>
             new Promise<void>((resolve) => {
-              console.warn(device);
               const socket = ioClient.connect(
                 `ws://${device.ip}:${device.port}`,
                 {
