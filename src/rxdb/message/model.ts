@@ -1,3 +1,4 @@
+import { Progress } from 'progress-stream';
 import { RxCollection, RxDocument, RxJsonSchema } from 'rxdb';
 
 export interface MessageDatabaseCollection {
@@ -7,6 +8,7 @@ export interface MessageDatabaseCollection {
 type PendingStatus = 'pending';
 type ReadStatus = 'sent' | 'read';
 type RejectedStatus = 'rejected';
+
 export type MessageStatus = PendingStatus | ReadStatus | RejectedStatus;
 
 export interface MessageDoc {
@@ -21,6 +23,40 @@ export interface MessageDoc {
   createdAt: number;
 }
 
+export interface Content {
+  progress: Progress;
+  path: string;
+}
+
+export function defaultContent(): Content {
+  return {
+    progress: {
+      delta: 0,
+      eta: 0,
+      length: 0,
+      percentage: 0,
+      remaining: 0,
+      runtime: 0,
+      speed: 0,
+      transferred: 0,
+    },
+    path: 'rejected',
+  };
+}
+
+export function parseContent(content: string): Content {
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.error(`${status} parse error`, error);
+    return defaultContent();
+  }
+}
+
+export function stringifyContent(content: Content): string {
+  return JSON.stringify(content);
+}
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type MessageDocMethods = {};
 
@@ -29,6 +65,11 @@ export type MessageCollectionMethods = {
     this: MessageCollection,
     message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'>
   ): Promise<MessageDoc>;
+  findMessage(
+    this: MessageCollection,
+    roomId: string,
+    messageId: string
+  ): Promise<MessageDoc | undefined>;
   findMessages(
     this: MessageCollection,
     roomId: string,

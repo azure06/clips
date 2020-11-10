@@ -13,7 +13,6 @@ const state: NetworkState = {
     message: false,
     user: false,
     devices: false,
-    sending: false,
   },
 };
 

@@ -5,7 +5,6 @@
         :room="roomStream"
         :draft="draftStream"
         :loadingMessages="loading.message"
-        :sendingMessage="loading.sending"
         :unreadCount="unreadMessagesByUser[roomStream.userIds[0]].size"
         @close="$router.back()"
         @keydown="(room, event) => onKeyDown(room, draftStream, event)"
@@ -353,21 +352,21 @@ export default class Share extends ExtendedVue {
   ) => Promise<MessageDoc[]>;
   @Action('sendMessage', { namespace: 'network' })
   public sendMessage!: (args: {
+    message: Pick<MessageDoc, 'roomId' | 'content'> & {
+      id?: string;
+    };
     sender?: IDevice;
     receiver: IDevice;
-    message: Omit<
-      MessageDoc,
-      'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
-    > & { senderId?: string };
   }) => Promise<MessageDoc>;
   @Action('sendFile', { namespace: 'network' })
   public sendFile!: (args: {
+    message: {
+      roomId: string;
+      path: string;
+      id?: string;
+    };
     sender?: IDevice;
     receiver: IDevice;
-    message: Omit<
-      MessageDoc,
-      'id' | 'updatedAt' | 'createdAt' | 'senderId' | 'status'
-    > & { senderId?: string };
   }) => Promise<MessageDoc>;
   @Action('handleServer', { namespace: 'network' })
   public handleServer!: (arg: 'start' | 'close') => Promise<boolean>;
@@ -400,6 +399,7 @@ export default class Share extends ExtendedVue {
     if (!receiver) return; // TODO Handle receiver absent exception
     this.sendMessage({
       // Actually we don't need the username of the receiver
+      message,
       receiver: { ...receiver.device, username: receiver.username },
       sender: this.thisUser
         ? {
@@ -407,16 +407,19 @@ export default class Share extends ExtendedVue {
             username: this.thisUser.username,
           }
         : undefined,
-      message,
     });
   }
 
-  public async onSendMessage(room: RoomType, message: string): Promise<void> {
+  public async onSendMessage(room: RoomType, content: string): Promise<void> {
     const receiver = await this.findUser(room.userIds[0]);
-    if (!receiver || message.trim() === '') return; // TODO Handle receiver absent exception
+    if (!receiver || content.trim() === '') return; // TODO Handle receiver absent exception
     this.onDraftChange.next({ roomId: room.id, draft: '' }); // Remove message
     this.sendMessage({
       // Actually we don't need the username of the receiver
+      message: {
+        roomId: room.id,
+        content,
+      },
       receiver: { ...receiver.device, username: receiver.username },
       sender: this.thisUser
         ? {
@@ -424,12 +427,6 @@ export default class Share extends ExtendedVue {
             username: this.thisUser.username,
           }
         : undefined,
-      message: {
-        roomId: room.id,
-        senderId: this.thisUser?.id,
-        content: message,
-        type: 'text',
-      },
     });
   }
 
@@ -438,6 +435,10 @@ export default class Share extends ExtendedVue {
     if (!receiver || path.trim() === '') return;
     this.sendFile({
       // Actually we don't need the username of the receiver
+      message: {
+        path,
+        roomId: room.id,
+      },
       receiver: { ...receiver.device, username: receiver.username },
       sender: this.thisUser
         ? {
@@ -445,12 +446,6 @@ export default class Share extends ExtendedVue {
             username: this.thisUser.username,
           }
         : undefined,
-      message: {
-        roomId: room.id,
-        senderId: this.thisUser?.id,
-        content: path,
-        type: 'file',
-      },
     });
   }
 

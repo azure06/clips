@@ -1,8 +1,8 @@
-import { IDevice } from './types';
+import { End, IDevice, Keep, Start, Error } from './types';
 import ioClient from 'socket.io-client';
 import findLocalDevices from 'local-devices';
 import { Observable, ReplaySubject } from 'rxjs';
-import { MessageDoc } from '@/rxdb/message/model';
+import { MessageDoc, parseContent } from '@/rxdb/message/model';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import any from 'promise.any';
@@ -10,6 +10,7 @@ import pathNode from 'path';
 import fs from 'fs';
 import { ports } from './utils/network';
 import progress, { Progress } from 'progress-stream';
+import { concatMap, map, take } from 'rxjs/operators';
 
 any.shim();
 
@@ -67,7 +68,7 @@ export async function sendMessage(sender: IDevice, receiver: IDevice, message: M
   // prettier-ignore
   console.info(`%cSending message to ${receiver.username} 🙈🙉🙊`,`background: rgb(235,0,135); ${style}`);
   return new Promise<MessageDoc>((resolve) => {
-    socket.emit('message-text', { sender, message }, () => {
+    socket.emit('message', message, () => {
       console.info(`Disconnecting from ${receiver.username} 👀 🎬`);
       socket.disconnect();
       resolve(message);
@@ -80,64 +81,92 @@ export function sendFile(
   receiver: IDevice,
   message: MessageDoc
 ): Observable<Progress> {
-  const replaySubject = new ReplaySubject<Progress>();
+  const progressReplay = new ReplaySubject<Progress>(1);
+  const emitReplay = new ReplaySubject<
+    | Omit<Start, 'progress'>
+    | Omit<Keep, 'progress'>
+    | Omit<End, 'progress'>
+    | Error
+  >();
+  const completeAll = () => {
+    progressReplay.complete();
+    emitReplay.complete();
+  };
   (async () => {
     const socket = await connect(receiver.ip, receiver.port);
-    await authorize(socket, sender, receiver);
-    const filename = pathNode.basename(message.content);
-    const stat = fs.statSync(message.content);
-    const str = progress({
-      length: stat.size,
-      time: 100 /* ms */,
-    });
-    str.on('progress', function(progress) {
-      console.info(progress);
-      replaySubject.next(progress);
-    });
-    const readStream = fs.createReadStream(message.content).pipe(str);
-    readStream.on('open', function() {
-      socket.emit(
-        'message',
-        {
-          fileName: filename,
-          status: 'start',
-        },
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      );
-    });
-    readStream.on('data', function(chunk) {
-      socket.emit(
-        'message',
-        {
-          fileName: filename,
-          buffer: chunk as Buffer,
-          status: 'keep',
-        },
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      );
-    });
-    readStream.on('end', function() {
-      socket.emit(
-        'message',
-        {
-          fileName: filename,
-          status: 'end',
-        },
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {
-          socket.disconnect();
-          replaySubject.complete();
-        }
-      );
-    });
-    readStream.on('error', function(err) {
-      console.info('Something went wrong', err);
-      replaySubject.error(err);
-    });
+    return authorize(socket, sender, receiver)
+      .then(() => {
+        const { path } = parseContent(message.content);
+        const filename = pathNode.basename(path);
+        const stat = fs.statSync(path);
+        const progStream = progress({
+          length: stat.size,
+          time: 100 /* ms */,
+        });
+        progStream.on('progress', function(progress) {
+          progressReplay.next(progress);
+        });
+        emitReplay
+          .pipe(
+            concatMap((state) =>
+              progressReplay
+                .asObservable()
+                .pipe(map((progress) => ({ ...state, progress })))
+                .pipe(take(1))
+                .toPromise()
+            )
+          )
+          .pipe(
+            concatMap(
+              (state) =>
+                new Promise((resolve) => {
+                  socket.emit(
+                    'message',
+                    state,
+                    state.status === 'end' || state.status === 'error'
+                      ? completeAll
+                      : resolve
+                  );
+                })
+            )
+          )
+          .subscribe();
+
+        const readStream = fs.createReadStream(path).pipe(progStream);
+        readStream.on('open', function() {
+          emitReplay.next({
+            filename,
+            status: 'start',
+          });
+        });
+        readStream.on('data', function(chunk) {
+          emitReplay.next({
+            filename,
+            buffer: chunk as Buffer,
+            status: 'keep',
+          });
+        });
+        readStream.on('end', function() {
+          emitReplay.next({
+            filename,
+            status: 'end',
+          });
+        });
+        readStream.on('error', function(error) {
+          emitReplay.next({
+            filename,
+            status: 'error',
+          });
+          console.info('Something went wrong', error);
+        });
+      })
+      .catch((error) => {
+        console.info('Authorization refused...', error);
+        completeAll();
+        socket.disconnect();
+      });
   })();
-  return replaySubject.asObservable();
+  return progressReplay.asObservable();
 }
 
 /**

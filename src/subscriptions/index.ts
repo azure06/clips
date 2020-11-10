@@ -11,7 +11,10 @@ const resizeSubject = new Subject<unknown>();
 const moveSubject = new Subject<unknown>();
 const clipSubject = new Subject<ClipDoc>();
 const navigateSubject = new Subject<{ name: string }>();
-const messageSubject = new Subject<{ sender: IDevice; message: MessageDoc }>();
+const messageSubject = new Subject<{
+  sender: IDevice;
+  message: MessageDoc;
+}>();
 const authorizeSubject = new Subject<IDevice>();
 const statusSubject = new Subject<
   | {

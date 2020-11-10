@@ -9,7 +9,11 @@ import { environment } from './environment';
 import { Clip, Room, SettingsState } from './store/types';
 import './firebase';
 import { initAnalytics } from './analytics-vue';
-import { MessageDoc } from './rxdb/message/model';
+import {
+  MessageDoc,
+  parseContent,
+  stringifyContent,
+} from './rxdb/message/model';
 import { IDevice } from './electron/services/socket.io/types';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
 import { concatMap, filter, map, tap } from 'rxjs/operators';
@@ -56,6 +60,7 @@ const vm = new Vue({
       loadRooms: 'loadRooms',
       findRoomFromUserOrCreate: 'findRoomFromUserOrCreate',
       addOrUpdateMessage: 'addOrUpdateMessage',
+      findMessage: 'findMessage',
       upsertUser: 'upsertUser',
       handleServer: 'handleServer',
     }),
@@ -169,22 +174,20 @@ const vm = new Vue({
     // onMessage received (onAuthorize is in App.vue)
     this.$subscribeTo(
       subscriptions.onMessage,
-      async ({ message, sender }: { sender: IDevice; message: MessageDoc }) => {
+      async ({ sender, message }: { sender: IDevice; message: MessageDoc }) => {
         //  Find user or create if necessary
-        const room = (await this.findRoomFromUserOrCreate({
+        const room: Room = await this.findRoomFromUserOrCreate({
           id: sender.mac,
           username: sender.username,
-        })) as Room;
-
-        // Update the roomId inside the message (Currently is the sender roomId)
+          // Update the roomId inside the message (Currently is the sender roomId)
+        });
         await this.addOrUpdateMessage({
           ...message,
-          status: 'sent',
           roomId: room.id,
         } as MessageDoc);
-
         // Notify user
         (() => {
+          if (message.status !== 'sent') return;
           const notification = new Notification(sender.username, {
             timestamp: Date.now(),
             icon: './assets/icons/clip.svg',
@@ -200,9 +203,48 @@ const vm = new Vue({
       }
     );
 
-    this.$subscribeTo(subscriptions.onProgress, (data) => {
-      console.warn(data);
-    });
+    this.$subscribeTo(
+      subscriptions.onProgress.pipe(
+        concatMap(async (data) => {
+          const room = (await this.findRoomFromUserOrCreate({
+            id: data.receiverId,
+            username: 'always present so fix later',
+          })) as Room;
+          const message = (await this.findMessage({
+            roomId: room.id,
+            messageId: data.messageId,
+          })) as MessageDoc;
+          // Update the roomId inside the message (Currently is the sender roomId)
+          return this.addOrUpdateMessage({
+            ...message,
+            content: (() => {
+              switch (data.status) {
+                case 'next':
+                  return stringifyContent({
+                    path: parseContent(message.content).path,
+                    progress: data.progress,
+                  });
+                default:
+                  return message.content;
+              }
+            })(),
+            status: (() => {
+              switch (data.status) {
+                case 'next':
+                  return 'pending';
+                case 'complete':
+                  return 'sent';
+                case 'error':
+                  return 'rejected';
+              }
+            })(),
+          } as MessageDoc);
+        })
+      ),
+      async (data) => {
+        console.info('OnProgress', data);
+      }
+    );
 
     this.handleServer('start');
   },

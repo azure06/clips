@@ -14,12 +14,6 @@
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
     </v-toolbar>
-    <!-- Sending message -->
-    <v-progress-linear
-      v-if="sendingMessage"
-      indeterminate
-      color="yellow darken-2"
-    ></v-progress-linear>
 
     <!-- Container -->
     <v-container
@@ -113,36 +107,29 @@
                       <!-- Status -->
                       <div
                         class="caption mr-1"
-                        v-show="
-                          message.status === 'read' || message.status === 'sent'
-                        "
+                        v-show="isReadOrSent(message.status)"
                       >
                         ✔︎
                       </div>
                       <!-- Staus Error -->
                       <div
-                        v-show="
-                          message.status === 'pending' ||
-                            message.status === 'rejected'
-                        "
+                        v-show="isRejectedOrPending(message.status)"
                         :class="
                           `caption mr-1 ${
-                            message.status === 'pending'
-                              ? 'infinite-spinning'
-                              : ''
+                            isPending(message.status) ? 'infinite-spinning' : ''
                           } `
                         "
                       >
                         <v-btn
                           x-small
                           icon
-                          :disabled="message.status === 'pending'"
+                          :disabled="isPending(message.status)"
                           @click="
                             $emit('resend-message', room, room.messages[index])
                           "
                         >
                           <v-icon>{{
-                            message.status === 'rejected'
+                            isRejected(message.status)
                               ? 'mdi-reload-alert'
                               : 'mdi-loading'
                           }}</v-icon>
@@ -151,11 +138,34 @@
                     </div>
                   </div>
                   <div class="caption line-height: 1rem">
-                    <div class="font-weight-normal" style="font-size: 0.65rem">
-                      {{ message.time }}
-                    </div>
-                    <div class="font-weight-medium">
-                      {{ message.content }}
+                    <div class="caption line-height: 1rem">
+                      <div
+                        class="font-weight-normal"
+                        style="font-size: 0.65rem"
+                      >
+                        {{ message.time }}
+                      </div>
+                      <div
+                        v-if="message.type === 'text'"
+                        class="font-weight-medium"
+                      >
+                        {{ message.content }}
+                      </div>
+                      <!-- Progress -->
+                      <div
+                        v-else
+                        style="min-width: 54px"
+                        class="d-flex flex-column justify-center align-center"
+                      >
+                        <v-icon class="move-animation my-1"> mdi-file </v-icon>
+                        <v-progress-linear
+                          v-if="message.content.progress.percentage !== 100"
+                          class="my-1"
+                          :value="message.content.progress.percentage"
+                          rounded
+                          style="width: 50px"
+                        ></v-progress-linear>
+                      </div>
                     </div>
                   </div>
                 </template>
@@ -164,8 +174,26 @@
                     <div class="font-weight-normal" style="font-size: 0.65rem">
                       {{ message.time }}
                     </div>
-                    <div class="font-weight-medium">
+                    <div
+                      v-if="message.type === 'text'"
+                      class="font-weight-medium"
+                    >
                       {{ message.content }}
+                    </div>
+                    <!-- Progress -->
+                    <div
+                      v-else
+                      style="min-width: 54px"
+                      class="d-flex flex-column justify-center align-center"
+                    >
+                      <v-icon class="move-animation my-1"> mdi-file </v-icon>
+                      <v-progress-linear
+                        v-if="message.content.progress.percentage !== 100"
+                        class="my-1"
+                        :value="message.content.progress.percentage"
+                        rounded
+                        style="width: 50px"
+                      ></v-progress-linear>
                     </div>
                   </div>
                 </template>
@@ -204,7 +232,6 @@
           color="blue darken-2"
           depressed
           dark
-          :loading="sendingMessage"
           @click="$emit('send-message', room, draft)"
         >
           Send
@@ -229,7 +256,7 @@ import {
   startWith,
   tap,
 } from 'rxjs/operators';
-import { MessageDoc } from '@/rxdb/message/model';
+import { MessageDoc, MessageStatus, parseContent } from '@/rxdb/message/model';
 import moment from 'moment';
 import { WatchObservable } from 'vue-rx';
 
@@ -254,6 +281,10 @@ type EventName = 'drop' | 'dragenter' | 'dragleave' | 'dragover';
               ...newValue,
               messages: newValue.messages.map((message, index) => ({
                 ...message,
+                content:
+                  message.type === 'file'
+                    ? parseContent(message.content)
+                    : message.content,
                 fromThisDevice:
                   this.room.userIds[0] !== message.senderId ||
                   message.senderId === 'unknown',
@@ -328,8 +359,6 @@ export default class Room extends Vue {
   public draft!: string;
   @Prop({ default: false })
   public loadingMessages!: boolean;
-  @Prop({ default: false })
-  public sendingMessage!: boolean;
   @Prop({ default: 0 })
   public unreadCount!: number;
 
@@ -356,14 +385,8 @@ export default class Room extends Vue {
     return this.$vuetify.breakpoint.smAndDown ? 56 : 64;
   }
 
-  public get progressbarHeight(): number {
-    return this.sendingMessage ? 4 : 0;
-  }
-
   public get containerCssHeight(): string {
-    return `height: calc(100vh - ${this.toolbarHeight +
-      this.headerHeight +
-      this.progressbarHeight}px`;
+    return `height: calc(100vh - ${this.toolbarHeight + this.headerHeight}px`;
   }
 
   public get containerStyle(): string {
@@ -378,6 +401,21 @@ export default class Room extends Vue {
   public get textareaRows(): number {
     const rows = this.draft.split('\n').length;
     return rows >= 1 && rows <= 3 ? rows : rows > 3 ? 3 : 1;
+  }
+
+  public isReadOrSent(status: MessageStatus): boolean {
+    return status === 'sent' || status === 'read';
+  }
+  public isRejectedOrPending(status: MessageStatus): boolean {
+    return status === 'pending' || status === 'rejected';
+  }
+
+  public isPending(status: MessageStatus): boolean {
+    return status === 'pending';
+  }
+
+  public isRejected(status: MessageStatus): boolean {
+    return status === 'rejected';
   }
 
   public infiniteScroll(): Observable<boolean> {
@@ -441,6 +479,29 @@ export default class Room extends Vue {
 .drop-animation {
   animation: drop-animation 2s infinite;
 }
+
+.move-animation {
+  animation: move-animation 2s infinite;
+}
+
+@keyframes move-animation {
+  0% {
+    transform: translate(-15px, 0) skewY(25deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(15px, 0) skewY(-25deg);
+    opacity: 0;
+  }
+}
+
+.drop-animation {
+  animation: drop-animation 2s infinite;
+}
+
 @keyframes drop-animation {
   0% {
     opacity: 0;

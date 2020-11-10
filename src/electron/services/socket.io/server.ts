@@ -1,14 +1,18 @@
-import { State, Keep, Start, IDevice } from './types';
+import { Keep, Start, IDevice, MessageReq, isMessageText } from './types';
 import io from 'socket.io';
 import fullName from 'fullname';
 import { Observable, Subject } from 'rxjs';
-import { MessageDoc } from '@/rxdb/message/model';
 import log from 'electron-log';
 import path from 'path';
 import fs from 'fs';
 import http from 'http';
+import {
+  defaultContent,
+  MessageDoc,
+  stringifyContent,
+} from '@/rxdb/message/model';
 
-type Response = {
+type MessageTextReq = {
   sender: IDevice;
   message: MessageDoc;
 };
@@ -20,7 +24,7 @@ const DIR_DOWNLOAD = ((dir) => path.join(dir || '~', 'Downloads/'))(
 function onConnectionStart(data: Start) {
   // const dir = process.env.HOME || process.env.USERPROFILE;
   // prettier-ignore
-  const target = path.join(DIR_DOWNLOAD,data.fileName);
+  const target = path.join(DIR_DOWNLOAD, data.filename);
   fs.unlink(target, (err) => {
     if (err) console.log(err);
     else console.log('File deleted');
@@ -28,7 +32,7 @@ function onConnectionStart(data: Start) {
 }
 
 function onConnectionKeep(data: Keep) {
-  fs.appendFileSync(path.join(DIR_DOWNLOAD, data.fileName), data.buffer);
+  fs.appendFileSync(path.join(DIR_DOWNLOAD, data.filename), data.buffer);
 }
 
 function initSocket(
@@ -39,7 +43,7 @@ function initSocket(
     serveClient: false,
     transports: ['websocket'],
   });
-  const messageSubject = new Subject<Response>();
+  const messageSubject = new Subject<MessageTextReq>();
   ioServer.sockets.on('connection', function(socket) {
     console.info(`Server connected with.. ${socket.handshake.address}🔥`);
     socket.on('authorize', async function(sender: IDevice, authorizeReq) {
@@ -47,28 +51,55 @@ function initSocket(
       if (sender.ip !== socket.handshake.address) authorizeReq(false);
       console.info(`Asking for authorization... ${socket.handshake.address} 🗣`);
       authorizeReq(await authorize(sender));
-      socket.on('message', function(state: State, resolve) {
-        switch (state.status) {
-          case 'start':
-            onConnectionStart(state);
-            break;
-          case 'keep':
-            onConnectionKeep(state);
-            break;
-          case 'end':
-            break;
+      socket.on('message', function(request: MessageReq, disconnectMe) {
+        if (!isMessageText(request)) {
+          switch (request.status) {
+            case 'start':
+              // FIXME never called when reading the file stream
+              onConnectionStart(request);
+              break;
+            case 'keep':
+              onConnectionKeep(request);
+              break;
+            case 'end':
+              break;
+            // Add error case
+          }
         }
-        resolve();
-      });
-      socket.on('message-text', function(data, resolve) {
-        messageSubject.next(data);
-        resolve();
+        const message = !isMessageText(request)
+          ? ({
+              id: path.join(DIR_DOWNLOAD, request.filename),
+              type: 'file',
+              ...(() => {
+                switch (request.status) {
+                  case 'error':
+                    return {
+                      status: 'rejected',
+                      content: stringifyContent(defaultContent()),
+                    };
+                  default:
+                    return {
+                      status: request.status === 'end' ? 'sent' : 'pending',
+                      content: stringifyContent({
+                        path: path.join(DIR_DOWNLOAD, request.filename),
+                        progress: request.progress,
+                      }),
+                    };
+                }
+              })(),
+              senderId: sender.mac,
+              ext: path.extname(request.filename),
+            } as MessageDoc)
+          : ({ ...request, type: 'text', status: 'sent' } as MessageDoc);
+        messageSubject.next({ sender, message });
+        disconnectMe();
       });
     });
     socket.on('recognize', async function(callback) {
       callback(await fullName());
     });
     socket.on('disconnect', function() {
+      // TODO Watch 'messageSubject' and emit error when necessary
       console.log('Disconnected...🎬');
     });
   });
@@ -81,12 +112,12 @@ export function listen(
   authorize_: (device: IDevice) => Promise<boolean>,
   port: number,
   ip: string
-): Promise<[http.Server, Observable<Response>]> {
-  return new Promise<[http.Server, Observable<Response>]>(
+): Promise<[http.Server, Observable<MessageTextReq>]> {
+  return new Promise<[http.Server, Observable<MessageTextReq>]>(
     (resolve_, reject_) => {
       const httpServer = http.createServer();
       httpServer.on('connection', (socket) => {
-        console.info('http:connection');
+        console.info('Http Server connected with 💻', socket.remoteAddress);
         httpServer.once('close', (close: unknown) => {
           console.info('http:close', close);
           socket.destroy();

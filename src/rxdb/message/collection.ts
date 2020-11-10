@@ -26,7 +26,20 @@ const messageCollectionsMethods: MessageCollectionMethods = {
       ...message,
       updatedAt: Date.now(),
       createdAt: message.createdAt || Date.now(),
-    }).then((message_) => message_.toJSON());
+    } as MessageDoc).then((message_) => message_.toJSON());
+  },
+  findMessage(
+    this: MessageCollection,
+    roomId: string,
+    messageId: string
+  ): Promise<MessageDoc | undefined> {
+    return this.find()
+      .where('roomId')
+      .eq(roomId)
+      .where('id')
+      .eq(messageId)
+      .exec()
+      .then(([message]) => (message ? message.toJSON() : undefined));
   },
   findMessages(
     this: MessageCollection,

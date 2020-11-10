@@ -9,7 +9,6 @@ export type Loading = {
   user: boolean;
   room: boolean;
   message: boolean;
-  sending: boolean;
   devices: boolean;
 };
 
