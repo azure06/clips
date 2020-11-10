@@ -88,23 +88,27 @@
           </v-card>
           <v-card
             :key="`content-${message.id}`"
+            max-width="70vw"
             flat
             :dark="!message.fromThisDevice"
             :class="
-              `my-2 ${
+              `my-1 ${
                 !message.fromThisDevice ? 'align-self-start' : 'align-self-end'
               }`
             "
             :color="message.fromThisDevice ? 'surfaceVariant' : 'blue darken-2'"
           >
-            <v-card-text class="pa-2" style="white-space: pre;">
+            <v-card-text
+              class="pa-1"
+              style="white-space: pre-wrap; overflow-wrap: break-word;"
+            >
               <div class="d-flex align-end">
                 <!-- Content -->
                 <template v-if="message.fromThisDevice">
                   <div style="position: relative;">
                     <div
                       class="d-flex"
-                      style="position: absolute; right: 15px; top: -20px"
+                      style="position: absolute; right: 10px; top: -20px"
                     >
                       <!-- Status -->
                       <div
@@ -144,25 +148,24 @@
                           }}</v-icon>
                         </v-btn>
                       </div>
-                      <!-- Time -->
-                      <div class="caption">{{ message.time }}</div>
                     </div>
                   </div>
-                  <div class="subtitle-2">
-                    {{ message.content }}
+                  <div class="caption line-height: 1rem">
+                    <div class="font-weight-normal" style="font-size: 0.65rem">
+                      {{ message.time }}
+                    </div>
+                    <div class="font-weight-medium">
+                      {{ message.content }}
+                    </div>
                   </div>
                 </template>
                 <template v-else>
-                  <div class="subtitle-2">
-                    {{ message.content }}
-                  </div>
-                  <div style="position: relative;">
-                    <div
-                      class="d-flex"
-                      style="position: absolute; left: 15px; top: -20px"
-                    >
-                      <!-- Time -->
-                      <div class="caption">{{ message.time }}</div>
+                  <div class="caption line-height: 1rem">
+                    <div class="font-weight-normal" style="font-size: 0.65rem">
+                      {{ message.time }}
+                    </div>
+                    <div class="font-weight-medium">
+                      {{ message.content }}
                     </div>
                   </div>
                 </template>
