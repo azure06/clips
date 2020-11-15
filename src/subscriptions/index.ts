@@ -3,8 +3,7 @@ import { Subject, merge, timer } from 'rxjs';
 import { ClipDoc } from '@/rxdb/clips/model';
 import { debounce, map } from 'rxjs/operators';
 import { MessageDoc } from '@/rxdb/message/model';
-import { IDevice } from '@/electron/services/socket.io/types';
-import { Progress } from 'progress-stream';
+import { IDevice, Progress } from '@/electron/services/socket.io/types';
 
 const mainWindow = electron.remote.getCurrentWindow();
 const resizeSubject = new Subject<unknown>();

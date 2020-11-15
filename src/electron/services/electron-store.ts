@@ -2,7 +2,7 @@ import { SettingsState, Clip, User } from '../../store/types';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { uuid } from 'uuidv4';
 import Store from 'electron-store';
-import { isSpaceAvailable } from '@/utils/clipsize';
+import { isSpaceAvailable } from '@/utils';
 import log from 'electron-log';
 
 const store = new Store();

@@ -20,6 +20,7 @@ import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { interval, from } from 'rxjs';
 import Sentry from '@/sentry-vue';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
+import * as R from 'ramda';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -171,26 +172,34 @@ const vm = new Vue({
       this.$router.push(location)
     );
 
+    const findRoomFromUserOrCreate = R.memoizeWith(
+      R.identity,
+      this.findRoomFromUserOrCreate
+    );
+
     // onMessage received (onAuthorize is in App.vue)
     this.$subscribeTo(
       subscriptions.onMessage,
       async ({ sender, message }: { sender: IDevice; message: MessageDoc }) => {
         //  Find user or create if necessary
-        const room: Room = await this.findRoomFromUserOrCreate({
+        const room: Room = await findRoomFromUserOrCreate({
           id: sender.mac,
           username: sender.username,
           // Update the roomId inside the message (Currently is the sender roomId)
         });
+        console.warn(room);
         await this.addOrUpdateMessage({
-          ...message,
-          roomId: room.id,
-        } as MessageDoc);
+          skipUpsert: message.status === 'pending', // Avoid to update database while receiving chunk of data (will not update when you re sending to yourself)
+          message: {
+            ...message,
+            roomId: room.id,
+          } as MessageDoc,
+        });
         // Notify user
         (() => {
           if (message.status !== 'sent') return;
           const notification = new Notification(sender.username, {
             timestamp: Date.now(),
-            icon: './assets/icons/clip.svg',
             body: `– ${message.content}`,
           });
           notification.onclick = () => {
@@ -198,15 +207,15 @@ const vm = new Vue({
               this.$router.push({ name: 'room', params: { roomId: room.id } });
             }
           };
+          console.info('Message Received! 🎉😼', message);
         })();
-        console.info('Message Received! 🎉😼', message);
       }
     );
 
     this.$subscribeTo(
       subscriptions.onProgress.pipe(
         concatMap(async (data) => {
-          const room = (await this.findRoomFromUserOrCreate({
+          const room = (await findRoomFromUserOrCreate({
             id: data.receiverId,
             username: 'always present so fix later',
           })) as Room;
@@ -216,29 +225,32 @@ const vm = new Vue({
           })) as MessageDoc;
           // Update the roomId inside the message (Currently is the sender roomId)
           return this.addOrUpdateMessage({
-            ...message,
-            content: (() => {
-              switch (data.status) {
-                case 'next':
-                  return stringifyContent({
-                    path: parseContent(message.content).path,
-                    progress: data.progress,
-                  });
-                default:
-                  return message.content;
-              }
-            })(),
-            status: (() => {
-              switch (data.status) {
-                case 'next':
-                  return 'pending';
-                case 'complete':
-                  return 'sent';
-                case 'error':
-                  return 'rejected';
-              }
-            })(),
-          } as MessageDoc);
+            skipUpsert: data.status === 'next',
+            message: {
+              ...message,
+              content: (() => {
+                switch (data.status) {
+                  case 'next':
+                    return stringifyContent({
+                      path: parseContent(message.content).path,
+                      progress: data.progress,
+                    });
+                  default:
+                    return message.content;
+                }
+              })(),
+              status: (() => {
+                switch (data.status) {
+                  case 'next':
+                    return 'pending';
+                  case 'complete':
+                    return 'sent';
+                  case 'error':
+                    return 'rejected';
+                }
+              })(),
+            } as MessageDoc,
+          });
         })
       ),
       async (data) => {

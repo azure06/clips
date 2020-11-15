@@ -6,8 +6,26 @@ import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { concatMap, tap, take, catchError } from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
 import { ipcRenderer, remote } from 'electron';
-import { isDriveResponse } from '@/utils/drive';
 import { storeService } from '@/electron/services/electron-store';
+
+export type DriveResponse<T> = Successful<T> | Unsuccessful<T>;
+
+type Successful<T> = {
+  status: number;
+  statusText: string;
+  data: T;
+};
+type Unsuccessful<T> = Omit<Successful<T>, 'data'>;
+
+function isDriveResponse<T>(
+  driveResponse: unknown
+): driveResponse is DriveResponse<T> {
+  return (
+    typeof driveResponse === 'object' &&
+    !!driveResponse &&
+    'status' in driveResponse
+  );
+}
 
 const collection = () => getCollection('clips');
 

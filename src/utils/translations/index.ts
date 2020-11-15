@@ -3,7 +3,7 @@ import { en } from './english';
 import { ja } from './japanese';
 import { it } from './italian';
 import { chinese } from './chinese';
-import { Language } from '../language';
+import { Language } from '..';
 
 export const translations: {
   [T in keyof Omit<Language, 'auto'>]: Translation;

@@ -11,8 +11,9 @@ import {
   MessageDoc,
   stringifyContent,
 } from '@/rxdb/message/model';
+import { map, scan } from 'rxjs/operators';
 
-type MessageTextReq = {
+type MessageSub = {
   sender: IDevice;
   message: MessageDoc;
 };
@@ -43,7 +44,7 @@ function initSocket(
     serveClient: false,
     transports: ['websocket'],
   });
-  const messageSubject = new Subject<MessageTextReq>();
+  const messageSubject = new Subject<MessageSub>();
   ioServer.sockets.on('connection', function(socket) {
     console.info(`Server connected with.. ${socket.handshake.address}🔥`);
     socket.on('authorize', async function(sender: IDevice, authorizeReq) {
@@ -55,7 +56,6 @@ function initSocket(
         if (!isMessageText(request)) {
           switch (request.status) {
             case 'start':
-              // FIXME never called when reading the file stream
               onConnectionStart(request);
               break;
             case 'keep':
@@ -63,7 +63,9 @@ function initSocket(
               break;
             case 'end':
               break;
-            // Add error case
+            case 'error':
+              // TODO Handle error
+              break;
           }
         }
         const message = !isMessageText(request)
@@ -112,8 +114,8 @@ export function listen(
   authorize_: (device: IDevice) => Promise<boolean>,
   port: number,
   ip: string
-): Promise<[http.Server, Observable<MessageTextReq>]> {
-  return new Promise<[http.Server, Observable<MessageTextReq>]>(
+): Promise<[http.Server, Observable<MessageSub>]> {
+  return new Promise<[http.Server, Observable<MessageSub>]>(
     (resolve_, reject_) => {
       const httpServer = http.createServer();
       httpServer.on('connection', (socket) => {

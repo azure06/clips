@@ -1,4 +1,4 @@
-import { Progress } from 'progress-stream';
+import { Progress } from '@/electron/services/socket.io/types';
 import { RxCollection, RxDocument, RxJsonSchema } from 'rxdb';
 
 export interface MessageDatabaseCollection {
@@ -31,7 +31,6 @@ export interface Content {
 export function defaultContent(): Content {
   return {
     progress: {
-      delta: 0,
       eta: 0,
       length: 0,
       percentage: 0,

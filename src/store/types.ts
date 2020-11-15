@@ -5,12 +5,11 @@ import { UserDoc } from '@/rxdb/user/model';
 
 export type Room = RoomDoc & { messages: MessageDoc[] };
 
-export type Loading = {
-  user: boolean;
-  room: boolean;
-  message: boolean;
-  devices: boolean;
-};
+export type LoDevices = boolean;
+export type LoRooms = boolean;
+export type LoMessages = boolean;
+
+export type Loading = [LoDevices, LoRooms, LoMessages];
 
 export interface NetworkState {
   status: 'started' | 'closed'; // Server status

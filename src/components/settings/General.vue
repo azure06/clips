@@ -234,7 +234,7 @@
 // @ is an alias to /src
 import { SettingsState } from '../../store/types';
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { replace } from '@/utils/string';
+import { replace } from '@/utils';
 
 @Component
 export default class General extends Vue {

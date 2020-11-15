@@ -20,7 +20,7 @@ export const it: Translation = {
   cleanupDesc2: '・I preferiti non saranno eliminati',
   cleanupDesc3: '・Aiuta a migliorare la performance di ricerca',
   cleanupDesc4:
-    "・[Attenzione] Questo queto meccanismo si basa sulla Data/Orario di sistema. Cambiamenti a quest'ultima potrebbe generare risultati inaspettati",
+    "・[Attenzione] Questo queto meccanismo si basa sulla Data/Orario di sistema. Cambiamenti a quest'ultima potrebbero generare risultati inaspettati",
   clearClipboardHistory: 'Cancella tutti i tuoi dati permanentemente',
   clearData: 'Cancella i dati',
   clipboard: 'Clipboard',

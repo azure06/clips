@@ -1,7 +1,6 @@
-import { language } from './language';
+import { language, replace } from '.';
 import { translations } from './translations';
 import { Translation } from './translations/types';
-import { replace } from './string';
 import { SettingsState } from '@/store/types';
 import { Getter } from 'vuex-class';
 import { Vue, Component } from 'vue-property-decorator';

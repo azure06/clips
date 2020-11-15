@@ -1,6 +1,6 @@
 {
   "name": "clips",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "homepage": "https://infiniticlips.com",
   "repository": {
@@ -35,7 +35,6 @@
   "dependencies": {
     "@sentry/electron": "^2.0.1",
     "@sentry/integrations": "^5.25.0",
-    "@types/progress-stream": "^2.0.1",
     "core-js": "^3.6.5",
     "electron-log": "^4.2.4",
     "electron-store": "^6.0.1",
@@ -51,8 +50,7 @@
     "moment": "^2.29.1",
     "object-sizeof": "^1.6.1",
     "pouchdb-adapter-idb": "^7.2.2",
-    "progress-stream": "^2.0.0",
-    "promise.any": "^2.0.1",
+    "ramda": "^0.27.1",
     "register-service-worker": "^1.7.1",
     "rxdb": "^9.6.0",
     "rxjs": "^6.6.3",
@@ -74,6 +72,7 @@
     "@mdi/font": "^5.6.55",
     "@types/auto-launch": "^5.0.1",
     "@types/electron-devtools-installer": "^2.2.0",
+    "@types/ramda": "^0.27.32",
     "@types/socket.io": "^2.1.11",
     "@types/socket.io-client": "^1.4.34",
     "@types/universal-analytics": "^0.4.4",
@@ -92,7 +91,7 @@
     "electron": "^9.0.0",
     "electron-devtools-installer": "^3.1.0",
     "electron-icon-builder": "^1.0.2",
-    "eslint": "^7.11.0",
+    "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-vue": "^7.0.1",

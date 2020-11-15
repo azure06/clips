@@ -1,11 +1,20 @@
 import { MessageDoc } from '@/rxdb/message/model';
 import findLocalDevices from 'local-devices';
-import { Progress } from 'progress-stream';
 
 export type IDevice = findLocalDevices.IDevice & {
   username: string;
   port: number;
 };
+
+export interface Progress {
+  percentage: number;
+  transferred: number;
+  length: number;
+  remaining: number;
+  eta: number;
+  runtime: number;
+  speed: number;
+}
 
 export interface Start {
   filename: string;
@@ -23,6 +32,12 @@ export type End = Omit<Start, 'status'> & { status: 'end' };
 export type Error = Omit<Start, 'status' | 'progress'> & { status: 'error' };
 
 export type State = Start | Keep | End | Error;
+
+export type StateOmitP =
+  | Omit<Start, 'progress'>
+  | Omit<Keep, 'progress'>
+  | Omit<End, 'progress'>
+  | Error;
 
 export type MessageReq = MessageDoc | State;
 

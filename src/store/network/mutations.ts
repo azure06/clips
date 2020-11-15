@@ -3,21 +3,24 @@ import { NetworkState } from '@/store/types';
 import Vue from 'vue';
 import { RoomDoc } from '@/rxdb/room/model';
 import { MessageDoc } from '@/rxdb/message/model';
-import { toDictionary } from '@/utils/object';
+import { toDictionary } from '@/utils';
 import { UserDoc } from '@/rxdb/user/model';
-
-type Loading = Partial<{
-  user: boolean;
-  room: boolean;
-  message: boolean;
-}>;
 
 const mutations: MutationTree<NetworkState> = {
   setServerStatus(state, status: 'started' | 'closed') {
     Vue.set(state, 'status', status);
   },
-  setLoading(state, loading: Loading) {
-    Vue.set(state, 'loading', { ...state.loading, ...loading });
+  setLoadingDevices(state, devices: boolean) {
+    const [, rooms, messages] = state.loading;
+    Vue.set(state, 'loading', [devices, rooms, messages]);
+  },
+  setLoadingRooms(state, rooms: boolean) {
+    const [devices, , messages] = state.loading;
+    Vue.set(state, 'loading', [devices, rooms, messages]);
+  },
+  setLoadingMessages(state, messages: boolean) {
+    const [devices, rooms] = state.loading;
+    Vue.set(state, 'loading', [devices, rooms, messages]);
   },
   addOrUpdateUser(state, user: UserDoc) {
     const users = state.users.filter((user_) => user_.id !== user.id);

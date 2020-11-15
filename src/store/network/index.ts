@@ -8,12 +8,7 @@ const state: NetworkState = {
   status: 'closed', // Server status
   users: [],
   rooms: [],
-  loading: {
-    room: false,
-    message: false,
-    user: false,
-    devices: false,
-  },
+  loading: [false, false, false],
 };
 
 export const network: Module<NetworkState, RootState> = {

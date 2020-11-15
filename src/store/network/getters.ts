@@ -1,10 +1,12 @@
 import { GetterTree } from 'vuex';
 import { RootState, NetworkState } from '@/store/types';
-import { toDictionary } from '@/utils/object';
+import { toDictionary } from '@/utils';
 
 const getters: GetterTree<NetworkState, RootState> = {
   serverStatus: (state: NetworkState) => state.status,
-  loading: (state: NetworkState) => state.loading,
+  loadingDevices: ({ loading: [devices] }: NetworkState) => devices,
+  loadingRooms: ({ loading: [, rooms] }: NetworkState) => rooms,
+  loadingMessages: ({ loading: [, , messages] }: NetworkState) => messages,
   thisUser: (state: NetworkState) => state.thisUser,
   users: (state: NetworkState) => state.users,
   userDictionary: (state: NetworkState) => toDictionary(state.users),

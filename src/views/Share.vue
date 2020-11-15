@@ -4,7 +4,7 @@
       <router-view
         :room="roomStream"
         :draft="draftStream"
-        :loadingMessages="loading.message"
+        :loadingMessages="loadingMessages"
         :unreadCount="unreadMessagesByUser[roomStream.userIds[0]].size"
         @close="$router.back()"
         @keydown="(room, event) => onKeyDown(room, draftStream, event)"
@@ -102,7 +102,7 @@
 
       <!-- Dialog -->
       <v-dialog
-        :value="loading.room || loading.message"
+        :value="loadingRooms || loadingMessages"
         persistent
         width="360"
         dark
@@ -135,7 +135,7 @@
           :height="$vuetify.breakpoint.smAndDown ? 56 : 64"
         >
           <v-card-text
-            v-if="loading.devices"
+            v-if="loadingDevices"
             class="ma-0 pa-3"
             @click="() => {}"
           >
@@ -153,8 +153,8 @@
               v-on="on"
               class="overline"
               depressed
-              :loading="loading.devices"
-              :disabled="loading.devices || serverStatus === 'closed'"
+              :loading="loadingDevices"
+              :disabled="loadingDevices || serverStatus === 'closed'"
               @click="discoverUsers"
               color="surfaceVariant"
             >
@@ -309,8 +309,12 @@ import { combineLatest, from, Subject } from 'rxjs';
 export default class Share extends ExtendedVue {
   @Getter('serverStatus', { namespace: 'network' })
   public serverStatus!: 'started' | 'closed';
-  @Getter('loading', { namespace: 'network' })
-  public loading!: { user: boolean; room: boolean; message: boolean };
+  @Getter('loadingDevices', { namespace: 'network' })
+  public loadingDevices!: boolean;
+  @Getter('loadingRooms', { namespace: 'network' })
+  public loadingRooms!: boolean;
+  @Getter('loadingMessages', { namespace: 'network' })
+  public loadingMessages!: boolean;
 
   @Getter('unreadMessagesByUser', { namespace: 'network' })
   public unreadMessagesByUser!: number;

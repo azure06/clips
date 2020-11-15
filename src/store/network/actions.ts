@@ -20,7 +20,7 @@ import { getCollection } from '@/rxdb';
 import { MessageDoc, stringifyContent } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
-import { toDictionary } from '@/utils/object';
+import { toDictionary } from '@/utils';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 
@@ -66,7 +66,7 @@ const actions: ActionTree<NetworkState, RootState> = {
     new Promise((resolve) =>
       range(1, 1)
         .pipe(
-          tap(() => commit('setLoading', { devices: true })),
+          tap(() => commit('setLoadingDevices', true)),
           concatMap(() =>
             from(
               ipcRenderer.invoke('my-device') as Promise<IDevice | undefined>
@@ -95,14 +95,13 @@ const actions: ActionTree<NetworkState, RootState> = {
         )
         .subscribe({
           complete: () => {
-            commit('setLoading', { devices: false });
+            commit('setLoadingDevices', false);
             resolve();
           },
         })
     ),
-  findUser: async ({ commit }, userId: string) =>
+  findUser: async (_, userId: string) =>
     getCollection('user')
-      .pipe(tap(() => commit('setLoading', { user: true })))
       .pipe(
         concatMap((collection) =>
           from(collection.findUser(userId)).pipe(
@@ -113,7 +112,6 @@ const actions: ActionTree<NetworkState, RootState> = {
           )
         )
       )
-      .pipe(tap(() => commit('setLoading', { user: false })))
       .pipe(take(1))
       .toPromise(),
   upsertUser: async (
@@ -121,7 +119,6 @@ const actions: ActionTree<NetworkState, RootState> = {
     user: Partial<Omit<UserDoc, 'device'>> & { device: IDevice }
   ) =>
     getCollection('user')
-      .pipe(tap(() => commit('setLoading', { user: true })))
       .pipe(
         concatMap((collection) =>
           from(
@@ -147,7 +144,6 @@ const actions: ActionTree<NetworkState, RootState> = {
           )
         )
       )
-      .pipe(tap(() => commit('setLoading', { user: false })))
       .pipe(take(1))
       .toPromise(),
   findRoomFromUserOrCreate: async (
@@ -155,7 +151,6 @@ const actions: ActionTree<NetworkState, RootState> = {
     user: Pick<UserDoc, 'id' | 'username'>
   ) =>
     getCollection('room')
-      .pipe(tap(() => commit('setLoading', { room: true })))
       .pipe(
         concatMap((collection) =>
           from(
@@ -189,12 +184,11 @@ const actions: ActionTree<NetworkState, RootState> = {
           room ? state.rooms.find((room_) => room_.id === room.id) : undefined
         )
       )
-      .pipe(tap(() => commit('setLoading', { room: false })))
       .pipe(take(1))
       .toPromise(),
   loadRooms: async ({ state, commit }) =>
     getCollection('room')
-      .pipe(tap(() => commit('setLoading', { room: true })))
+      .pipe(tap(() => commit('setLoadingRooms', true)))
       .pipe(
         concatMap((methods) =>
           from(methods.findRooms()).pipe(
@@ -207,7 +201,7 @@ const actions: ActionTree<NetworkState, RootState> = {
       )
       .pipe(tap((rooms) => commit('mergeRooms', rooms)))
       .pipe(map(() => state.rooms)) // At this point should contain message property
-      .pipe(tap(() => commit('setLoading', { room: false })))
+      .pipe(tap(() => commit('setLoadingRooms', false)))
       .pipe(take(1))
       .toPromise(),
   loadMessages: async (
@@ -215,7 +209,7 @@ const actions: ActionTree<NetworkState, RootState> = {
     data: { roomId: string; options?: { limit: number; skip: number } }
   ) =>
     getCollection('message')
-      .pipe(tap(() => commit('setLoading', { message: true })))
+      .pipe(tap(() => commit('setLoadingMessages', true)))
       .pipe(
         concatMap((collection) =>
           from(collection.findMessages(data.roomId, data.options)).pipe(
@@ -237,12 +231,11 @@ const actions: ActionTree<NetworkState, RootState> = {
         )
       )
       .pipe(map(() => toDictionary(state.rooms)[data.roomId].messages))
-      .pipe(tap(() => commit('setLoading', { message: false })))
+      .pipe(tap(() => commit('setLoadingMessages', false)))
       .pipe(take(1))
       .toPromise(),
-  findMessage: async ({ commit }, { roomId, messageId }) =>
+  findMessage: async (_, { roomId, messageId }) =>
     getCollection('message')
-      .pipe(tap(() => commit('setLoading', { message: true })))
       .pipe(
         concatMap((collection) =>
           from(
@@ -253,25 +246,28 @@ const actions: ActionTree<NetworkState, RootState> = {
           )
         )
       )
-      .pipe(tap(() => commit('setLoading', { message: false })))
       .pipe(take(1))
       .toPromise(),
   addOrUpdateMessage: async (
     { commit },
-    message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
-      id?: string;
+    args: {
+      message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
+        id?: string;
+      };
+      skipUpsert?: boolean;
     }
   ) =>
     getCollection('message')
-      .pipe(tap(() => commit('setLoading', { message: true })))
       .pipe(
         concatMap((methods) =>
-          from(methods.upsertMessage(message)).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of(undefined);
-            })
-          )
+          args.skipUpsert
+            ? Promise.resolve(args.message)
+            : from(methods.upsertMessage(args.message)).pipe(
+                catchError((error) => {
+                  Sentry.captureException(error);
+                  return of(undefined);
+                })
+              )
         )
       )
       .pipe(
@@ -279,7 +275,6 @@ const actions: ActionTree<NetworkState, RootState> = {
           if (message) commit('addOrUpdateMessage', message);
         })
       )
-      .pipe(tap(() => commit('setLoading', { message: false })))
       .pipe(take(1))
       .toPromise(),
   setMessagesToRead: async (
@@ -287,7 +282,6 @@ const actions: ActionTree<NetworkState, RootState> = {
     { roomId, senderId }: { roomId: string; senderId: string }
   ) =>
     getCollection('message')
-      .pipe(tap(() => commit('setLoading', { message: true })))
       .pipe(
         concatMap((collection) =>
           from(
@@ -325,7 +319,6 @@ const actions: ActionTree<NetworkState, RootState> = {
           messages.forEach((message) => commit('addOrUpdateMessage', message))
         )
       )
-      .pipe(tap(() => commit('setLoading', { message: false })))
       .pipe(take(1))
       .toPromise(),
   sendMessage: async (
@@ -400,7 +393,6 @@ const actions: ActionTree<NetworkState, RootState> = {
                 content: stringifyContent({
                   path: args.message.path,
                   progress: {
-                    delta: 0,
                     eta: 0,
                     length: 0,
                     percentage: 0,
