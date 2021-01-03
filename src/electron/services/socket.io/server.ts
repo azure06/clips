@@ -11,7 +11,6 @@ import {
   MessageDoc,
   stringifyContent,
 } from '@/rxdb/message/model';
-import { map, scan } from 'rxjs/operators';
 
 type MessageSub = {
   sender: IDevice;

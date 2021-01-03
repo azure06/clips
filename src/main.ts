@@ -20,7 +20,6 @@ import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { interval, from } from 'rxjs';
 import Sentry from '@/sentry-vue';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
-import * as R from 'ramda';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -172,22 +171,29 @@ const vm = new Vue({
       this.$router.push(location)
     );
 
-    const findRoomFromUserOrCreate = R.memoizeWith(
-      R.identity,
-      this.findRoomFromUserOrCreate
-    );
+    const findRoomFromUserOrCreate = ((memoized: {
+      [key: string]: Room | undefined;
+    }) => (messageId: string) => async (args: {
+      id: string;
+      username: string;
+    }) =>
+      memoized[messageId] ??
+      (async () => {
+        const room: Room = await this.findRoomFromUserOrCreate(args);
+        memoized[messageId] = room;
+        return room;
+      })())({});
 
     // onMessage received (onAuthorize is in App.vue)
     this.$subscribeTo(
       subscriptions.onMessage,
       async ({ sender, message }: { sender: IDevice; message: MessageDoc }) => {
         //  Find user or create if necessary
-        const room: Room = await findRoomFromUserOrCreate({
+        const room: Room = await findRoomFromUserOrCreate(message.id)({
           id: sender.mac,
           username: sender.username,
           // Update the roomId inside the message (Currently is the sender roomId)
         });
-        console.warn(room);
         await this.addOrUpdateMessage({
           skipUpsert: message.status === 'pending', // Avoid to update database while receiving chunk of data (will not update when you re sending to yourself)
           message: {
@@ -215,10 +221,10 @@ const vm = new Vue({
     this.$subscribeTo(
       subscriptions.onProgress.pipe(
         concatMap(async (data) => {
-          const room = (await findRoomFromUserOrCreate({
+          const room = await findRoomFromUserOrCreate(data.messageId)({
             id: data.receiverId,
             username: 'always present so fix later',
-          })) as Room;
+          });
           const message = (await this.findMessage({
             roomId: room.id,
             messageId: data.messageId,

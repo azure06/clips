@@ -80,7 +80,18 @@
                     <v-btn
                       v-if="!change.removed"
                       icon
-                      @click="retrieveFile(change)"
+                      @click="retrieveFile(change, 'sync')"
+                    >
+                      <v-icon color="grey lighten-1"
+                        >mdi-swap-horizontal</v-icon
+                      >
+                    </v-btn>
+                  </v-list-item-action>
+                  <v-list-item-action>
+                    <v-btn
+                      v-if="!change.removed"
+                      icon
+                      @click="retrieveFile(change, 'downlaod')"
                     >
                       <v-icon color="grey lighten-1">mdi-download</v-icon>
                     </v-btn>
@@ -139,7 +150,7 @@
     <v-dialog v-model="fetching" hide-overlay persistent width="300">
       <v-card color="blue darken-2" dark>
         <v-card-text>
-          Downloading...
+          Retrieving data...
           <v-progress-linear
             indeterminate
             color="white"
@@ -177,6 +188,8 @@ export default class GoogleDrive extends ExtendedVue {
   public signOut!: () => Promise<void>;
   @Action('downloadJson', { namespace: 'clips' })
   public downloadJson!: (clip: Clip[]) => Promise<void>;
+  @Action('addClip', { namespace: 'clips' })
+  public addClip!: (clip: Clip) => Promise<void>;
   @Getter('user', { namespace: 'user' })
   public processing!: boolean;
   public user!: () => Promise<User>;
@@ -193,7 +206,7 @@ export default class GoogleDrive extends ExtendedVue {
   }
 
   public isGaxiosError(
-    response: GaxiosErrorEx | SchemaChange
+    response: GaxiosErrorEx | SchemaChange | Clip[]
   ): response is GaxiosErrorEx {
     return 'error' in response;
   }
@@ -213,16 +226,22 @@ export default class GoogleDrive extends ExtendedVue {
     }
   }
 
-  public async retrieveFile(change: drive_v3.Schema$Change): Promise<void> {
+  public async retrieveFile(
+    change: drive_v3.Schema$Change,
+    action: 'download' | 'sync' = 'sync'
+  ): Promise<void> {
     // FIXME move to action?
     this.fetching = true;
-    const response = await ipcRenderer.invoke('retrieve-file', change.fileId);
-    this.fetching = false;
-    if (this.isGaxiosError(response)) {
-      this.errorHandler(response);
-    } else {
-      this.downloadJson(response);
-    }
+    ipcRenderer
+      .invoke('retrieve-file', change.fileId)
+      .then((response: Clip[] | GaxiosErrorEx) =>
+        this.isGaxiosError(response)
+          ? Promise.resolve(this.errorHandler(response))
+          : action === 'sync'
+          ? (Promise.all(response.map(this.addClip)) as unknown)
+          : this.downloadJson(response)
+      )
+      .finally(() => (this.fetching = false));
   }
 
   public async retrieveData(token?: string): Promise<void> {
