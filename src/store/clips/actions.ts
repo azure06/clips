@@ -30,6 +30,25 @@ function isDriveResponse<T>(
 const collection = () => getCollection('clips');
 
 const actions: ActionTree<ClipsState, RootState> = {
+  findClips: async (
+    { commit },
+    searchConditions: Partial<ClipSearchConditions>
+  ) =>
+    collection()
+      .pipe(tap(() => commit('setLoadingStatus', true)))
+      .pipe(
+        concatMap((methods) =>
+          from(methods.findClips(searchConditions)).pipe(
+            catchError((error) => {
+              Sentry.captureException(error);
+              return of([]);
+            })
+          )
+        )
+      )
+      .pipe(tap(() => commit('setLoadingStatus', false)))
+      .pipe(take(1))
+      .toPromise(),
   loadClips: async (
     { commit },
     searchConditions: Partial<ClipSearchConditions>

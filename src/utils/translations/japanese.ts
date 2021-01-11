@@ -37,6 +37,7 @@ export const ja: Translation = {
   fuzzySearch: '曖昧検索',
   general: '全般',
   googleDrive: 'Google Drive',
+  grid: 'グリッド',
   hideOnBlur: 'Hide on blur イベント',
   home: 'ホーム',
   htmlText: 'Htmlテキスト',
@@ -46,6 +47,7 @@ export const ja: Translation = {
   itemsHaveBeenUploaded:
     '{length} アイテムがGoogle Driveにアップロードされました',
   language: '言語',
+  list: 'リスト',
   maintain: '位置を保つ',
   mightTakeSeveralMinutes: '処理には数分かかる場合があります',
   networkError: 'ネットワークエラー',

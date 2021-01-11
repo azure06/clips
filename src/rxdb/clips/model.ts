@@ -11,7 +11,7 @@ export interface ClipDoc {
   htmlText: string;
   richText: string;
   dataURI: string;
-  category: 'none' | 'starred';
+  category: string;
   type: 'text' | 'image';
   formats: string[];
   updatedAt: number;
@@ -42,7 +42,7 @@ export interface SearchFilters {
   readonly htmlText: string;
   readonly richText: string;
   readonly dataURI: string;
-  readonly category: 'none' | 'starred';
+  readonly category: 'starred' | string;
   readonly type: 'text' | 'image';
   readonly formats: string[];
   readonly updatedAt: number;

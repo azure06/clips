@@ -37,6 +37,7 @@ export const it: Translation = {
   fuzzySearch: 'Ricerca ambigua',
   general: 'Generale',
   googleDrive: 'Google Drive',
+  grid: 'Griglia',
   hideOnBlur: 'Nascondi Clips',
   home: 'Home',
   htmlText: 'Testo Html',
@@ -45,6 +46,7 @@ export const it: Translation = {
   items: 'Elementi',
   itemsHaveBeenUploaded: '{length} elemnti sono stati caricati su Google Drive',
   language: 'Lingua',
+  list: 'Lista',
   maintain: 'Mantieni',
   mightTakeSeveralMinutes:
     'Questa operazione potrebbe richiedere diversi minuti...',

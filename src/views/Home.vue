@@ -9,135 +9,25 @@
       :class="`container ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
       ref="scroll-target"
     >
-      <v-list two-line subheader dense nav color="surfaceVariant" class="pt-1">
-        <v-list-item
-          v-for="(clip, index) in clipsObserver"
-          :key="clip.id"
-          @mouseover="onClipHover(clips[index])"
-          @click="onClipClick(clips[index])"
-        >
-          <!-- FIXME Remove icon for now -->
-          <!-- <v-list-item-avatar size="40">
-            <v-icon :class="clip.iconClass" v-text="clip.icon"></v-icon>
-          </v-list-item-avatar>-->
-
-          <v-list-item-content>
-            <v-list-item-title
-              v-if="
-                displayType[clip.id].availableTypes[
-                  displayType[clip.id].index
-                ] === 'plainText'
-              "
-              v-text="clip.preview"
-            ></v-list-item-title>
-            <v-img
-              v-else-if="
-                displayType[clip.id].availableTypes[
-                  displayType[clip.id].index
-                ] === 'dataURI'
-              "
-              style="border-radius: 5px; max-height: 64px;"
-              :src="clip.dataURI"
-              :alt="clip.preview"
-            ></v-img>
-            <v-list-item-title v-else>
-              <div
-                v-dompurify-html="clip.htmlText"
-                style="border-radius: 5px; max-height: 64px;"
-              ></div>
-            </v-list-item-title>
-            <v-list-item-subtitle v-text="clip.fromNow"></v-list-item-subtitle>
-          </v-list-item-content>
-
-          <v-list-item-action class="pa-0 pl-2 ma-0" v-if="mode !== 'select'">
-            <div>
-              <v-btn
-                v-if="displayType[clip.id].availableTypes.length > 1"
-                icon
-                @click="goNext($event, clip.id)"
-              >
-                <v-icon
-                  v-if="
-                    displayType[clip.id].availableTypes[
-                      displayType[clip.id].index
-                    ] === 'plainText'
-                  "
-                  >mdi-card-text</v-icon
-                >
-                <v-icon
-                  v-if="
-                    displayType[clip.id].availableTypes[
-                      displayType[clip.id].index
-                    ] === 'htmlText'
-                  "
-                  >mdi-language-html5</v-icon
-                >
-                <v-icon
-                  v-if="
-                    displayType[clip.id].availableTypes[
-                      displayType[clip.id].index
-                    ] === 'richText'
-                  "
-                  >mdi-card-text-outline</v-icon
-                >
-                <v-icon
-                  v-if="
-                    displayType[clip.id].availableTypes[
-                      displayType[clip.id].index
-                    ] === 'dataURI'
-                  "
-                  >mdi-image-area</v-icon
-                >
-              </v-btn>
-              <v-btn icon @click="onStarClick($event, clips[index])">
-                <v-icon
-                  :color="
-                    `${
-                      clip.category === 'starred'
-                        ? clip.type === 'text'
-                          ? 'blue darken-2'
-                          : 'cyan darken-2'
-                        : 'blue-gray'
-                    }`
-                  "
-                  >mdi-star</v-icon
-                >
-              </v-btn>
-            </div>
-          </v-list-item-action>
-          <v-list-item-action class="pa-0 pl-2 pr-2 ma-0" v-else>
-            <v-checkbox
-              :input-value="removeTarget[clip.id]"
-              color="cyan darken-2"
-              @click="onRemoveCLick($event, clips[index], index)"
-            ></v-checkbox>
-          </v-list-item-action>
-        </v-list-item>
-      </v-list>
-
-      <!-- Loading circle -->
-
-      <transition name="fade">
-        <div style="height: 120px" class="py-4" flat tile>
-          <v-row v-if="loading" align="center" justify="center">
-            <v-progress-circular
-              indeterminate
-              color="cyan darken-2"
-              size="50"
-            ></v-progress-circular>
-          </v-row>
-          <v-row
-            v-if="loading"
-            align="center"
-            justify="center"
-            class="text-center"
-          >
-            <v-subheader class="text-center overline"
-              >Loading more data...</v-subheader
-            >
-          </v-row>
-        </div>
-      </transition>
+      <Grid
+        :clipsObserver="clipsObserver"
+        :clips="clips"
+        :labels="labels"
+        :loading="loading"
+        :displayType="displayType"
+        :clipboardMode="clipboardMode"
+        :removeTarget="removeTarget"
+        :viewMode="viewMode"
+        @clip-hover="onClipHover"
+        @clip-click="onClipClick"
+        @label-click="onLabelClick"
+        @label-select="onLabelSelect"
+        @go-next="goNext"
+        @remove-click="onRemoveClick"
+        @edit-label="modifyLabel"
+        @remove-label="removeLabel"
+        @create-label="addLabel"
+      />
     </v-container>
 
     <!-- Dialog -->
@@ -163,18 +53,20 @@
     <!-- Search bar -->
     <SearchBar
       @change-mode="onChangeMode"
-      @change-type="onChangeType"
-      @change-category="onChangeCategory"
+      @change-type="(type) => search(normalizeQuery(searchQuery, { type }))"
       @remove-items="onRemoveItems"
-      @query-change="search"
+      @query-change="(value) => search(normalizeQuery(value))"
       @download-json="fromDump().then(downloadJson)"
       @upload-json="uploadJson"
       @sync-with-drive="syncWithDrive"
+      @focus="onSearchBarFocus"
+      @change-view-mode="(value) => (viewMode = value)"
       :translations="$translations"
       :type="searchConditions.filters.type"
-      :category="searchConditions.filters.category"
       :sync-status="syncStatus"
-      :mode="mode"
+      :clipboardMode="clipboardMode"
+      :viewMode="viewMode"
+      :searchQuery="searchQuery"
     />
   </div>
 </template>
@@ -184,8 +76,9 @@ import { Component } from 'vue-property-decorator';
 import { fromEvent } from 'rxjs';
 import AppBar from '@/components/AppBar.vue';
 import SearchBar from '@/components/SearchBar.vue';
-import { Clip, User } from '@/store/types';
-import { Getter, Action } from 'vuex-class';
+import Grid from '@/components/Grid.vue';
+import { Clip, Label, User } from '@/store/types';
+import { Getter, Action, Mutation } from 'vuex-class';
 import { ClipSearchConditions, SearchFilters } from '@/rxdb/clips/model';
 import * as utils from '@/rxdb/clips/utils';
 import { ExtendedVue } from '@/utils/base-vue';
@@ -204,7 +97,7 @@ import { WatchObservable } from 'vue-rx';
 type ClipEx = Clip & { fromNow?: string; preview?: string };
 
 @Component<Home>({
-  components: { AppBar, SearchBar },
+  components: { AppBar, SearchBar, Grid },
   subscriptions() {
     return {
       clipsObserver: this.$watchAsObservable(() => this.clips).pipe(
@@ -283,10 +176,18 @@ export default class Home extends ExtendedVue {
     clip: Clip;
     threshold: number;
   }) => Promise<Clip[]>;
+  @Mutation('modifyLabel', { namespace: 'labels' })
+  public modifyLabel!: (label: Label) => void;
+  @Mutation('addLabel', { namespace: 'labels' })
+  public addLabel!: (label: Label) => void;
+  @Action('removeLabel', { namespace: 'labels' })
+  public removeLabel!: (labelId: string) => void;
   @Getter('user', { namespace: 'user' })
   public user!: User;
   @Getter('clips', { namespace: 'clips' })
   public clips!: Clip[];
+  @Getter('labels', { namespace: 'labels' })
+  public labels!: Label[];
   @Getter('loading', { namespace: 'clips' })
   public loading!: boolean;
   @Getter('processing', { namespace: 'clips' })
@@ -300,7 +201,7 @@ export default class Home extends ExtendedVue {
     sort: '-updatedAt',
     filters: {},
   };
-  public mode: 'normal' | 'select' = 'normal';
+  public clipboardMode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
   public displayType: {
     [id: string]: {
@@ -312,9 +213,11 @@ export default class Home extends ExtendedVue {
 
   public snackbar = false;
   public snackbarText = '';
+  public viewMode: 'list' | 'grid' = 'list';
+  public searchQuery = '';
 
   public get clipCount(): number {
-    return this.mode === 'select'
+    return this.clipboardMode === 'select'
       ? Object.entries(this.removeTarget).length
       : this.clips.length;
   }
@@ -351,18 +254,17 @@ export default class Home extends ExtendedVue {
     }
   }
 
-  public async onStarClick(event: Event, clip: Clip): Promise<void> {
-    event.stopPropagation();
+  public async onLabelSelect(label: Label, clip: Clip): Promise<void> {
     await this.modifyClip({
       clip: {
         ...clip,
-        category: clip.category === 'starred' ? 'none' : 'starred',
+        category: !label.id ? 'none' : label.id,
       },
       options: { silently: true },
     });
   }
 
-  public async onRemoveCLick(event: Event, clip: ClipEx): Promise<void> {
+  public async onRemoveClick(event: Event, clip: ClipEx): Promise<void> {
     event.stopPropagation();
     this.removeTarget = {
       ...this.removeTarget,
@@ -378,43 +280,77 @@ export default class Home extends ExtendedVue {
       [] as string[]
     );
     await this.removeClips(ids);
-    this.mode = 'normal';
+    this.clipboardMode = 'normal';
   }
 
   public onChangeMode(mode: 'normal' | 'select'): void {
-    this.mode = mode;
+    this.clipboardMode = mode;
   }
 
-  public onChangeType(type?: 'text' | 'image'): Promise<Clip[]> {
-    this.searchConditions.filters = {
-      ...this.searchConditions.filters,
-      type,
-    };
-    return this.loadClips(this.searchConditions);
+  public onLabelClick(label: Label): void {
+    const target = this.labels.find((label_) => label_.id === label.id);
+
+    this.search(this.normalizeQuery(this.searchQuery, { label: target?.name }));
   }
 
-  public onChangeCategory(category?: 'none' | 'starred'): Promise<Clip[]> {
-    this.searchConditions.filters = {
-      ...this.searchConditions.filters,
-      category,
-    };
-    return this.loadClips(this.searchConditions);
+  public normalizeQuery(
+    searchQuery: string,
+    args?: { type: 'text' | 'image' } | { label?: 'Starred' | string }
+  ):
+    | {
+        search: string;
+        type?: 'text' | 'image';
+        label?: string;
+      }
+    | string {
+    try {
+      const { type, label, search } = JSON.parse(searchQuery);
+      if (!args) {
+        return { type, label, search };
+      } else if ('type' in args) {
+        return { type: args.type, label, search };
+      } else if ('label' in args) {
+        return { type, label: args.label, search };
+      } else {
+        return { type, label, search };
+      }
+    } catch (e) {
+      if (!args) {
+        return searchQuery;
+      } else if ('type' in args) {
+        return { type: args.type, search: searchQuery };
+      } else if ('label' in args) {
+        return { label: args.label, search: searchQuery };
+      } else {
+        return searchQuery;
+      }
+    }
   }
 
   // eslint-disable-next-line no-undef
   public timeout?: NodeJS.Timeout;
-  public search(value: string): void {
+  public search(
+    args:
+      | {
+          search: string;
+          type?: 'text' | 'image';
+          label?: string;
+        }
+      | string
+  ): void {
     if (this.timeout) clearTimeout(this.timeout);
+    const search = typeof args === 'string' ? args : args.search;
+
     this.timeout = setTimeout(async () => {
       const regex = (() => {
-        if (value) {
+        if (search) {
           switch (this.settings.storage.search.type) {
             case 'fuzzy':
-              return utils.patterns.likeSearch('plainText', value);
+              return utils.patterns.likeSearch('plainText', search);
             case 'advanced-fuzzy':
               return utils.patterns.advancedSearch(
                 'plainText',
-                value.split(' ')
+                search.split(' ')
               );
           }
         }
@@ -423,13 +359,31 @@ export default class Home extends ExtendedVue {
       this.searchConditions = {
         ...this.searchConditions,
         regex,
-        filters:
-          value && !regex
-            ? { ...this.searchConditions.filters, plainText: value }
-            : { ...this.searchConditions.filters, plainText: undefined },
+        filters: {
+          ...this.searchConditions.filters,
+          type: typeof args === 'string' ? undefined : args.type,
+          category:
+            typeof args === 'string' || !args.label
+              ? undefined
+              : args.label === 'Starred'
+              ? // Starerd is a particular case maintained for back compatibility
+                'starred'
+              : this.labels.find((label) => label.name === args.label)?.id,
+          plainText: search && !regex ? search : undefined,
+        },
       };
 
-      return this.loadClips(this.searchConditions);
+      this.searchQuery =
+        typeof args === 'string'
+          ? search
+          : JSON.stringify({
+              type: args.type,
+              label: args.label,
+              search: args.search,
+            });
+
+      await this.loadClips(this.searchConditions);
+      this.viewMode = 'list';
     }, 500);
   }
 
@@ -463,6 +417,10 @@ export default class Home extends ExtendedVue {
       filter((value) => value && !this.loading),
       debounceTime(100)
     );
+  }
+
+  public onSearchBarFocus(): void {
+    this.viewMode = 'grid';
   }
 
   public async mounted(): Promise<void> {

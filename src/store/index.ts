@@ -3,6 +3,7 @@ import { clips } from './clips/index';
 import { user } from './user/index';
 import { settings } from './settings/index';
 import { network } from './network/index';
+import { labels } from './labels/index';
 import Vuex, { StoreOptions } from 'vuex';
 import Vue from 'vue';
 
@@ -28,6 +29,7 @@ const store: StoreOptions<RootState> = {
     user,
     settings,
     network,
+    labels,
   },
 };
 

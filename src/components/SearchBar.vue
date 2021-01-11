@@ -6,10 +6,10 @@
       <v-text-field
         :value="searchQuery"
         @input="(value) => $emit('query-change', value)"
+        @focus="$emit('focus', $event)"
         class="pa-2"
         :label="translations.search + '...'"
         prepend-inner-icon="mdi-magnify"
-        autofocus
         clearable
         color="blue darken-2"
         background-color="background"
@@ -52,28 +52,23 @@
           <v-btn
             icon
             v-on="on"
-            :color="category === 'starred' ? 'blue darken-2' : undefined"
             @click="
-              $emit(
-                'change-category',
-                category !== 'starred' ? 'starred' : undefined
-              )
+              $emit('change-view-mode', viewMode !== 'grid' ? 'grid' : 'list')
             "
           >
-            <v-icon>mdi-star</v-icon>
+            <v-icon v-if="viewMode === 'grid'">mdi-dots-grid</v-icon>
+            <v-icon v-else>mdi-view-list</v-icon>
           </v-btn>
         </template>
         <span>{{
-          category === 'starred'
-            ? translations.onlyStarred
-            : translations.allCategories
+          viewMode === 'grid' ? translations.grid : translations.list
         }}</span>
       </v-tooltip>
 
       <v-tooltip top>
         <template v-slot:activator="{ on }">
           <v-btn
-            v-show="mode !== 'select'"
+            v-show="clipboardMode !== 'select'"
             icon
             @click="$emit('change-mode', 'select')"
             v-on="on"
@@ -87,7 +82,7 @@
       <v-tooltip top>
         <template v-slot:activator="{ on }">
           <v-btn
-            v-show="mode === 'select'"
+            v-show="clipboardMode === 'select'"
             v-on="on"
             icon
             @click="$emit('remove-items')"
@@ -102,7 +97,7 @@
       <v-tooltip top>
         <template v-slot:activator="{ on }">
           <v-btn
-            v-show="mode === 'select'"
+            v-show="clipboardMode === 'select'"
             v-on="on"
             icon
             @click="$emit('change-mode', 'normal')"
@@ -184,17 +179,17 @@ import { Component, Vue, Prop } from 'vue-property-decorator';
 @Component
 export default class SearchBar extends Vue {
   @Prop({ default: 'normal' })
-  public mode!: 'normal' | 'select';
+  public clipboardMode!: 'normal' | 'select';
   @Prop()
   public type?: 'text' | 'image';
-  @Prop()
-  public category?: 'none' | 'starred';
   @Prop()
   public searchQuery!: 'string';
   @Prop()
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
   @Prop({ required: true })
   public translations!: unknown;
+  @Prop({ required: true })
+  public viewMode!: 'list' | 'grid';
 }
 </script>
 

@@ -75,6 +75,16 @@ export interface SettingsState {
   };
 }
 
+export interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface LabelState {
+  labels: Label[];
+}
+
 export interface User {
   displayName: string;
   emailAddress: string;
