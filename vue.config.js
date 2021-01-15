@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const gitRevisionPlugin = new GitRevisionPlugin();
 const CopyPlugin = require('copy-webpack-plugin');
@@ -11,8 +12,17 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       builderOptions: {
+        appId: 'com.infiniti.clips',
         productName: 'Clips',
         publish: ['github'],
+        afterSign: 'scripts/notarize.js',
+        mac: {
+          category: 'public.app-category.productivity',
+          hardenedRuntime: true,
+          gatekeeperAssess: false,
+          entitlements: 'build/entitlements.mac.plist',
+          entitlementsInherit: 'build/entitlements.mac.plist',
+        },
       },
       // chainWebpackMainProcess: (config) => {
       //   const dest =
