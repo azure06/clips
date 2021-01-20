@@ -1,9 +1,7 @@
 import { RootState } from './types';
 import { clips } from './clips/index';
-import { user } from './user/index';
-import { settings } from './settings/index';
+import { configuration } from './configuration';
 import { network } from './network/index';
-import { labels } from './labels/index';
 import Vuex, { StoreOptions } from 'vuex';
 import Vue from 'vue';
 
@@ -26,10 +24,8 @@ const store: StoreOptions<RootState> = {
   },
   modules: {
     clips,
-    user,
-    settings,
+    configuration,
     network,
-    labels,
   },
 };
 

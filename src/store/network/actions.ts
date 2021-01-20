@@ -10,9 +10,9 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
-import { ipcRenderer } from 'electron';
 import {
   discoverDevices,
+  sendFile,
   sendMessage,
 } from '@/electron/services/socket.io/client';
 import * as Sentry from '@sentry/electron';
@@ -20,7 +20,8 @@ import { getCollection } from '@/rxdb';
 import { MessageDoc, stringifyContent } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
-import { toDictionary } from '@/utils';
+import { toDictionary } from '@/utils/common';
+import { getMyDevice, handleIoServer } from '@/utils/invocation';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 
@@ -43,9 +44,9 @@ export function randomColor(): string {
 
 const actions: ActionTree<NetworkState, RootState> = {
   handleServer: async ({ commit, dispatch }, action: 'start' | 'close') =>
-    from(ipcRenderer.invoke('handle-server', action))
+    from(handleIoServer(action))
       .pipe(
-        tap(async (device: IDevice | undefined) => {
+        tap(async (device) => {
           commit('setServerStatus', action === 'start' ? 'started' : 'closed');
           // Set this user
           if (device) {
@@ -68,9 +69,7 @@ const actions: ActionTree<NetworkState, RootState> = {
         .pipe(
           tap(() => commit('setLoadingDevices', true)),
           concatMap(() =>
-            from(
-              ipcRenderer.invoke('my-device') as Promise<IDevice | undefined>
-            ).pipe(
+            from(getMyDevice()).pipe(
               catchError((error) => {
                 Sentry.captureException(error);
                 return of<undefined>();
@@ -411,12 +410,7 @@ const actions: ActionTree<NetworkState, RootState> = {
               .then(async (message) => {
                 commit('addOrUpdateMessage', message);
                 return args.sender
-                  ? (ipcRenderer.invoke(
-                      'send-file',
-                      args.sender,
-                      args.receiver,
-                      message
-                    ) as Promise<void>)
+                  ? sendFile(args.sender, args.receiver, message)
                   : Promise.reject(new Error('Sender absent'));
               })
               .catch((error) => Sentry.captureException(error))

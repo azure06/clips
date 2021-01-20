@@ -1,7 +1,13 @@
-import { language, replace } from '.';
+import { language, replace } from './common';
 import { translations } from './translations';
 import { Translation } from './translations/types';
-import { SettingsState } from '@/store/types';
+import {
+  Appearance,
+  General,
+  Advanced,
+  InAppStatus,
+  Label,
+} from '@/store/types';
 import { Getter } from 'vuex-class';
 import { Vue, Component } from 'vue-property-decorator';
 
@@ -35,11 +41,23 @@ export class BaseVue extends Vue {
 
 @Component
 export class ExtendedVue extends BaseVue {
-  @Getter('settings', { namespace: 'settings' })
-  public settings!: SettingsState;
+  @Getter('general', { namespace: 'configuration' })
+  public general!: General;
+  @Getter('appearance', { namespace: 'configuration' })
+  public appearance!: Appearance;
+  @Getter('drive', { namespace: 'configuration' })
+  public drive!: Advanced;
+  @Getter('advanced', { namespace: 'configuration' })
+  public advanced!: Advanced;
+  @Getter('labels', { namespace: 'configuration' })
+  public labels!: Label[];
+  @Getter('premium', { namespace: 'configuration' })
+  public premium!: boolean;
+  @Getter('inAppStatus', { namespace: 'configuration' })
+  public inAppStatus!: InAppStatus;
 
   public get $language(): Language {
-    return this.settings.system.language;
+    return this.advanced.language;
   }
 
   public get $translations(): Translation {

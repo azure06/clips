@@ -140,20 +140,25 @@
       <!-- Rooter -->
       <div :class="`content ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`">
         <router-view
-          :settings="settings"
           :translations="$translations"
+          :general="general"
+          :advanced="advanced"
+          :drive="drive"
+          :appearance="appearance"
           :premium="premium"
+          :in-app-status="inAppStatus"
           :licenseKey="licenseKey"
           :fetching="fetching"
-          @change-settings="
-            (payload) => changeSettings({ vuetify: $vuetify, payload })
+          :products="products"
+          @set-general="setGeneral"
+          @set-drive="setDrive"
+          @set-appearance="
+            (payload) => setAppearance({ ...payload, vuetify: $vuetify })
           "
-          @change-shortcut="
-            (payload) => changeShortcut({ vuetify: $vuetify, payload })
-          "
-          @change-startup="
-            (payload) => changeStartup({ vuetify: $vuetify, payload })
-          "
+          @set-advanced="setAdvanced"
+          @set-shortcut="setShortcut"
+          @set-startup="setStartup"
+          @set-in-app-status="setInAppStatus"
           @action="openDialog"
           @change-licensekey="(value) => (licenseKey = value)"
           @activate-premium="activatePremium"
@@ -189,43 +194,48 @@
 </template>
 
 <script lang="ts">
-import { ExtendedVue } from '@/utils/base-vue';
+import { ExtendedVue } from '@/utils/basevue';
 import { Component } from 'vue-property-decorator';
-import { SettingsState } from '@/store/types';
-import { Getter, Mutation, Action } from 'vuex-class';
+
+import { Mutation, Action } from 'vuex-class';
 import { activatePremium } from '@/firebase';
+import { Product } from 'electron';
+import { getProducts } from '@/utils/invocation';
+import { InAppStatus } from '@/store/types';
 
 @Component
 export default class Settings extends ExtendedVue {
-  @Mutation('changeSettings', { namespace: 'settings' })
-  public changeSettings!: (args: {
-    vuetify: unknown;
-    payload: SettingsState;
-  }) => void;
-  @Mutation('restoreSettings', { namespace: 'settings' })
+  @Mutation('restoreSettings', { namespace: 'configuration' })
   public restoreSettings!: () => void;
-  @Mutation('setPremium', { namespace: 'clips' })
+  @Mutation('setGeneral', { namespace: 'configuration' })
+  public setGeneral!: (arg: unknown) => void;
+  @Mutation('setAdvanced', { namespace: 'configuration' })
+  public setAdvanced!: (arg: unknown) => void;
+  @Mutation('setDrive', { namespace: 'configuration' })
+  public setDrive!: (arg: unknown) => void;
+  @Mutation('setAppearance', { namespace: 'configuration' })
+  public setAppearance!: (arg: unknown) => void;
+  @Mutation('setPremium', { namespace: 'configuration' })
   public setPremium!: (arg: boolean) => void;
-  @Action('changeShortcut', { namespace: 'settings' })
-  public changeShortcut!: (args: {
-    vuetify: unknown;
-    payload: unknown;
-  }) => Promise<void>;
-  @Action('changeStartup', { namespace: 'settings' })
-  public changeStartup!: (args: {
-    vuetify: unknown;
-    payload: boolean;
-  }) => Promise<void>;
+  @Mutation('setInAppStatus', { namespace: 'configuration' })
+  public setInAppStatus!: (payload: InAppStatus) => void;
+  @Action('setShortcut', { namespace: 'configuration' })
+  public setShortcut!: (payload: unknown) => Promise<void>;
+  @Action('setStartup', { namespace: 'configuration' })
+  public setStartup!: (payload: boolean) => Promise<void>;
   @Action('restoreFactoryDefault', { namespace: 'clips' })
   public restoreFactoryDefault!: () => Promise<boolean>;
-  @Getter('premium', { namespace: 'clips' })
-  public premium!: () => boolean;
   public dialog = false;
   public dialog_ = false;
   public action?: 'clear-data' | 'factory-default';
   public licenseKey = '';
   public fetching = false;
   public errorDialog = false;
+  public products: Product[] = [];
+
+  public async created(): Promise<void> {
+    this.products = await getProducts();
+  }
 
   public onClose(): void {
     this.dialog = false;

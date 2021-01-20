@@ -44,12 +44,12 @@
           flat
           solo
           :items="keys"
-          :value="settings.system.shortcut[2]"
+          :value="advanced.shortcut[2]"
           @change="
             (value) =>
-              $emit('change-shortcut', [
-                settings.system.shortcut[0],
-                settings.system.shortcut[1],
+              $emit('set-shortcut', [
+                advanced.shortcut[0],
+                advanced.shortcut[1],
                 value,
               ])
           "
@@ -78,13 +78,9 @@
           flat
           solo
           :items="languages"
-          :value="settings.system.language"
+          :value="advanced.language"
           @change="
-            (value) =>
-              $emit('change-settings', {
-                ...settings,
-                system: { ...settings.system, language: value },
-              })
+            (value) => $emit('set-advanced', { ...advanced, language: value })
           "
           filled
           style="max-width: 220px;"
@@ -101,15 +97,15 @@
 <script lang="ts">
 // @ is an alias to /src
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { language } from '@/utils';
-import { SettingsState } from '@/store/types';
+import { language } from '@/utils/common';
+import { Advanced } from '@/store/types';
 
 @Component
 export default class Shortcuts extends Vue {
   @Prop({ required: true })
   public translations!: unknown;
   @Prop({ required: true })
-  public settings!: SettingsState;
+  public advanced!: Advanced;
   public keys = [
     'A',
     'B',

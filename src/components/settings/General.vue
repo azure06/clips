@@ -5,14 +5,11 @@
       <v-list-item>
         <v-list-item-action>
           <v-switch
-            :input-value="settings.system.notifications"
+            :input-value="general.notifications"
             @change="
-              $emit('change-settings', {
-                ...settings,
-                system: {
-                  ...settings.system,
-                  notifications: !settings.system.notifications,
-                },
+              $emit('set-general', {
+                ...general,
+                notifications: !general.notifications,
               })
             "
             dense
@@ -29,21 +26,18 @@
     </v-list>
     <v-divider></v-divider>
     <v-list subheader dense color="surfaceVariant">
-      <v-subheader>{{ translations.displayPosition }}</v-subheader>
+      <v-subheader>{{ translations.positioningMode }}</v-subheader>
       <v-list-item>
         <v-radio-group
-          :value="settings.system.display.type"
+          :value="general.positioningMode.type"
           :mandatory="true"
           dense
         >
           <v-radio
             @change="
-              $emit('change-settings', {
-                ...settings,
-                system: {
-                  ...settings.system,
-                  display: { ...settings.system.display, type: 'cursor' },
-                },
+              $emit('set-general', {
+                ...general,
+                positioningMode: { ...general.positioningMode, type: 'cursor' },
               })
             "
             color="blue darken-2"
@@ -53,11 +47,11 @@
           ></v-radio>
           <v-radio
             @change="
-              $emit('change-settings', {
-                ...settings,
-                system: {
-                  ...settings.system,
-                  display: { ...settings.system.display, type: 'maintain' },
+              $emit('set-general', {
+                ...general,
+                positioningMode: {
+                  ...general.positioningMode,
+                  type: 'maintain',
                 },
               })
             "
@@ -75,14 +69,11 @@
       <v-list-item>
         <v-list-item-action>
           <v-switch
-            :input-value="settings.appearance.theme.dark"
+            :input-value="appearance.theme === 'dark'"
             @change="
-              $emit('change-settings', {
-                ...settings,
-                appearance: {
-                  ...settings.appearance,
-                  theme: { dark: !settings.appearance.theme.dark },
-                },
+              $emit('set-appearance', {
+                ...appearance,
+                theme: appearance.theme === 'dark' ? 'light' : 'dark',
               })
             "
             dense
@@ -103,14 +94,11 @@
       <v-list-item>
         <v-list-item-action>
           <v-switch
-            :input-value="settings.drive.sync"
+            :input-value="drive.backup"
             @change="
-              $emit('change-settings', {
-                ...settings,
-                drive: {
-                  ...settings.drive,
-                  sync: !settings.drive.sync,
-                },
+              $emit('set-drive', {
+                ...drive,
+                backup: !drive.backup,
               })
             "
             dense
@@ -118,9 +106,9 @@
           ></v-switch>
         </v-list-item-action>
         <v-list-item-content>
-          <v-list-item-title>{{ translations.driveSync }}</v-list-item-title>
+          <v-list-item-title>{{ translations.driveBackup }}</v-list-item-title>
           <v-list-item-subtitle>{{
-            translations.syncDevicesWithDrive
+            translations.backupDeviceWithDrive
           }}</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -128,13 +116,17 @@
         <v-list-item-content>
           <v-list-item-title>{{ translations.threshold }}</v-list-item-title>
           <v-list-item-subtitle>
-            {{ replacer(translations.syncEvery, settings.drive) }}
+            {{
+              replacer(translations.backupEvery, {
+                threshold: drive.backupThreshold,
+              })
+            }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
       <v-slider
-        :value="settings.drive.threshold"
-        :disabled="!settings.drive.sync"
+        :value="drive.backupThreshold"
+        :disabled="!drive.backup"
         class="pl-10 pr-10"
         style="-webkit-app-region: no-drag"
         step="10"
@@ -145,12 +137,9 @@
         color="blue darken-2"
         @input="
           (value) => {
-            $emit('change-settings', {
-              ...settings,
-              drive: {
-                ...settings.drive,
-                threshold: value,
-              },
+            $emit('set-drive', {
+              ...drive,
+              backupThreshold: value,
             });
           }
         "
@@ -162,8 +151,8 @@
       <v-list-item>
         <v-list-item-action>
           <v-switch
-            :input-value="settings.system.startup"
-            @change="(value) => $emit('change-startup', value)"
+            :input-value="general.startup"
+            @change="(value) => $emit('set-startup', value)"
             dense
             color="blue darken-2"
           ></v-switch>
@@ -178,11 +167,11 @@
       <v-list-item>
         <v-list-item-action>
           <v-switch
-            :input-value="settings.system.blur"
+            :input-value="general.blur"
             @change="
-              $emit('change-settings', {
-                ...settings,
-                system: { ...settings.system, blur: !settings.system.blur },
+              $emit('set-general', {
+                ...general,
+                blur: !general.blur,
               })
             "
             dense
@@ -232,14 +221,22 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { SettingsState } from '../../store/types';
+import {
+  Appearance,
+  Drive,
+  General as GeneralSettings,
+} from '../../store/types';
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { replace } from '@/utils';
+import { replace } from '@/utils/common';
 
 @Component
 export default class General extends Vue {
   @Prop({ required: true })
-  public settings!: SettingsState;
+  public general!: GeneralSettings;
+  @Prop({ required: true })
+  public drive!: Drive;
+  @Prop({ required: true })
+  public appearance!: Appearance;
   @Prop({ required: true })
   public translations!: unknown;
 

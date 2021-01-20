@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const gitRevisionPlugin = new GitRevisionPlugin();
-const CopyPlugin = require('copy-webpack-plugin');
-const path = require('path');
 
 module.exports = {
   transpileDependencies: ['vuetify'],
@@ -15,41 +13,27 @@ module.exports = {
         appId: 'com.infiniti.clips',
         productName: 'Clips',
         publish: ['github'],
-        afterSign: 'scripts/notarize.js',
+        // afterSign: 'scripts/notarize.js',
+        buildVersion: '0.1.10',
         mac: {
-          category: 'public.app-category.productivity',
+          category: 'public.app-category.utilities',
+          target: ['mas', 'pkg', 'dmg'],
           hardenedRuntime: true,
           gatekeeperAssess: false,
           entitlements: 'build/entitlements.mac.plist',
           entitlementsInherit: 'build/entitlements.mac.plist',
+          type: 'distribution',
+          provisioningProfile: 'build/Clips_Dist.provisionprofile',
+        },
+        mas: {
+          category: 'public.app-category.utilities',
+          hardenedRuntime: false, //IMPORTANT!!!!
+          type: 'distribution',
+          entitlements: 'build/entitlements.mas.plist',
+          entitlementsInherit: 'build/entitlements.mas.inherit.plist',
+          provisioningProfile: 'build/Clips_Dist.provisionprofile',
         },
       },
-      // chainWebpackMainProcess: (config) => {
-      //   const dest =
-      //     process.env.NODE_ENV === 'development' ? 'dist_electron' : 'public';
-      //   config.plugin('copy').use(CopyPlugin, [
-      //     {
-      //       patterns: [
-      //         {
-      //           from: 'node_modules/push-receiver/src/gcm/checkin.proto',
-      //           to: path.resolve(__dirname, dest, 'checkin.proto'),
-      //           toType: 'file',
-      //         },
-      //         {
-      //           from:
-      //             'node_modules/push-receiver/src/gcm/android_checkin.proto',
-      //           to: path.resolve(__dirname, dest, 'android_checkin.proto'),
-      //           toType: 'file',
-      //         },
-      //         {
-      //           from: 'node_modules/push-receiver/src/mcs.proto',
-      //           to: path.resolve(__dirname, dest, 'mcs.proto'),
-      //           toType: 'file',
-      //         },
-      //       ],
-      //     },
-      //   ]);
-      // },
       chainWebpackRendererProcess: (config) => {
         config.plugin('define').tap((definitions) => {
           definitions[0] = Object.assign(definitions[0], {

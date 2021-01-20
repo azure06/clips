@@ -4,9 +4,9 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
-import * as subscriptions from './subscriptions';
+import * as subscriptions from './utils/subscription';
 import { environment } from './environment';
-import { Clip, Room, SettingsState } from './store/types';
+import { Clip, Room, General, Advanced, Drive } from './store/types';
 import './firebase';
 import { initAnalytics } from './analytics-vue';
 import {
@@ -20,6 +20,8 @@ import { concatMap, filter, map, tap } from 'rxjs/operators';
 import { interval, from } from 'rxjs';
 import Sentry from '@/sentry-vue';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
+import { Format } from './rxdb/clips/model';
+import { imagePathToDataURI } from './utils/invocation';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -40,11 +42,12 @@ const vm = new Vue({
   vuetify,
   render: (h) => h(App),
   computed: {
-    ...mapGetters('user', {
+    ...mapGetters('configuration', {
       user: 'user',
-    }),
-    ...mapGetters('settings', {
-      settings: 'settings',
+      general: 'general',
+      appearance: 'appearance',
+      drive: 'drive',
+      advanced: 'advanced',
     }),
     oneHour() {
       return 1000 * 60 * 60;
@@ -56,6 +59,10 @@ const vm = new Vue({
       removeClipsLte: 'removeClipsLte',
       uploadToDrive: 'uploadToDrive',
     }),
+    ...mapMutations('configuration', {
+      loadConfig: 'loadConfig',
+      setGeneral: 'setGeneral',
+    }),
     ...mapActions('network', {
       loadRooms: 'loadRooms',
       findRoomFromUserOrCreate: 'findRoomFromUserOrCreate',
@@ -64,21 +71,39 @@ const vm = new Vue({
       upsertUser: 'upsertUser',
       handleServer: 'handleServer',
     }),
-    ...mapMutations('user', {
-      loadUser: 'loadUser',
-    }),
-    ...mapMutations('settings', {
-      loadSettings: 'loadSettings',
-      changeSettings: 'changeSettings',
-    }),
     filterClip(clip: Clip): Clip {
-      return Object.entries(this.settings.storage.formats).reduce(
+      return Object.entries((this.advanced as Advanced).formats).reduce(
         (acc, entry) => {
-          const [key, value] = entry as [
+          const [clipFormat, present] = entry as [
             'plainText' | 'richText' | 'htmlText' | 'dataURI',
             boolean
           ];
-          acc[key] = value ? clip[key] : '';
+          const filterFormat = (
+            clipFormat: 'plainText' | 'richText' | 'htmlText' | 'dataURI',
+            present: boolean,
+            formats: Format[]
+          ) => {
+            return present
+              ? formats
+              : formats.filter((format) => {
+                  switch (format) {
+                    case 'text/plain':
+                      return !(clipFormat === 'plainText');
+                    case 'text/rtf':
+                      return !(clipFormat === 'richText');
+                    case 'text/html':
+                      return !(clipFormat === 'htmlText');
+                    case 'image/jpg':
+                      return !(clipFormat === 'dataURI');
+                    case 'image/png':
+                      return !(clipFormat === 'dataURI');
+                    case 'vscode-editor-data':
+                      return false;
+                  }
+                });
+          };
+          acc[clipFormat] = present ? acc[clipFormat] : '';
+          acc.formats = filterFormat(clipFormat, present, acc.formats);
           return acc;
         },
         clip
@@ -86,8 +111,7 @@ const vm = new Vue({
     },
   },
   created() {
-    this.loadUser();
-    this.loadSettings({ vuetify: this.$vuetify });
+    this.loadConfig({ vuetify: this.$vuetify });
 
     /**
      * Get clipboard data from background.ts
@@ -107,11 +131,17 @@ const vm = new Vue({
           )
         )
         .pipe(
-          tap((clip) => {
-            if (this.settings.drive.sync)
+          tap(async (clip) => {
+            const { sync, syncThreshold } = this.general as Drive;
+            if (sync)
               this.uploadToDrive({
-                clip,
-                threshold: this.settings.drive.threshold,
+                clip: {
+                  ...clip,
+                  dataURI: clip.dataURI
+                    ? await imagePathToDataURI(clip.dataURI)
+                    : clip.dataURI,
+                } as Clip,
+                threshold: syncThreshold,
               });
           })
         ),
@@ -123,14 +153,12 @@ const vm = new Vue({
      */
     this.$subscribeTo(
       interval(this.oneHour)
-        .pipe(
-          filter(() => !!this.user && this.settings.storage.optimize.every > 0)
-        )
+        .pipe(filter(() => (this.advanced as Advanced).optimize > 0))
         .pipe(
           concatMap(() =>
             from(
               this.removeClipsLte(
-                Date.now() - this.settings.storage.optimize.every
+                Date.now() - (this.advanced as Advanced).optimize
               )
             )
           )
@@ -142,29 +170,27 @@ const vm = new Vue({
     /**
      * On bounds change
      */
-    this.$subscribeTo(subscriptions.onBoundsChange, ({ height, width, x, y }) =>
-      this.changeSettings({
-        vuetify: this.$vuetify,
-        payload: {
-          ...this.settings,
-          system: {
-            ...this.settings.system,
-            display:
-              this.settings.system.display.type === 'cursor'
-                ? {
-                    type: 'cursor',
-                    height,
-                    width,
-                  }
-                : {
-                    type: 'maintain',
-                    height,
-                    width,
-                    position: { x, y },
-                  },
-          },
-        } as SettingsState,
-      })
+    this.$subscribeTo(
+      subscriptions.onBoundsChange,
+      ({ height, width, x, y }) => {
+        const general: General = this.general;
+        this.setGeneral({
+          ...general,
+          positioningMode:
+            general.positioningMode.type === 'cursor'
+              ? {
+                  type: 'cursor',
+                  height,
+                  width,
+                }
+              : {
+                  type: 'maintain',
+                  height,
+                  width,
+                  position: { x, y },
+                },
+        } as General);
+      }
     );
 
     this.$subscribeTo(subscriptions.onNavigate, (location) =>

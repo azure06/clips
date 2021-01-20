@@ -1,6 +1,5 @@
 import { MutationTree } from 'vuex';
 import { ClipsState, Clip } from '@/store/types';
-import { storeService } from '@/electron/services/electron-store';
 
 const mutations: MutationTree<ClipsState> = {
   loadClips: (state, { clips }: { clips: Clip[] }) => {
@@ -43,10 +42,6 @@ const mutations: MutationTree<ClipsState> = {
   },
   setSyncStatus: (state, sync: 'pending' | 'resolved' | 'rejected') => {
     state.sync = sync;
-  },
-  setPremium: (state, premium: boolean) => {
-    storeService.setPremium(premium);
-    state.premium = premium;
   },
 };
 

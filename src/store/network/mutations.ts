@@ -3,7 +3,7 @@ import { NetworkState } from '@/store/types';
 import Vue from 'vue';
 import { RoomDoc } from '@/rxdb/room/model';
 import { MessageDoc } from '@/rxdb/message/model';
-import { toDictionary } from '@/utils';
+import { toDictionary } from '@/utils/common';
 import { UserDoc } from '@/rxdb/user/model';
 
 const mutations: MutationTree<NetworkState> = {

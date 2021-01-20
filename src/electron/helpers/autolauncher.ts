@@ -9,7 +9,7 @@ const autoLauncher = new AutoLaunch({
 });
 
 export function initAutoLauncher(): void {
-  ipcMain.handle('change-startup', (event, startup: boolean) => {
+  ipcMain.handle('set-startup', (event, startup: boolean) => {
     return autoLauncher
       .isEnabled()
       .then(async (isEnabled) => {

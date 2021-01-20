@@ -27,11 +27,12 @@ export const it: Translation = {
   confirm: 'Conferma',
   cursor: 'Segui il cursore',
   darkTheme: 'Tema Dark',
-  displayPosition: 'Posizione di Clips',
+  positioningMode: 'Posizione di Clips',
   downloading: 'Sto scaricando',
-  downloadItems: 'Scarica dati',
+  backupItems: 'Backup dei tuoi dati',
   driveFolder: 'Cartella Drive',
   driveSync: 'Google Drive Sync',
+  driveBackup: 'Google Drive Back up',
   files: 'File',
   fourWeeks: '4 settimane',
   fuzzySearch: 'Ricerca ambigua',
@@ -78,9 +79,11 @@ export const it: Translation = {
   somethingWentWrong: 'Qualcosa non ha funzionato...',
   startOnSystemStartup: "Avvia Clips all'avvio del sistema",
   switchToDarkTheme: 'Utilizza il tema Dark',
-  syncDevicesWithDrive: 'Sincornizza i tuoi device con Google Drive',
-  syncEvery:
+  syncDeviceWithDrive: 'Sincornizza il tuo device con Google Drive',
+  backupDeviceWithDrive: 'Backup il tuo device con Google Drive',
+  backupEvery:
     'Sincronizza dopo che {threshold} elementi sono stati aggiunti alla clipboard',
+  syncEvery: 'Procedi con il back up ogni {threshold} ore',
   syncWithDrive: 'Sincronizza con Drive',
   system: 'Sistema',
   text: 'Testo',
@@ -88,6 +91,8 @@ export const it: Translation = {
   threshold: 'Soglia',
   tokenShouldBeNumeric: 'Il token dovrebbe essere un valore numerico',
   twentyFourHours: '24 ore',
-  uploadItems: 'Carica dati',
+  restoreItems: 'Carica dati',
   wakeOn: 'Shortcut',
+
+  image: 'Immagine',
 };

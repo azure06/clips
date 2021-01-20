@@ -14,9 +14,6 @@ const getters: GetterTree<ClipsState, RootState> = {
   clips: (state: ClipsState) => {
     return state.clips;
   },
-  premium: (state: ClipsState) => {
-    return state.premium;
-  },
 };
 
 export default getters;

@@ -1,6 +1,6 @@
 import { GetterTree } from 'vuex';
 import { RootState, NetworkState } from '@/store/types';
-import { toDictionary } from '@/utils';
+import { toDictionary } from '@/utils/common';
 
 const getters: GetterTree<NetworkState, RootState> = {
   serverStatus: (state: NetworkState) => state.status,

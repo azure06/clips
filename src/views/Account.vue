@@ -78,15 +78,15 @@
 import { Component } from 'vue-property-decorator';
 import { User } from '@/store/types';
 import { Getter, Action } from 'vuex-class';
-import { ExtendedVue } from '@/utils/base-vue';
+import { ExtendedVue } from '@/utils/basevue';
 
 @Component
 export default class Account extends ExtendedVue {
-  @Action('signIn', { namespace: 'user' })
+  @Action('signIn', { namespace: 'configuration' })
   public signIn!: () => Promise<void>;
-  @Action('signOut', { namespace: 'user' })
+  @Action('signOut', { namespace: 'configuration' })
   public signOut!: () => Promise<void>;
-  @Getter('user', { namespace: 'user' })
+  @Getter('user', { namespace: 'configuration' })
   public user!: () => Promise<User>;
   public value = false;
 }

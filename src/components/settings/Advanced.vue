@@ -1,5 +1,10 @@
 <template>
-  <div>
+  <v-card
+    color="surfaceVariant"
+    tile
+    flat
+    :height="`calc(100vh - ${$vuetify.breakpoint.smAndDown ? '58' : `66`}px)`"
+  >
     <v-list v-if="!premium" subheader dense color="surfaceVariant">
       <v-progress-linear
         v-if="fetching"
@@ -8,12 +13,128 @@
       ></v-progress-linear>
       <v-subheader class="font-weight-bold">Premium features</v-subheader>
       <v-card flat class="px-6" color="transparent">
-        <v-form>
+        <v-row v-if="isDarwin" justify="center">
+          <v-card
+            color="blue darken-3"
+            class="ma-2"
+            min-width="200"
+            width="300"
+            dark
+            elevation="12"
+            max-height="calc(100vh - 125px)"
+          >
+            <v-card-title class="subtitle-2 font-weight-bold">
+              Free
+            </v-card-title>
+            <v-card-subtitle class="overline">
+              Clips Community Edition
+            </v-card-subtitle>
+            <div style="max-height: calc(100vh - 240px); overflow: scroll;">
+              <v-card color="blue darken-4" flat tile>
+                <h4 class="text-center display-3 py-6 font-weight-medium">
+                  {{ product ? product.formattedPrice.charAt(0) + 0 : 0 }}
+                </h4>
+              </v-card>
+              <v-card-text>
+                <div class="pa-1">
+                  <v-icon color="blue"> mdi-check </v-icon> Search
+                </div>
+                <div class="pa-1">
+                  <v-icon color="blue"> </v-icon>
+                </div>
+                <v-divider class="my-2"> </v-divider>
+                <div class="pa-1">
+                  <v-icon color="blue"> mdi-check </v-icon> Labels
+                </div>
+                <v-divider class="my-2"> </v-divider>
+                <div class="pa-1">
+                  <v-icon color="blue"> mdi-check </v-icon> Google Drive Sync
+                </div>
+              </v-card-text>
+            </div>
+          </v-card>
+          <v-card
+            class="ma-2 card"
+            min-width="200"
+            width="300"
+            elevation="12"
+            dark
+            max-height="calc(100vh - 130px)"
+          >
+            <v-card-title class="subtitle-2 font-weight-bold">
+              Premium
+            </v-card-title>
+            <v-card-subtitle class="overline">
+              Clips Premium Edition
+            </v-card-subtitle>
+            <div style="max-height: calc(100vh - 300px); overflow: scroll;">
+              <v-card color="grey darken-4" flat tile>
+                <h4 class="text-center display-3 py-6 font-weight-medium">
+                  {{ product ? product.formattedPrice : undefined }}
+                </h4>
+              </v-card>
+              <v-card-text>
+                <div>
+                  <div class="pa-1">
+                    <v-icon color="blue"> mdi-check </v-icon> Search
+                  </div>
+                  <div class="pa-1">
+                    <v-icon color="blue"> mdi-check </v-icon> Advanced Search
+                  </div>
+                  <v-divider class="my-2"> </v-divider>
+                  <div class="pa-1">
+                    <v-icon color="blue"> mdi-check </v-icon> Labels
+                  </div>
+                  <v-divider class="my-2"> </v-divider>
+                  <div class="pa-1">
+                    <v-icon color="blue"> mdi-check </v-icon> Google Drive Sync
+                  </div>
+                  <v-divider class="my-2"> </v-divider>
+                  <div class="pa-1">
+                    <v-icon color="blue"> mdi-check </v-icon> Save RTF and Html
+                    Text
+                  </div>
+                  <div class="pa-1">
+                    <v-icon color="blue"> mdi-check </v-icon> Clipboard Auto
+                    Sync
+                  </div>
+                  <div class="pa-1">
+                    <v-icon color="blue"> mdi-check </v-icon> Autmatic History
+                    Cleanup
+                  </div>
+                </div>
+              </v-card-text>
+            </div>
+            <v-card-actions class="d-flex justify-center">
+              <v-btn
+                text
+                class="ma-2"
+                @click="purchase"
+                :disabled="purchaseDisabled"
+              >
+                Purchase
+              </v-btn>
+            </v-card-actions>
+            <p
+              @click="restoreCompletedTransaction"
+              style="position: relative; bottom: 10px; cursor: pointer"
+              class="text-center caption text-decoration-underline"
+            >
+              Already purchased?
+            </p>
+          </v-card>
+        </v-row>
+        <div v-else>
           <v-subheader>
             Please provide a license key. If you don't have a license key you
-            can find more information at inifniticlips.com
+            can find more information at
+            <a
+              style="margin-left: 0.25rem;"
+              @click.prevent="openLink('https://infiniticlips.com')"
+            >
+              inifniticlips.com
+            </a>
           </v-subheader>
-
           <v-text-field
             prepend-inner-icon="mdi-numeric"
             label="Insert your code"
@@ -34,28 +155,21 @@
               Activate
             </v-btn>
           </v-card-actions>
-        </v-form>
+        </div>
       </v-card>
     </v-list>
     <v-list v-else subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.searchType }}</v-subheader>
       <v-list-item>
-        <v-radio-group
-          :value="settings.storage.search.type"
-          :mandatory="true"
-          dense
-        >
+        <v-radio-group :value="advanced.searchMode" :mandatory="true" dense>
           <v-radio
             color="blue darken-2"
             class="caption label"
             :label="translations.accurateSearch"
             @change="
-              $emit('change-settings', {
-                ...settings,
-                storage: {
-                  ...settings.storage,
-                  search: { type: 'accurate' },
-                },
+              $emit('set-advanced', {
+                ...advanced,
+                searchMode: 'accurate',
               })
             "
             value="accurate"
@@ -66,12 +180,9 @@
             value="fuzzy"
             :label="translations.fuzzySearch"
             @change="
-              $emit('change-settings', {
-                ...settings,
-                storage: {
-                  ...settings.storage,
-                  search: { type: 'fuzzy' },
-                },
+              $emit('set-advanced', {
+                ...advanced,
+                searchMode: 'fuzzy',
               })
             "
           ></v-radio>
@@ -81,12 +192,9 @@
             :label="translations.advancedFuzzySearch"
             value="advanced-fuzzy"
             @change="
-              $emit('change-settings', {
-                ...settings,
-                storage: {
-                  ...settings.storage,
-                  search: { type: 'advanced-fuzzy' },
-                },
+              $emit('set-advanced', {
+                ...advanced,
+                searchMode: 'advanced-fuzzy',
               })
             "
           ></v-radio>
@@ -102,16 +210,13 @@
               dense
               hide-details
               :label="translations.text"
-              :input-value="settings.storage.formats.plainText"
+              :input-value="advanced.formats.plainText"
               @change="
-                $emit('change-settings', {
-                  ...settings,
-                  storage: {
-                    ...settings.storage,
-                    formats: {
-                      ...settings.storage.formats,
-                      plainText: !settings.storage.formats.plainText,
-                    },
+                $emit('set-advanced', {
+                  ...advanced,
+                  formats: {
+                    ...advanced.formats,
+                    plainText: !advanced.formats.plainText,
                   },
                 })
               "
@@ -121,16 +226,13 @@
               dense
               hide-details
               :label="translations.pictures"
-              :input-value="settings.storage.formats.dataURI"
+              :input-value="advanced.formats.dataURI"
               @change="
-                $emit('change-settings', {
-                  ...settings,
-                  storage: {
-                    ...settings.storage,
-                    formats: {
-                      ...settings.storage.formats,
-                      dataURI: !settings.storage.formats.dataURI,
-                    },
+                $emit('set-advanced', {
+                  ...advanced,
+                  formats: {
+                    ...advanced.formats,
+                    dataURI: !advanced.formats.dataURI,
                   },
                 })
               "
@@ -140,16 +242,13 @@
               dense
               hide-details
               :label="translations.richText"
-              :input-value="settings.storage.formats.richText"
+              :input-value="advanced.formats.richText"
               @change="
-                $emit('change-settings', {
-                  ...settings,
-                  storage: {
-                    ...settings.storage,
-                    formats: {
-                      ...settings.storage.formats,
-                      richText: !settings.storage.formats.richText,
-                    },
+                $emit('set-advanced', {
+                  ...advanced,
+                  formats: {
+                    ...advanced.formats,
+                    richText: !advanced.formats.richText,
                   },
                 })
               "
@@ -159,16 +258,13 @@
               dense
               hide-details
               :label="translations.htmlText"
-              :input-value="settings.storage.formats.htmlText"
+              :input-value="advanced.formats.htmlText"
               @change="
-                $emit('change-settings', {
-                  ...settings,
-                  storage: {
-                    ...settings.storage,
-                    formats: {
-                      ...settings.storage.formats,
-                      htmlText: !settings.storage.formats.htmlText,
-                    },
+                $emit('set-advanced', {
+                  ...advanced,
+                  formats: {
+                    ...advanced.formats,
+                    htmlText: !advanced.formats.htmlText,
                   },
                 })
               "
@@ -176,6 +272,61 @@
           </v-col>
         </v-row>
       </v-list-item>
+      <v-divider></v-divider>
+      <v-subheader>{{ translations.googleDrive }}</v-subheader>
+      <v-list-item>
+        <v-list-item-action>
+          <v-switch
+            :input-value="drive.sync"
+            @change="
+              $emit('set-drive', {
+                ...drive,
+                sync: !drive.sync,
+              })
+            "
+            dense
+            color="blue darken-2"
+          ></v-switch>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title>{{ translations.driveSync }}</v-list-item-title>
+          <v-list-item-subtitle>{{
+            translations.syncDeviceWithDrive
+          }}</v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item class="pt-2">
+        <v-list-item-content>
+          <v-list-item-title>{{ translations.threshold }}</v-list-item-title>
+          <v-list-item-subtitle>
+            {{
+              replacer(translations.syncEvery, {
+                threshold: scheduleSync,
+              })
+            }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+      <v-slider
+        :value="scheduleSync"
+        :disabled="!drive.sync"
+        class="pl-10 pr-10"
+        style="-webkit-app-region: no-drag"
+        step="1"
+        min="1"
+        max="48"
+        hide-details
+        thumb-label
+        color="blue darken-2"
+        @input="
+          (value) => {
+            $emit('set-drive', {
+              ...drive,
+              syncThreshold: value * hourInMillis,
+            });
+          }
+        "
+      ></v-slider>
       <v-divider></v-divider>
       <v-subheader>{{ translations.automaticCleanup }}</v-subheader>
       <v-subheader class="pt-2 pl-4" style="height: unset">{{
@@ -199,12 +350,9 @@
           :value="schedule"
           @change="
             (event) =>
-              $emit('change-settings', {
-                ...settings,
-                storage: {
-                  ...settings.storage,
-                  optimize: { every: toMillis(event) },
-                },
+              $emit('set-advanced', {
+                ...advanced,
+                optimize: toMillis(event),
               })
           "
           filled
@@ -215,13 +363,24 @@
         ></v-select>
       </v-list-item>
     </v-list>
-  </div>
+  </v-card>
 </template>
 
 <script lang="ts">
-import { SettingsState } from '../../store/types';
+import {
+  Advanced as AdvancedSetting,
+  Drive,
+  InAppStatus,
+} from '../../store/types';
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { Translation } from '@/utils/translations/types';
+import { Product, shell } from 'electron';
+import {
+  restoreCompletedTransactions,
+  canMakePayments,
+  purchaseProduct,
+} from '@/utils/invocation';
+import { replace } from '@/utils/common';
 
 type Cycle = {
   oneHour: string;
@@ -232,9 +391,15 @@ type Cycle = {
 };
 
 @Component
-export default class General extends Vue {
+export default class Advanced extends Vue {
   @Prop({ required: true })
-  public settings!: SettingsState;
+  public advanced!: AdvancedSetting;
+  @Prop({ required: true })
+  public drive!: Drive;
+  @Prop({ required: true })
+  public products!: Product[];
+  @Prop({ required: true })
+  public inAppStatus!: InAppStatus;
   @Prop({ required: true })
   public translations!: Translation;
   @Prop({ required: true })
@@ -244,13 +409,44 @@ export default class General extends Vue {
   @Prop({ required: true })
   public licenseKey!: string;
 
+  public get replacer(): typeof replace {
+    return replace;
+  }
+
   public get hourInMillis(): number {
     return 3600000;
   }
 
+  public get product(): Product | undefined {
+    return this.products.length > 0 ? this.products[0] : undefined;
+  }
+
+  public get purchaseDisabled(): boolean {
+    return (
+      this.inAppStatus === 'pre-purchasing' ||
+      this.inAppStatus === 'purchasing' ||
+      this.inAppStatus === 'purchased' ||
+      this.inAppStatus === 'deferred' ||
+      this.inAppStatus === 'restored'
+    );
+  }
+
+  get isDarwin(): boolean {
+    return process.platform === 'darwin';
+  }
+
+  public openLink(link: string): void {
+    shell.openExternal(link);
+  }
+
+  public get scheduleSync(): number {
+    const { syncThreshold } = this.drive;
+    return syncThreshold / this.hourInMillis;
+  }
+
   public get schedule(): string {
-    const { every } = this.settings.storage.optimize;
-    switch (every) {
+    const { optimize } = this.advanced;
+    switch (optimize) {
       case 0:
         return this.cycle.never;
       case this.hourInMillis:
@@ -292,11 +488,28 @@ export default class General extends Vue {
       never: this.translations.never,
     };
   }
+
+  public restoreCompletedTransaction(): Promise<void> {
+    return restoreCompletedTransactions();
+  }
+
+  public async purchase(): Promise<void> {
+    if (this.product && (await canMakePayments())) {
+      this.$emit('set-in-app-status', 'pre-purchasing');
+      purchaseProduct(this.product);
+    } else console.log('Something went wrong');
+  }
 }
 </script>
 
 <style scoped lang="scss">
 .label ::v-deep .v-label {
   font-size: 0.8rem;
+}
+.card {
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: scale(1.05);
 }
 </style>

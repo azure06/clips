@@ -5,6 +5,14 @@ export interface ClipsDatabaseCollection {
   clips: ClipsCollection;
 }
 
+export type Format =
+  | 'text/plain'
+  | 'text/html'
+  | 'text/rtf'
+  | 'image/png'
+  | 'image/jpg' // This might be wrong
+  | 'vscode-editor-data';
+
 export interface ClipDoc {
   id: string;
   plainText: string;
@@ -13,7 +21,7 @@ export interface ClipDoc {
   dataURI: string;
   category: string;
   type: 'text' | 'image';
-  formats: string[];
+  formats: Format[];
   updatedAt: number;
   createdAt: number;
 }

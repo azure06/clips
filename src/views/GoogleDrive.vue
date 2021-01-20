@@ -144,6 +144,33 @@
           <span class="caption font-weight-light"> {{ storedToken }} </span>
         </span>
       </v-chip>
+
+      <!-- Help Dialog-->
+      <v-dialog v-model="showDialog" max-width="420">
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon
+            class="ml-2 pa-1"
+            v-bind="attrs"
+            v-on="on"
+            size="18px"
+            @click="showDialog = !showDialog"
+          >
+            mdi-help-circle
+          </v-icon>
+        </template>
+        <v-card>
+          <v-card-title class="subtitle-1 overline">
+            <v-icon class="mx-2">mdi-share-variant</v-icon> Sync with Google
+            Drive
+          </v-card-title>
+
+          <v-card-text>
+            Insert a valid token from another device to retrieve your clipboard
+            history. If you don't have one the newest token will be
+            automatically used.
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-toolbar>
 
     <!-- Dialog -->
@@ -166,31 +193,27 @@
 import { Component } from 'vue-property-decorator';
 import { Clip, User } from '@/store/types';
 import { Getter, Action } from 'vuex-class';
-import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
 import moment from 'moment';
-import { GaxiosError } from 'gaxios';
-import { ExtendedVue } from '@/utils/base-vue';
-import { storeService } from '@/electron/services/electron-store';
-
-type SchemaChange = { [token: string]: drive_v3.Schema$Change[] };
-type AurthError = {
-  code: number;
-  config: unknown;
-  errors: unknown[];
-  response: unknown;
-};
-type GaxiosErrorEx = { error: GaxiosError | AurthError | unknown };
+import { ExtendedVue } from '@/utils/basevue';
+import * as storeService from '@/electron/services/electron-store';
+import {
+  changePageToken,
+  GaxiosErrorEx,
+  isGaxiosError,
+  listGoogleDriveFiles,
+  retrieveFileFromDrive,
+} from '@/utils/invocation';
 
 @Component
 export default class GoogleDrive extends ExtendedVue {
-  @Action('signOut', { namespace: 'user' })
+  @Action('signOut', { namespace: 'configuration' })
   public signOut!: () => Promise<void>;
-  @Action('downloadJson', { namespace: 'clips' })
-  public downloadJson!: (clip: Clip[]) => Promise<void>;
+  @Action('createBackup', { namespace: 'clips' })
+  public createBackup!: (clip: Clip[]) => Promise<void>;
   @Action('addClip', { namespace: 'clips' })
   public addClip!: (clip: Clip) => Promise<void>;
-  @Getter('user', { namespace: 'user' })
+  @Getter('user', { namespace: 'configuration' })
   public processing!: boolean;
   public user!: () => Promise<User>;
   public driveChanges: Array<[string, drive_v3.Schema$Change[]]> = [];
@@ -200,19 +223,14 @@ export default class GoogleDrive extends ExtendedVue {
   public fetching = false;
   public inputToken = '';
   public storedToken = '';
+  public showDialog = false;
 
   public get moment(): typeof moment {
     return moment;
   }
 
-  public isGaxiosError(
-    response: GaxiosErrorEx | SchemaChange | Clip[]
-  ): response is GaxiosErrorEx {
-    return 'error' in response;
-  }
-
   public async resetPageToken(): Promise<void> {
-    const pageToken = await ipcRenderer.invoke('change-page-token');
+    const pageToken = await changePageToken();
     storeService.setPageToken(pageToken);
     this.retrieveData();
   }
@@ -232,14 +250,13 @@ export default class GoogleDrive extends ExtendedVue {
   ): Promise<void> {
     // FIXME move to action?
     this.fetching = true;
-    ipcRenderer
-      .invoke('retrieve-file', change.fileId)
+    retrieveFileFromDrive(change.fileId)
       .then((response: Clip[] | GaxiosErrorEx) =>
-        this.isGaxiosError(response)
+        isGaxiosError(response)
           ? Promise.resolve(this.errorHandler(response))
           : action === 'sync'
           ? (Promise.all(response.map(this.addClip)) as unknown)
-          : this.downloadJson(response)
+          : this.createBackup(response)
       )
       .finally(() => (this.fetching = false));
   }
@@ -247,15 +264,13 @@ export default class GoogleDrive extends ExtendedVue {
   public async retrieveData(token?: string): Promise<void> {
     this.loading = true;
     if (token) {
-      const newToken = await ipcRenderer.invoke('change-page-token', token);
+      const newToken = await changePageToken(token);
       storeService.setPageToken(newToken);
     }
     this.storedToken = storeService.getPageToken('');
-    const response: SchemaChange | GaxiosErrorEx = await ipcRenderer.invoke(
-      'list-files'
-    );
+    const response = await listGoogleDriveFiles();
     this.loading = false;
-    if (!this.isGaxiosError(response)) {
+    if (!isGaxiosError(response)) {
       this.driveChanges = Object.entries(response)
         .reverse()
         .map(([token, changes]) => [

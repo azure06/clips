@@ -14,15 +14,15 @@
         :clips="clips"
         :labels="labels"
         :loading="loading"
-        :displayType="displayType"
         :clipboardMode="clipboardMode"
         :removeTarget="removeTarget"
         :viewMode="viewMode"
+        :translations="$translations"
         @clip-hover="onClipHover"
         @clip-click="onClipClick"
         @label-click="onLabelClick"
         @label-select="onLabelSelect"
-        @go-next="goNext"
+        @change-format="(format) => clipsFormatSubject.next(format)"
         @remove-click="onRemoveClick"
         @edit-label="modifyLabel"
         @remove-label="removeLabel"
@@ -56,8 +56,8 @@
       @change-type="(type) => search(normalizeQuery(searchQuery, { type }))"
       @remove-items="onRemoveItems"
       @query-change="(value) => search(normalizeQuery(value))"
-      @download-json="fromDump().then(downloadJson)"
-      @upload-json="uploadJson"
+      @create-backup="fromDump().then(createBackup)"
+      @restore-backup="restoreBackup"
       @sync-with-drive="syncWithDrive"
       @focus="onSearchBarFocus"
       @change-view-mode="(value) => (viewMode = value)"
@@ -73,15 +73,19 @@
 
 <script lang="ts">
 import { Component } from 'vue-property-decorator';
-import { fromEvent } from 'rxjs';
+import { combineLatest, fromEvent, Subject } from 'rxjs';
 import AppBar from '@/components/AppBar.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import Grid from '@/components/Grid.vue';
 import { Clip, Label, User } from '@/store/types';
 import { Getter, Action, Mutation } from 'vuex-class';
-import { ClipSearchConditions, SearchFilters } from '@/rxdb/clips/model';
+import {
+  ClipSearchConditions,
+  Format,
+  SearchFilters,
+} from '@/rxdb/clips/model';
 import * as utils from '@/rxdb/clips/utils';
-import { ExtendedVue } from '@/utils/base-vue';
+import { ExtendedVue } from '@/utils/basevue';
 import moment from 'moment';
 import electron from 'electron';
 import {
@@ -90,56 +94,70 @@ import {
   concatMap,
   distinctUntilChanged,
   debounceTime,
-  tap,
+  startWith,
+  scan,
 } from 'rxjs/operators';
-import { WatchObservable } from 'vue-rx';
 
-type ClipEx = Clip & { fromNow?: string; preview?: string };
+export type ClipFormat = 'plainText' | 'richText' | 'htmlText' | 'dataURI';
+
+export type ClipsFormatMap = { [clipdId: string]: ClipFormat | undefined };
+
+export type ClipExtended = Clip & {
+  fromNow?: string;
+  preview?: string;
+  displayingFormat: ClipFormat;
+};
+
+export const toClipProp = (type?: Format | string): ClipFormat => {
+  switch (type) {
+    case 'text/plain':
+      return 'plainText';
+    case 'text/html':
+      return 'htmlText';
+    case 'text/rtf':
+      return 'richText';
+    case 'image/png':
+      return 'dataURI';
+    case 'image/jpg':
+      return 'dataURI';
+    case 'vscode-editor-data':
+      return 'htmlText';
+    default:
+      return 'plainText';
+  }
+};
 
 @Component<Home>({
   components: { AppBar, SearchBar, Grid },
   subscriptions() {
     return {
-      clipsObserver: this.$watchAsObservable(() => this.clips).pipe(
-        tap(({ newValue }: WatchObservable<ClipEx[]>) => {
-          const { displayType } = this;
-          // TODO Consider to improve this implementation
-          newValue.forEach((clip) => {
-            if (!displayType[clip.id]) {
-              displayType[clip.id] = {
-                availableTypes: (clip.type === 'text'
-                  ? [
-                      clip.plainText ? ('plainText' as const) : undefined,
-                      clip.richText ? ('richText' as const) : undefined,
-                      clip.htmlText ? ('htmlText' as const) : undefined,
-                      clip.dataURI ? ('dataURI' as const) : undefined,
-                    ]
-                  : [
-                      clip.dataURI ? ('dataURI' as const) : undefined,
-                      clip.htmlText ? ('htmlText' as const) : undefined,
-                      clip.richText ? ('richText' as const) : undefined,
-                      clip.plainText ? ('plainText' as const) : undefined,
-                    ]
-                ).filter((value) => !!value) as Array<
-                  'plainText' | 'richText' | 'dataURI' | 'htmlText'
-                >,
-                index: 0,
-              };
-            }
-          });
-        }),
-        map(({ newValue }) => {
-          return newValue.map((clip) => ({
-            ...clip,
-            icon:
-              clip.type === 'text' ? 'mdi-clipboard-text' : 'mdi-image-area',
-            iconClass: `${
-              clip.type === 'text' ? 'blue darken-2' : 'cyan darken-2'
-            } white--text`,
-            preview: (clip.plainText || '').substring(0, 255),
-            fromNow: moment(clip.updatedAt).fromNow(),
-          }));
-        })
+      clipsObserver: combineLatest([
+        this.clipsFormatSubject
+          .asObservable()
+          .pipe(
+            scan((acc: ClipsFormatMap, value) => ({ ...acc, ...value }), {})
+          )
+          .pipe(startWith({} as ClipsFormatMap)),
+        this.$watchAsObservable(() => this.clips),
+      ]).pipe(
+        map(([clipsFormatMap, { newValue: clips }]) =>
+          clips.map(
+            (clip): ClipExtended => ({
+              ...clip,
+              formats: clip.formats.filter(
+                (format) => format !== 'vscode-editor-data'
+              ),
+              preview: (clip.plainText || '').substring(0, 255),
+              displayingFormat:
+                clipsFormatMap[clip.id] ||
+                (clip.type === 'image' &&
+                clip.formats.find((f) => f === 'image/png' || f === 'image/jpg')
+                  ? 'dataURI'
+                  : toClipProp(clip.formats[0])),
+              fromNow: moment(clip.updatedAt).fromNow(),
+            })
+          )
+        )
       ),
     };
   },
@@ -165,33 +183,31 @@ export default class Home extends ExtendedVue {
     type: 'text' | 'image';
     payload: string;
   }) => Promise<void>;
-  @Action('uploadJson', { namespace: 'clips' })
-  public uploadJson!: () => Promise<Clip[]>;
+  @Action('restoreBackup', { namespace: 'clips' })
+  public restoreBackup!: () => Promise<Clip[]>;
   @Action('fromDump', { namespace: 'clips' })
   public fromDump!: () => Promise<Clip[]>;
-  @Action('downloadJson', { namespace: 'clips' })
-  public downloadJson!: (clips: Clip[]) => Promise<Clip[]>;
+  @Action('createBackup', { namespace: 'clips' })
+  public createBackup!: (clips: Clip[]) => Promise<Clip[]>;
   @Action('uploadToDrive', { namespace: 'clips' })
   public uploadToDrive!: (args?: {
     clip: Clip;
     threshold: number;
   }) => Promise<Clip[]>;
-  @Mutation('modifyLabel', { namespace: 'labels' })
-  public modifyLabel!: (label: Label) => void;
-  @Mutation('addLabel', { namespace: 'labels' })
-  public addLabel!: (label: Label) => void;
-  @Action('removeLabel', { namespace: 'labels' })
+  @Action('removeLabel', { namespace: 'configuration' })
   public removeLabel!: (labelId: string) => void;
-  @Getter('user', { namespace: 'user' })
+  @Mutation('modifyLabel', { namespace: 'configuration' })
+  public modifyLabel!: (label: Label) => void;
+  @Mutation('addLabel', { namespace: 'configuration' })
+  public addLabel!: (label: Label) => void;
+  @Getter('user', { namespace: 'configuration' })
   public user!: User;
   @Getter('clips', { namespace: 'clips' })
   public clips!: Clip[];
-  @Getter('labels', { namespace: 'labels' })
-  public labels!: Label[];
   @Getter('loading', { namespace: 'clips' })
   public loading!: boolean;
   @Getter('processing', { namespace: 'clips' })
-  public processing!: Clip[];
+  public processing!: boolean;
   @Getter('syncStatus', { namespace: 'clips' })
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
   public searchConditions: Partial<ClipSearchConditions> & {
@@ -203,12 +219,7 @@ export default class Home extends ExtendedVue {
   };
   public clipboardMode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
-  public displayType: {
-    [id: string]: {
-      availableTypes: Array<'plainText' | 'richText' | 'dataURI' | 'htmlText'>;
-      index: number;
-    };
-  } = {};
+  public clipsFormatSubject = new Subject<ClipsFormatMap>();
   public dateTime: number = Date.now();
 
   public snackbar = false;
@@ -222,53 +233,39 @@ export default class Home extends ExtendedVue {
       : this.clips.length;
   }
 
-  public onClipHover(clip: ClipEx): void {
-    this.dateTime = clip.updatedAt;
+  public onClipHover(clipIndex: number): void {
+    this.dateTime = this.clips[clipIndex].updatedAt;
   }
 
-  public goNext(event: Event, id: string): void {
-    event.stopPropagation();
-    const target = this.displayType[id];
-    this.displayType = {
-      ...this.displayType,
-      [id]: {
-        availableTypes: target.availableTypes,
-        index:
-          target.index + 1 < target.availableTypes.length
-            ? target.index + 1
-            : 0,
-      },
-    };
-  }
-
-  public onClipClick(clip: Clip): void {
-    const target = this.displayType[clip.id];
-    const type = target.availableTypes[target.index];
+  public onClipClick(
+    clipIndex: number,
+    displayType: 'plainText' | 'richText' | 'dataURI'
+  ): void {
     this.copyToClipboard({
-      type: type === 'dataURI' ? 'image' : 'text',
-      payload: clip[type],
+      type: displayType === 'dataURI' ? 'image' : 'text',
+      payload: this.clips[clipIndex][displayType],
     });
     const mainWindow = electron.remote.getCurrentWindow();
-    if (mainWindow.isVisible() && this.settings.system.blur) {
+    if (mainWindow.isVisible() && this.general.blur) {
       setTimeout(mainWindow.hide, 0);
     }
   }
 
-  public async onLabelSelect(label: Label, clip: Clip): Promise<void> {
+  public async onLabelSelect(label: Label, clipIndex: number): Promise<void> {
     await this.modifyClip({
       clip: {
-        ...clip,
+        ...this.clips[clipIndex],
         category: !label.id ? 'none' : label.id,
       },
       options: { silently: true },
     });
   }
 
-  public async onRemoveClick(event: Event, clip: ClipEx): Promise<void> {
+  public async onRemoveClick(event: Event, clipIndex: number): Promise<void> {
     event.stopPropagation();
     this.removeTarget = {
       ...this.removeTarget,
-      [clip.id]: !this.removeTarget[clip.id],
+      [this.clips[clipIndex].id]: !this.removeTarget[this.clips[clipIndex].id],
     };
   }
 
@@ -289,7 +286,6 @@ export default class Home extends ExtendedVue {
 
   public onLabelClick(label: Label): void {
     const target = this.labels.find((label_) => label_.id === label.id);
-
     this.search(this.normalizeQuery(this.searchQuery, { label: target?.name }));
   }
 
@@ -344,7 +340,7 @@ export default class Home extends ExtendedVue {
     this.timeout = setTimeout(async () => {
       const regex = (() => {
         if (search) {
-          switch (this.settings.storage.search.type) {
+          switch (this.advanced.searchMode) {
             case 'fuzzy':
               return utils.patterns.likeSearch('plainText', search);
             case 'advanced-fuzzy':

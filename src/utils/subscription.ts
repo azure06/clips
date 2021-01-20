@@ -28,6 +28,7 @@ const statusSubject = new Subject<
       messageId: string;
     }
 >();
+const transactionsSubject = new Subject<Electron.Transaction[]>();
 
 mainWindow.on('resize', (args: unknown) => resizeSubject.next(args));
 mainWindow.on('move', (args: unknown) => resizeSubject.next(args));
@@ -46,12 +47,16 @@ electron.ipcRenderer.on(
   (event, status, receiverId, messageId, progress) =>
     statusSubject.next({ status, receiverId, messageId, progress })
 );
+electron.ipcRenderer.on('transactions-updated', (event, transactions) =>
+  transactionsSubject.next(transactions)
+);
 
 export const clipboardChange = clipSubject.asObservable();
 export const onNavigate = navigateSubject.asObservable();
 export const onMessage = messageSubject.asObservable();
 export const onAuthorize = authorizeSubject.asObservable();
 export const onProgress = statusSubject.asObservable();
+export const onTransactionsUpdated = transactionsSubject.asObservable();
 export const onBoundsChange = merge(
   moveSubject.asObservable(),
   resizeSubject.asObservable()

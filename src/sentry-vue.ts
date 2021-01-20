@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/electron';
 import log from 'electron-log';
-import { storeService } from '@/electron/services/electron-store';
+import * as storeService from '@/electron/services/electron-store';
 
 // Use only with main.process
 export default {
@@ -8,7 +8,7 @@ export default {
   init: (value: Sentry.ElectronOptions): void => {
     Sentry.init(value);
     Sentry.configureScope(function(scope) {
-      const user = storeService.getUser();
+      const user = storeService.getAppConf()?.user;
       scope.setUser({
         id: storeService.getUserId(),
         username: user ? user.displayName : undefined,

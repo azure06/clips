@@ -136,23 +136,23 @@
           </v-btn>
         </template>
         <v-list dense>
-          <v-list-item link @click="$emit('upload-json')">
+          <v-list-item link @click="$emit('restore-backup')">
             <v-list-item-avatar class="pa-0 ma-0">
               <v-icon v-text="`mdi-upload`" dense></v-icon>
             </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title>{{
-                translations.uploadItems
+                translations.restoreItems
               }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item link @click="$emit('download-json')">
+          <v-list-item link @click="$emit('create-backup')">
             <v-list-item-avatar class="pa-0 ma-0">
               <v-icon v-text="`mdi-download`" dense></v-icon>
             </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title>{{
-                translations.downloadItems
+                translations.backupItems
               }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>

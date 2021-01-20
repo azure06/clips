@@ -27,6 +27,21 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- In App Purchase -->
+    <v-dialog v-model="inAppStatusDialog" persistent max-width="290">
+      <v-card color="surfaceVariant">
+        <v-card-title class="subtitle-2">{{
+          inAppStatusDialogText
+        }}</v-card-title>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="inAppStatusDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
@@ -35,17 +50,50 @@ import { UserDoc } from './rxdb/user/model';
 import { UserUpsert } from './store/network/actions';
 import { Component, Vue } from 'vue-property-decorator';
 import NavDrawer from '@/components/NavDrawer.vue';
-import { onAuthorize } from '@/subscriptions';
+import { onAuthorize, onTransactionsUpdated } from '@/utils/subscription';
 import { ipcRenderer } from 'electron';
-import { Action } from 'vuex-class';
+import { Action, Mutation } from 'vuex-class';
+import { tap } from 'rxjs/operators';
+import { handleTransaction } from './utils/in-app-transaction';
+import { InAppStatus } from './store/types';
 
-@Component({ components: { NavDrawer } })
+@Component<App>({
+  components: { NavDrawer },
+  subscriptions() {
+    return {
+      transactions: onTransactionsUpdated.pipe(
+        tap((transactions) =>
+          handleTransaction((transaction) => {
+            switch (transaction.transactionState) {
+              case 'purchased':
+                this.setPremium(true);
+                break;
+              case 'failed':
+                this.inAppStatusDialog = true;
+                this.inAppStatusDialogText = transaction.errorMessage;
+                break;
+            }
+            this.setInAppStatus(transaction.transactionState);
+          }, transactions)
+        ),
+        tap((value) => console.log(value))
+      ),
+    };
+  },
+})
 export default class App extends Vue {
   @Action('upsertUser', { namespace: 'network' })
   public upsertUser!: (device: UserUpsert) => Promise<UserDoc>;
+  @Mutation('setInAppStatus', { namespace: 'configuration' })
+  public setInAppStatus!: (status: InAppStatus) => void;
+  @Mutation('setPremium', { namespace: 'configuration' })
+  public setPremium!: (status: boolean) => void;
 
   public dialog = false;
   public dialogText = 'Accept the invitation from';
+
+  public inAppStatusDialog = false;
+  public inAppStatusDialogText = 'Something went wrong';
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   public resolve: (args: 'close' | 'once' | 'always') => void = () => {};
 

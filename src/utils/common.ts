@@ -1,13 +1,9 @@
-import sizeof from 'object-sizeof';
-
 export type Language = typeof language;
 export type Dictionary<T> = { [id: string]: T };
 export type StringProp<T> = {
   [K in keyof T]: T[K] extends string ? K : never;
 }[keyof T];
 
-const clipsThreshold = 32768 * 1000;
-const clipThreshold = 8192 * 1000;
 export const language = {
   auto: 'Auto',
   en: 'English',
@@ -16,16 +12,6 @@ export const language = {
   'zh-CN': '简体中文',
   'zh-TW': '繁體中文',
 } as const;
-
-/**
- * Size
- */
-export function checkSize<T>(clip: T): boolean {
-  return sizeof(clip) < clipThreshold;
-}
-export function isSpaceAvailable<T>(clips: T[]): boolean {
-  return sizeof(clips) < clipsThreshold;
-}
 
 /**
  * String

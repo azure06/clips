@@ -138,48 +138,41 @@
             } slide-move delay`
           : ''
       "
+      :flat="!isGridMode"
       color="surfaceVariant"
     >
       <v-card-text :class="!isGridMode ? 'ma-0 pa-0' : ''">
         <div v-if="isGridMode">Clips</div>
-        <v-list
-          two-line
-          subheader
-          dense
-          nav
-          color="surfaceVariant"
-          class="pt-1"
-        >
+        <v-list two-line dense nav color="surfaceVariant" class="pt-1">
           <v-list-item
             v-for="(clip, index) in clipsObserver"
             :key="clip.id"
-            @mouseover="$emit('clip-hover', clips[index])"
-            @click="$emit('clip-click', clips[index])"
+            @mouseover="$emit('clip-hover', index)"
+            @click="$emit('clip-click', index, clip.displayingFormat)"
           >
             <v-list-item-content>
               <v-list-item-title
-                v-if="
-                  displayType[clip.id].availableTypes[
-                    displayType[clip.id].index
-                  ] === 'plainText'
-                "
+                v-if="clip.displayingFormat === 'plainText'"
                 v-text="clip.preview"
               ></v-list-item-title>
               <v-img
-                v-else-if="
-                  displayType[clip.id].availableTypes[
-                    displayType[clip.id].index
-                  ] === 'dataURI'
-                "
+                v-else-if="clip.displayingFormat === 'dataURI'"
                 style="border-radius: 5px; max-height: 64px;"
                 :src="clip.dataURI"
                 :alt="clip.preview"
               ></v-img>
-              <v-list-item-title v-else>
+              <v-list-item-title
+                v-else-if="clip.displayingFormat === 'htmlText'"
+              >
                 <div
                   v-dompurify-html="clip.htmlText"
                   style="border-radius: 5px; max-height: 64px;"
                 ></div>
+              </v-list-item-title>
+              <v-list-item-title
+                v-else-if="clip.displayingFormat === 'richText'"
+                v-text="clip.richText"
+              >
               </v-list-item-title>
               <v-list-item-subtitle
                 v-text="clip.fromNow"
@@ -191,49 +184,48 @@
               v-if="clipboardMode !== 'select'"
             >
               <div>
-                <v-btn
-                  v-if="displayType[clip.id].availableTypes.length > 1"
-                  icon
-                  @click="$emit('go-next', $event, clip.id)"
+                <v-menu
+                  v-if="clip.formats.length > 1"
+                  offset-x
+                  max-height="170"
                 >
-                  <v-icon
-                    v-if="
-                      displayType[clip.id].availableTypes[
-                        displayType[clip.id].index
-                      ] === 'plainText'
-                    "
-                    >mdi-card-text</v-icon
-                  >
-                  <v-icon
-                    v-if="
-                      displayType[clip.id].availableTypes[
-                        displayType[clip.id].index
-                      ] === 'htmlText'
-                    "
-                    >mdi-language-html5</v-icon
-                  >
-                  <v-icon
-                    v-if="
-                      displayType[clip.id].availableTypes[
-                        displayType[clip.id].index
-                      ] === 'richText'
-                    "
-                    >mdi-card-text-outline</v-icon
-                  >
-                  <v-icon
-                    v-if="
-                      displayType[clip.id].availableTypes[
-                        displayType[clip.id].index
-                      ] === 'dataURI'
-                    "
-                    >mdi-image-area</v-icon
-                  >
-                </v-btn>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon v-bind="attrs" v-on="on">
+                      <v-icon>mdi-format-letter-case</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list dense width="190">
+                    <v-list-item-group
+                      :value="indexSelectedFormat(clip)"
+                      color="primary"
+                    >
+                      <v-list-item
+                        v-for="(format, formatIndex) in clip.formats"
+                        :key="`${format}-${formatIndex}-format`"
+                        @click="
+                          $emit('change-format', {
+                            [clip.id]: toClipProp(format),
+                          })
+                        "
+                        dense
+                      >
+                        <v-list-item-icon class="mx-0">
+                          <v-icon v-text="`mdi-label`" small></v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title class="mx-2">{{
+                          translationByFormat[format]
+                        }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list-item-group>
+                  </v-list>
+                </v-menu>
 
                 <v-menu offset-x max-height="170">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn icon v-bind="attrs" v-on="on">
-                      <v-icon>mdi-dots-vertical</v-icon>
+                      <v-icon :color="colorByLabelId[clip.category]"
+                        >mdi-star</v-icon
+                      >
                     </v-btn>
                   </template>
                   <v-list dense width="190">
@@ -244,7 +236,7 @@
                       <v-list-item
                         v-for="(label, labelIndex) in labelsWithNone"
                         :key="`${label.id}-${labelIndex}-menu`"
-                        @click="$emit('label-select', label, clips[index])"
+                        @click="$emit('label-select', label, index)"
                         dense
                       >
                         <v-list-item-icon class="mx-0">
@@ -268,7 +260,7 @@
               <v-checkbox
                 :input-value="removeTarget[clip.id]"
                 color="cyan darken-2"
-                @click="$emit('remove-click', $event, clips[index], index)"
+                @click="$emit('remove-click', $event, index)"
               ></v-checkbox>
             </v-list-item-action>
           </v-list-item>
@@ -308,20 +300,16 @@ import { Clip, Label } from '@/store/types';
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { uuid } from 'uuidv4';
 import { randomColor } from '@/store/network/actions';
+import { Translation } from '@/utils/translations/types';
+import { ClipExtended, ClipFormat, toClipProp } from '@/views/Home.vue';
+import { Format } from '@/rxdb/clips/model';
 
 @Component
 export default class Grid extends Vue {
   @Prop({ required: true })
-  public clipsObserver!: Array<Clip & { fromNow?: string; preview?: string }>;
+  public translations!: Translation;
   @Prop({ required: true })
-  public clips!: Clip[];
-  @Prop()
-  public displayType?: {
-    [id: string]: {
-      availableTypes: Array<'plainText' | 'richText' | 'dataURI' | 'htmlText'>;
-      index: number;
-    };
-  };
+  public clipsObserver!: Array<Clip & { fromNow?: string; preview?: string }>;
   @Prop()
   public loading?: boolean;
   @Prop({ required: true })
@@ -338,6 +326,27 @@ export default class Grid extends Vue {
   public labelDialog = false;
   public editNewLabel = false;
   public newLabel = '';
+
+  public get colorByLabelId(): { [labelId: string]: string | undefined } {
+    return this.labels.reduce(
+      (acc, label) => ({
+        ...acc,
+        ...{ [label.id]: label.color },
+      }),
+      {}
+    );
+  }
+
+  public get translationByFormat(): { [P in Format]: string } {
+    return {
+      'text/plain': this.translations.text,
+      'text/html': this.translations.htmlText,
+      'text/rtf': this.translations.richText,
+      'image/png': this.translations.image,
+      'image/jpg': this.translations.image,
+      'vscode-editor-data': 'EMPTY',
+    };
+  }
 
   public finishEditingNewLabel(): void {
     if (this.newLabel === '') return;
@@ -356,6 +365,17 @@ export default class Grid extends Vue {
 
   public get labelsWithNone(): Label[] {
     return [{ name: 'None', color: '#1d1d20', id: '' }, ...this.labels];
+  }
+
+  public toClipProp(format: Format): ClipFormat {
+    return toClipProp(format);
+  }
+
+  public indexSelectedFormat(clip: ClipExtended): number {
+    const value = clip.formats.findIndex(
+      (format) => toClipProp(format) === clip.displayingFormat
+    );
+    return value === -1 ? 0 : value;
   }
 
   public indexSelectedLabel(clip: Clip): number {

@@ -1,31 +1,22 @@
 import { ActionTree } from 'vuex';
-import { ClipsState, Clip, RootState } from '@/store/types';
+import { ClipsState, Clip, RootState, AppConfState } from '@/store/types';
 import { createClipsRxDB, removeClipsRxDB, getCollection } from '@/rxdb';
 import { from, EMPTY, of, range } from 'rxjs';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { concatMap, tap, take, catchError } from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
-import { ipcRenderer, remote } from 'electron';
-import { storeService } from '@/electron/services/electron-store';
-
-export type DriveResponse<T> = Successful<T> | Unsuccessful<T>;
-
-type Successful<T> = {
-  status: number;
-  statusText: string;
-  data: T;
-};
-type Unsuccessful<T> = Omit<Successful<T>, 'data'>;
-
-function isDriveResponse<T>(
-  driveResponse: unknown
-): driveResponse is DriveResponse<T> {
-  return (
-    typeof driveResponse === 'object' &&
-    !!driveResponse &&
-    'status' in driveResponse
-  );
-}
+import { remote } from 'electron';
+import * as storeService from '@/electron/services/electron-store';
+import {
+  copyToClipboard,
+  exportJson,
+  importJson,
+  isDriveResponse,
+  isSuccessful,
+  removeImage,
+  removeImageDirectory,
+  uploadToDrive,
+} from '@/utils/invocation';
 
 const collection = () => getCollection('clips');
 
@@ -101,6 +92,10 @@ const actions: ActionTree<ClipsState, RootState> = {
               .findClips({
                 filters: clip.dataURI
                   ? { dataURI: clip.dataURI }
+                  : clip.richText
+                  ? { richText: clip.richText }
+                  : clip.htmlText
+                  ? { htmlText: clip.htmlText }
                   : { plainText: clip.plainText },
               })
               .then(async ([targetClip]) => {
@@ -148,12 +143,30 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap(() => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
-          from(methods.removeClips(ids)).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([]);
-            })
-          )
+          from(methods.removeClips(ids))
+            .pipe(
+              concatMap(async (clips) => {
+                await Promise.all(
+                  clips
+                    .filter((clip) => clip.type === 'image')
+                    .map((clip) =>
+                      from(removeImage(clip.dataURI))
+                        .pipe(
+                          catchError((error) => Sentry.captureException(error))
+                        )
+                        .pipe(take(1))
+                        .toPromise()
+                    )
+                );
+                return clips;
+              })
+            )
+            .pipe(
+              catchError((error) => {
+                Sentry.captureException(error);
+                return of([] as Clip[]);
+              })
+            )
         )
       )
       .pipe(tap((clips) => commit('removeClips', { clips })))
@@ -161,17 +174,18 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(take(1))
       .toPromise(),
   /** Remove clipboard item before X date excluding starred */
-  removeClipsLte: async ({ commit }, updatedAt: number) =>
+  removeClipsLte: async ({ commit, dispatch }, updatedAt: number) =>
     collection()
       .pipe(tap(() => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
           from(
-            methods
-              .findClipsLte(updatedAt)
-              .then((clips) =>
-                methods.removeClips(clips.map((clip) => clip.id))
+            methods.findClipsLte(updatedAt).then((clips) =>
+              dispatch(
+                'removeClips',
+                clips.map((clip) => clip.id)
               )
+            )
           ).pipe(
             catchError((error) => {
               Sentry.captureException(error);
@@ -194,18 +208,26 @@ const actions: ActionTree<ClipsState, RootState> = {
         })
       )
       .pipe(concatMap(() => createClipsRxDB()))
+      .pipe(
+        concatMap(() =>
+          from(removeImageDirectory())
+            .pipe(catchError((error) => Sentry.captureException(error)))
+            .pipe(take(1))
+            .toPromise()
+        )
+      )
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .toPromise(),
   copyToClipboard: async (
     _,
-    { type, payload }: { type: 'text' | 'base64'; payload: string }
+    { type, payload }: { type: 'text' | 'image'; payload: string }
   ) =>
-    from(ipcRenderer.invoke('copy-to-clipboard', type, payload))
+    from(copyToClipboard(type, payload))
       .pipe(catchError((error) => Sentry.captureException(error)))
       .pipe(take(1))
       .toPromise(),
   uploadToDrive: async (
-    { commit },
+    { commit, rootState },
     args?: { clip: Clip; threshold?: number }
   ) => {
     const clips =
@@ -218,10 +240,18 @@ const actions: ActionTree<ClipsState, RootState> = {
       (!!args && args.threshold !== undefined && clips.length >= args.threshold)
     ) {
       commit('setSyncStatus', 'pending');
-      const response = await ipcRenderer
-        .invoke('upload-to-drive', clips)
-        .catch((error) => error);
-      if (isDriveResponse(response)) {
+      const response = await uploadToDrive(clips).catch((error) => error);
+      if (isSuccessful<{ id: string }>(response)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { drive } = (rootState as any).configuration as AppConfState;
+        commit(
+          'configuration/setDrive',
+          {
+            ...drive,
+            syncedFiles: { ...drive.syncedFiles, [response.data.id]: true },
+          },
+          { root: true }
+        );
         storeService.removeClips();
         commit('setSyncStatus', 'resolved');
       } else {
@@ -247,7 +277,7 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise(),
-  downloadJson: async ({ commit }, clips: Clip[]) =>
+  createBackup: async ({ commit }, clips: Clip[]) =>
     collection()
       .pipe(tap(() => commit('setProcessingStatus', true)))
       .pipe(tap(() => commit('setLoadingStatus', true)))
@@ -257,9 +287,7 @@ const actions: ActionTree<ClipsState, RootState> = {
             defaultPath: 'untitled',
             filters: [{ name: 'Json File', extensions: ['json'] }],
           });
-          return filePath
-            ? ipcRenderer.invoke('downloadJson', filePath, clips)
-            : [];
+          return filePath ? exportJson(filePath, clips) : [];
         })
       )
       .pipe(
@@ -272,7 +300,7 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise(),
-  uploadJson: async ({ commit, dispatch }) =>
+  restoreBackup: async ({ commit, dispatch }) =>
     collection()
       .pipe(tap(() => commit('setProcessingStatus', true)))
       .pipe(tap(() => commit('setLoadingStatus', true)))
@@ -283,7 +311,7 @@ const actions: ActionTree<ClipsState, RootState> = {
             filters: [{ name: 'Json File', extensions: ['json'] }],
           });
           return (filePaths.length > 0
-            ? ipcRenderer.invoke('uploadJson', filePaths[0])
+            ? importJson(filePaths[0])
             : Promise.resolve([])) as Promise<Clip[]>;
         })
       )

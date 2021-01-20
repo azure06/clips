@@ -1,4 +1,4 @@
-import { storeService } from '../services/electron-store';
+import * as storeService from '../services/electron-store';
 import { BrowserWindow, ipcMain, screen, globalShortcut } from 'electron';
 
 type MacOS = ['Command', 'Shift', string];
@@ -41,18 +41,18 @@ function unregister() {
 
 /** Init Shortcuts */
 export function initShortcuts(mainWindow: BrowserWindow): void {
-  const appSettings = storeService.getAppSettings();
-  const storedShortcut = appSettings
-    ? fromFuzzyShortcut(appSettings.system.shortcut)
+  const appConf = storeService.getAppConf();
+  const storedShortcut = appConf
+    ? fromFuzzyShortcut(appConf.advanced.shortcut)
     : undefined;
 
   const show = () => {
     const point = screen.getCursorScreenPoint();
-    const appSettings = storeService.getAppSettings();
+    const appConf = storeService.getAppConf();
     // https://github.com/electron/electron/blob/master/docs/api/screen.md
     // const display = screen.getDisplayNearestPoint(point);
-    if (appSettings && appSettings.system.display.type === 'cursor') {
-      const { width, height } = appSettings.system.display;
+    if (appConf && appConf.general.positioningMode.type === 'cursor') {
+      const { width, height } = appConf.general.positioningMode;
       mainWindow.setPosition(
         point.x - Math.round(width / 2),
         point.y - Math.round(height / 2)
@@ -66,7 +66,7 @@ export function initShortcuts(mainWindow: BrowserWindow): void {
 
   register(storedShortcut, onShortcutPressed);
 
-  ipcMain.handle('change-shortcut', (_, shortcut) =>
+  ipcMain.handle('set-shortcut', (_, shortcut) =>
     register(fromFuzzyShortcut(shortcut), onShortcutPressed)
   );
 }

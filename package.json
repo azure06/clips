@@ -35,8 +35,8 @@
   },
   "main": "background.js",
   "dependencies": {
-    "@sentry/electron": "^2.0.1",
-    "@sentry/integrations": "^5.25.0",
+    "@sentry/electron": "^2.1.0",
+    "@sentry/integrations": "^5.30.0",
     "core-js": "^3.6.5",
     "electron-log": "^4.2.4",
     "electron-store": "^6.0.1",
@@ -50,7 +50,6 @@
     "local-devices": "^3.1.0",
     "macaddress": "^0.5.1",
     "moment": "^2.29.1",
-    "object-sizeof": "^1.6.1",
     "pouchdb-adapter-idb": "^7.2.2",
     "register-service-worker": "^1.7.1",
     "rxdb": "^9.6.0",

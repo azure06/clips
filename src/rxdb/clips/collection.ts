@@ -46,7 +46,7 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
       .where('updatedAt')
       .lte(lte)
       .where('category')
-      .ne('starred');
+      .eq('none');
 
     const result = await query.exec();
     return result.map((clip) => clip.toJSON());

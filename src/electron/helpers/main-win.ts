@@ -1,24 +1,24 @@
 import { startAutoUpdater } from './auto-updater';
-import { storeService } from '../services/electron-store';
+import * as storeService from '../services/electron-store';
 import { BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
 
 declare const __static: string;
 
-const appSettings = storeService.getAppSettings();
+const appConf = storeService.getAppConf();
 
-const storeFlags = appSettings
-  ? ((display) =>
-      display.type === 'maintain'
+const storeFlags = appConf
+  ? ((positioningMode) =>
+      positioningMode.type === 'maintain'
         ? {
-            width: display.width,
-            height: display.height,
-            x: display.position.x,
-            y: display.position.y,
+            width: positioningMode.width,
+            height: positioningMode.height,
+            x: positioningMode.position.x,
+            y: positioningMode.position.y,
           }
-        : { width: display.width, height: display.height })(
-      appSettings.system.display
+        : { width: positioningMode.width, height: positioningMode.height })(
+      appConf.general.positioningMode
     )
   : {};
 

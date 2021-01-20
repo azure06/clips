@@ -1,4 +1,4 @@
-import { storeService } from '../services/electron-store';
+import * as storeService from '../services/electron-store';
 import { BrowserWindow } from 'electron';
 
 export function initEvents(mainWindow: BrowserWindow): void {
@@ -9,8 +9,8 @@ export function initEvents(mainWindow: BrowserWindow): void {
     // shell.openExternal(url);
   });
   const maybeHide = () => {
-    const appSettings = storeService.getAppSettings();
-    if (appSettings && appSettings.system.blur) {
+    const appConf = storeService.getAppConf();
+    if (appConf && appConf.general.blur) {
       mainWindow.hide();
     }
   };

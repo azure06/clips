@@ -231,7 +231,7 @@
 import { Component } from 'vue-property-decorator';
 import { Getter, Action } from 'vuex-class';
 import { Dictionary } from 'vue-router/types/router';
-import { ExtendedVue } from '@/utils/base-vue';
+import { ExtendedVue } from '@/utils/basevue';
 import Room from '@/components/Room.vue';
 import { Room as RoomType } from '@/store/types';
 import { UserDoc } from '@/rxdb/user/model';

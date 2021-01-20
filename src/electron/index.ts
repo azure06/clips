@@ -1,13 +1,13 @@
 import { BrowserWindow, ipcMain, IpcMainInvokeEvent } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
-import { clipboardService } from './services/clipboard';
+import * as clipboardService from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
 import { GoogleDriveService } from './services/google-drive';
 import { environment } from './environment';
 import { mainWindow } from './helpers/main-win';
 import { tray } from './helpers/tray';
 import Sentry from './helpers/sentry-electron';
-import { storeService } from './services/electron-store';
+import * as storeService from './services/electron-store';
 import { initEvents } from './helpers/events';
 import { initShortcuts } from './helpers/shortcuts';
 import { initAutoLauncher } from './helpers/autolauncher';
@@ -21,6 +21,7 @@ import fs from 'fs';
 import { Subscription } from 'rxjs';
 import { sendFile } from './services/socket.io/client';
 import { MessageDoc } from '@/rxdb/message/model';
+import * as inAppPurchaseService from './services/in-app-purachase';
 
 Sentry.init(environment.sentry);
 
@@ -132,11 +133,7 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
 }
 
 function subscribeToClipboard(mainWindow: BrowserWindow) {
-  const {
-    clipboardAsObservable: clipboard,
-    copyToClipboard,
-  } = clipboardService;
-  clipboard
+  clipboardService.clipboardAsObservable
     .pipe(
       tap((clip) => {
         mainWindow.webContents.send('clipboard-change', clip);
@@ -145,18 +142,27 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
     .subscribe();
 
   ipcMain.handle('copy-to-clipboard', (event, type, content) => {
-    return copyToClipboard(type, content);
+    return clipboardService.copyToClipboard(type, content);
   });
 
-  ipcMain.handle('downloadJson', (event, path, clips) => {
+  ipcMain.handle('to-dataURI', (event, content) => {
+    return clipboardService.convertToDataURI(content);
+  });
+  ipcMain.handle('remove-image', (event, content) => {
+    return clipboardService.removeFromDirectory(content);
+  });
+  ipcMain.handle('remove-image-directory', () => {
+    return clipboardService.removeImageDirectory();
+  });
+
+  ipcMain.handle('createBackup', (event, path, clips) => {
     return new Promise((resolve, reject) => {
       fs.writeFile(path, JSON.stringify(clips), function(err) {
         return err ? reject(err) : resolve(clips);
       });
     });
   });
-
-  ipcMain.handle('uploadJson', (event, path) => {
+  ipcMain.handle('restoreBackup', (event, path) => {
     return new Promise((resolve, reject) => {
       fs.readFile(path, 'utf-8', function(err, data) {
         return err
@@ -257,6 +263,27 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
   ipcMain.handle('send-file', handleSendFile);
 }
 
+function subscribeToInAppPurchase(mainWindow: BrowserWindow) {
+  ipcMain.handle('can-make-payments', inAppPurchaseService.canMakePayments);
+  ipcMain.handle('get-receipt-url', inAppPurchaseService.getReceiptURL);
+  ipcMain.handle('get-products', (event, productIds) =>
+    inAppPurchaseService.getProducts(productIds)
+  );
+  ipcMain.handle('purchase-product', (event, product) =>
+    inAppPurchaseService.purchaseProduct(product)
+  );
+  ipcMain.handle(
+    'restore-completed-transactions',
+    inAppPurchaseService.restoreCompletedTransactions
+  );
+  ipcMain.handle('finish-transaction-by-date', (event, date: string) =>
+    inAppPurchaseService.finishTransactionByDate(date)
+  );
+  inAppPurchaseService.onTransactionUpdate((event, transactions) =>
+    mainWindow.webContents.send('transactions-updated', transactions)
+  );
+}
+
 export function onReady(): void {
   const win = mainWindow.create();
   tray.create(win);
@@ -269,6 +296,7 @@ export function onReady(): void {
   subscribeToClipboard(win);
   subscribeToGoogle(win);
   subscribeToSocketIo(win);
+  subscribeToInAppPurchase(win);
 }
 
 export function onActivate(): void {

@@ -154,7 +154,7 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { ExtendedVue } from '@/utils/base-vue';
+import { ExtendedVue } from '@/utils/basevue';
 import { Component } from 'vue-property-decorator';
 import { Getter } from 'vuex-class';
 
@@ -162,7 +162,7 @@ import { Getter } from 'vuex-class';
 export default class NavDrawer extends ExtendedVue {
   @Getter('loading', { namespace: 'clips' })
   public loading!: boolean;
-  @Getter('user', { namespace: 'user' })
+  @Getter('user', { namespace: 'configuration' })
   public user!: unknown;
   public drawer = true;
 
