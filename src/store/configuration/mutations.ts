@@ -59,7 +59,6 @@ const mutations: MutationTree<AppConfState> = {
     Vue.set(state, 'user', storeService.getAppConf(state).user);
   },
   setGeneral(state, general: General) {
-    console.warn('state', state);
     storeService.setAppConf({ ...state, general });
     state.general = storeService.getAppConf(state).general;
   },
@@ -68,7 +67,6 @@ const mutations: MutationTree<AppConfState> = {
     state.advanced = storeService.getAppConf(state).advanced;
   },
   setDrive(state, drive: Drive) {
-    console.warn('state drive', state);
     storeService.setAppConf({ ...state, drive });
     state.drive = storeService.getAppConf(state).drive;
   },

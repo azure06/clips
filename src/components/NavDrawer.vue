@@ -1,6 +1,7 @@
 <template>
   <v-navigation-drawer
     v-model="drawer"
+    class="py-3"
     mini-variant
     app
     permanent

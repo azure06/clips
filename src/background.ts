@@ -5,7 +5,8 @@ import { app, protocol, globalShortcut } from 'electron';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-const appLocked = app.requestSingleInstanceLock();
+// The return value of this method indicates whether or not this instance of your application successfully obtained the lock
+const appLocked = process.mas || app.requestSingleInstanceLock();
 
 !appLocked
   ? app.quit()

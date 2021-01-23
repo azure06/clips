@@ -3,7 +3,14 @@ import { ClipsState, Clip, RootState, AppConfState } from '@/store/types';
 import { createClipsRxDB, removeClipsRxDB, getCollection } from '@/rxdb';
 import { from, EMPTY, of, range } from 'rxjs';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
-import { concatMap, tap, take, catchError } from 'rxjs/operators';
+import {
+  concatMap,
+  tap,
+  take,
+  catchError,
+  expand,
+  mapTo,
+} from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
 import { remote } from 'electron';
 import * as storeService from '@/electron/services/electron-store';
@@ -11,10 +18,11 @@ import {
   copyToClipboard,
   exportJson,
   importJson,
-  isDriveResponse,
+  isGaxiosError,
   isSuccessful,
   removeImage,
   removeImageDirectory,
+  retrieveFileFromDrive,
   uploadToDrive,
 } from '@/utils/invocation';
 
@@ -226,6 +234,62 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(catchError((error) => Sentry.captureException(error)))
       .pipe(take(1))
       .toPromise(),
+  // force:
+  retrieveFromDrive: async (
+    { commit, dispatch, rootState },
+    args: { fileIds: string[]; force?: boolean }
+  ) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { drive } = (rootState as any).configuration as AppConfState;
+    return of(
+      args.fileIds.filter(
+        (fieldId) => !drive.syncedFiles[fieldId] || args.force
+      )
+    )
+      .pipe(
+        tap(() => commit('setSyncStatus', 'pending')),
+        expand((fieldIds) => {
+          const [fileId, ...tail] = fieldIds;
+          return fieldIds.length > 0
+            ? from(retrieveFileFromDrive(fileId))
+                .pipe(
+                  catchError((error) => {
+                    Sentry.captureException(error);
+                    return of([] as Clip[]);
+                  })
+                )
+                .pipe(
+                  concatMap(async (response) => {
+                    if (!isGaxiosError(response)) {
+                      await Promise.all(
+                        response.map((clip) => dispatch('addClip', clip))
+                      );
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const { drive } = (rootState as any)
+                        .configuration as AppConfState;
+                      commit(
+                        'configuration/setDrive',
+                        {
+                          ...drive,
+                          syncedFiles: {
+                            ...drive.syncedFiles,
+                            [fileId]: true,
+                          },
+                        },
+                        { root: true }
+                      );
+                    } else {
+                      return Promise.resolve([]);
+                    }
+                  })
+                )
+                .pipe(mapTo(tail))
+            : EMPTY;
+        }),
+        tap(() => commit('setSyncStatus', 'resolved'))
+      )
+      .toPromise();
+  },
   uploadToDrive: async (
     { commit, rootState },
     args?: { clip: Clip; threshold?: number }

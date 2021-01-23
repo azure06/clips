@@ -52,10 +52,19 @@ import { Component, Vue } from 'vue-property-decorator';
 import NavDrawer from '@/components/NavDrawer.vue';
 import { onAuthorize, onTransactionsUpdated } from '@/utils/subscription';
 import { ipcRenderer } from 'electron';
-import { Action, Mutation } from 'vuex-class';
-import { tap } from 'rxjs/operators';
+import { Action, Getter, Mutation } from 'vuex-class';
+import {
+  concatMap,
+  delay,
+  expand,
+  mapTo,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 import { handleTransaction } from './utils/in-app-transaction';
-import { InAppStatus } from './store/types';
+import { Drive, InAppStatus } from './store/types';
+import { from, of } from 'rxjs';
+import { isGaxiosError, listGoogleDriveFiles } from './utils/invocation';
 
 @Component<App>({
   components: { NavDrawer },
@@ -76,12 +85,44 @@ import { InAppStatus } from './store/types';
             this.setInAppStatus(transaction.transactionState);
           }, transactions)
         ),
-        tap((value) => console.log(value))
+        tap((value) => console.log('transaction:', value))
+      ),
+      syncWithDrive: this.$watchAsObservable(() => this.drive.syncThreshold, {
+        immediate: true,
+      }).pipe(
+        switchMap(({ newValue }) =>
+          of(newValue).pipe(
+            expand((millis) =>
+              from(listGoogleDriveFiles())
+                .pipe(
+                  concatMap((res) =>
+                    !isGaxiosError(res) && this.drive.sync
+                      ? this.retrieveFromDrive({
+                          fileIds: Object.values(res)
+                            .flat()
+                            .filter((value) => !value.removed && !!value.fileId)
+                            .map((value) => value.fileId) as string[],
+                        })
+                      : Promise.resolve()
+                  )
+                )
+                .pipe(delay(millis))
+                .pipe(mapTo(millis))
+            )
+          )
+        )
       ),
     };
   },
 })
 export default class App extends Vue {
+  @Getter('drive', { namespace: 'configuration' })
+  public drive!: Drive;
+  @Action('retrieveFromDrive', { namespace: 'clips' })
+  public retrieveFromDrive!: (args: {
+    fileIds: string[];
+    force?: boolean;
+  }) => Promise<unknown>;
   @Action('upsertUser', { namespace: 'network' })
   public upsertUser!: (device: UserUpsert) => Promise<UserDoc>;
   @Mutation('setInAppStatus', { namespace: 'configuration' })
