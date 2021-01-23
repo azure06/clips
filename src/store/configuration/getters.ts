@@ -8,7 +8,7 @@ const getters: GetterTree<AppConfState, RootState> = {
   advanced: (state: AppConfState) => state.advanced,
   drive: (state: AppConfState) => state.drive,
   appearance: (state: AppConfState) => state.appearance,
-  premium: (state: AppConfState) => true, // state.premium,
+  premium: (state: AppConfState) => state.premium,
   inAppStatus: (state: AppConfState) => state.inAppStatus,
 };
 

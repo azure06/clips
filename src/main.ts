@@ -132,8 +132,8 @@ const vm = new Vue({
         )
         .pipe(
           tap(async (clip) => {
-            const { sync, syncThreshold } = this.general as Drive;
-            if (sync)
+            const { backup, backupThreshold } = this.drive as Drive;
+            if (backup)
               this.uploadToDrive({
                 clip: {
                   ...clip,
@@ -141,7 +141,7 @@ const vm = new Vue({
                     ? await imagePathToDataURI(clip.dataURI)
                     : clip.dataURI,
                 } as Clip,
-                threshold: syncThreshold,
+                threshold: backupThreshold,
               });
           })
         ),

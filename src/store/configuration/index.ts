@@ -33,7 +33,7 @@ const state: AppConfState = {
   },
   drive: {
     sync: false,
-    syncThreshold: 0,
+    syncThreshold: 3600000 * 24, // 24h
     backup: false,
     backupThreshold: 100,
     syncedFiles: {},
