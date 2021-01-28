@@ -199,11 +199,13 @@ import { ExtendedVue } from '@/utils/basevue';
 import * as storeService from '@/electron/services/electron-store';
 import {
   changePageToken,
-  GaxiosErrorEx,
-  isGaxiosError,
   listGoogleDriveFiles,
   retrieveFileFromDrive,
 } from '@/utils/invocation';
+import {
+  HttpFailure,
+  isSuccessHttp,
+} from '@/electron/utils/invocation-handler';
 
 @Component
 export default class GoogleDrive extends ExtendedVue {
@@ -230,9 +232,11 @@ export default class GoogleDrive extends ExtendedVue {
   }
 
   public async resetPageToken(): Promise<void> {
-    const pageToken = await changePageToken();
-    storeService.setPageToken(pageToken);
-    this.retrieveData();
+    const response = await changePageToken();
+    if (isSuccessHttp(response) && response.data.startPageToken) {
+      storeService.setPageToken(response.data.startPageToken);
+      this.retrieveData();
+    }
   }
 
   public async updatePageToken(token: string): Promise<void> {
@@ -251,12 +255,12 @@ export default class GoogleDrive extends ExtendedVue {
     // FIXME move to action?
     this.fetching = true;
     retrieveFileFromDrive(change.fileId)
-      .then((response: Clip[] | GaxiosErrorEx) =>
-        isGaxiosError(response)
-          ? Promise.resolve(this.errorHandler(response))
+      .then((response) =>
+        !isSuccessHttp(response)
+          ? this.errorHandler(response)
           : action === 'sync'
-          ? (Promise.all(response.map(this.addClip)) as unknown)
-          : this.createBackup(response)
+          ? (Promise.all(response.data.map(this.addClip)) as unknown)
+          : this.createBackup(response.data)
       )
       .finally(() => (this.fetching = false));
   }
@@ -264,22 +268,25 @@ export default class GoogleDrive extends ExtendedVue {
   public async retrieveData(token?: string): Promise<void> {
     this.loading = true;
     if (token) {
-      const newToken = await changePageToken(token);
-      storeService.setPageToken(newToken);
+      const response = await changePageToken(token);
+      if (isSuccessHttp(response) && response.data.startPageToken)
+        storeService.setPageToken(response.data.startPageToken);
     }
     this.storedToken = storeService.getPageToken('');
     const response = await listGoogleDriveFiles();
     this.loading = false;
-    if (!isGaxiosError(response)) {
-      this.driveChanges = Object.entries(response)
+    if (isSuccessHttp(response)) {
+      this.driveChanges = Object.entries(response.data)
         .reverse()
         .map(([token, changes]) => [
           token,
-          changes.sort(
-            (a, b) =>
-              new Date(b.time || '').getTime() -
-              new Date(a.time || '').getTime()
-          ),
+          changes
+            .filter((change) => change.file?.name === 'clips.json')
+            .sort(
+              (a, b) =>
+                new Date(b.time || '').getTime() -
+                new Date(a.time || '').getTime()
+            ),
         ])
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .filter(([_, changes]) => changes.length > 0) as Array<
@@ -290,18 +297,16 @@ export default class GoogleDrive extends ExtendedVue {
     }
   }
 
-  public errorHandler(gaxiosError: GaxiosErrorEx): void {
+  public errorHandler(response: HttpFailure): void {
     this.errorMsg = (() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      switch ((gaxiosError.error as any).code) {
+      switch (response.status) {
         case 401:
           return this.$translations.invalidCredentials;
         case 402:
           return this.$translations.invalidCredentials;
-        case 'ENOTFOUND':
-          return this.$translations.networkError;
         default:
-          return this.$translations.somethingWentWrong;
+          return response.message;
       }
     })();
     this.snackbar = true;

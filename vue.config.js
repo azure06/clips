@@ -14,7 +14,7 @@ module.exports = {
         productName: 'Clips',
         publish: ['github'],
         afterSign: 'scripts/notarize.js',
-        buildVersion: '0.1.14',
+        buildVersion: '0.1.15',
         mac: {
           hardenedRuntime: true,
           type: 'distribution',

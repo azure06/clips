@@ -43,7 +43,7 @@ electron.ipcRenderer.on('authorize', (event, data) =>
   authorizeSubject.next(data)
 );
 electron.ipcRenderer.on(
-  'status',
+  'progress-status',
   (event, status, receiverId, messageId, progress) =>
     statusSubject.next({ status, receiverId, messageId, progress })
 );

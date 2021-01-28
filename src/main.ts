@@ -22,6 +22,7 @@ import Sentry from '@/sentry-vue';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
 import { Format } from './rxdb/clips/model';
 import { imagePathToDataURI } from './utils/invocation';
+import { isSuccess } from './electron/utils/invocation-handler';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -133,13 +134,12 @@ const vm = new Vue({
         .pipe(
           tap(async (clip) => {
             const { backup, backupThreshold } = this.drive as Drive;
-            if (backup)
+            const result = await imagePathToDataURI(clip.dataURI);
+            if (backup && isSuccess(result))
               this.uploadToDrive({
                 clip: {
                   ...clip,
-                  dataURI: clip.dataURI
-                    ? await imagePathToDataURI(clip.dataURI)
-                    : clip.dataURI,
+                  dataURI: clip.dataURI ? result.data : clip.dataURI,
                 } as Clip,
                 threshold: backupThreshold,
               });

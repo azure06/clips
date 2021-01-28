@@ -16,15 +16,14 @@ import { remote } from 'electron';
 import * as storeService from '@/electron/services/electron-store';
 import {
   copyToClipboard,
-  exportJson,
-  importJson,
-  isGaxiosError,
-  isSuccessful,
+  createBackup,
+  restoreBackup,
   removeImage,
   removeImageDirectory,
   retrieveFileFromDrive,
   uploadToDrive,
 } from '@/utils/invocation';
+import { isSuccess, isSuccessHttp } from '@/electron/utils/invocation-handler';
 
 const collection = () => getCollection('clips');
 
@@ -151,30 +150,20 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap(() => commit('setLoadingStatus', true)))
       .pipe(
         concatMap((methods) =>
-          from(methods.removeClips(ids))
-            .pipe(
-              concatMap(async (clips) => {
-                await Promise.all(
-                  clips
-                    .filter((clip) => clip.type === 'image')
-                    .map((clip) =>
-                      from(removeImage(clip.dataURI))
-                        .pipe(
-                          catchError((error) => Sentry.captureException(error))
-                        )
-                        .pipe(take(1))
-                        .toPromise()
-                    )
-                );
-                return clips;
-              })
-            )
-            .pipe(
-              catchError((error) => {
-                Sentry.captureException(error);
-                return of([] as Clip[]);
-              })
-            )
+          from(methods.removeClips(ids)).pipe(
+            concatMap(async (clips) => {
+              await Promise.all(
+                clips
+                  .filter((clip) => clip.type === 'image')
+                  .map((clip) =>
+                    from(removeImage(clip.dataURI))
+                      .pipe(take(1))
+                      .toPromise()
+                  )
+              );
+              return clips;
+            })
+          )
         )
       )
       .pipe(tap((clips) => commit('removeClips', { clips })))
@@ -219,7 +208,6 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(
         concatMap(() =>
           from(removeImageDirectory())
-            .pipe(catchError((error) => Sentry.captureException(error)))
             .pipe(take(1))
             .toPromise()
         )
@@ -231,7 +219,6 @@ const actions: ActionTree<ClipsState, RootState> = {
     { type, payload }: { type: 'text' | 'image'; payload: string }
   ) =>
     from(copyToClipboard(type, payload))
-      .pipe(catchError((error) => Sentry.captureException(error)))
       .pipe(take(1))
       .toPromise(),
   // force:
@@ -253,16 +240,10 @@ const actions: ActionTree<ClipsState, RootState> = {
           return fieldIds.length > 0
             ? from(retrieveFileFromDrive(fileId))
                 .pipe(
-                  catchError((error) => {
-                    Sentry.captureException(error);
-                    return of([] as Clip[]);
-                  })
-                )
-                .pipe(
                   concatMap(async (response) => {
-                    if (!isGaxiosError(response)) {
+                    if (isSuccessHttp(response)) {
                       await Promise.all(
-                        response.map((clip) => dispatch('addClip', clip))
+                        response.data.map((clip) => dispatch('addClip', clip))
                       );
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       const { drive } = (rootState as any)
@@ -304,8 +285,8 @@ const actions: ActionTree<ClipsState, RootState> = {
       (!!args && args.threshold !== undefined && clips.length >= args.threshold)
     ) {
       commit('setSyncStatus', 'pending');
-      const response = await uploadToDrive(clips).catch((error) => error);
-      if (isSuccessful<{ id: string }>(response)) {
+      const response = await uploadToDrive(clips);
+      if (isSuccessHttp(response) && response.data.id) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { drive } = (rootState as any).configuration as AppConfState;
         commit(
@@ -351,13 +332,12 @@ const actions: ActionTree<ClipsState, RootState> = {
             defaultPath: 'untitled',
             filters: [{ name: 'Json File', extensions: ['json'] }],
           });
-          return filePath ? exportJson(filePath, clips) : [];
-        })
-      )
-      .pipe(
-        catchError((error) => {
-          Sentry.captureException(error);
-          return of([]);
+          return filePath
+            ? (async () => {
+                const response = await createBackup(filePath, clips);
+                return isSuccess(response) ? clips : [];
+              })()
+            : [];
         })
       )
       .pipe(tap(() => commit('setProcessingStatus', false)))
@@ -374,15 +354,12 @@ const actions: ActionTree<ClipsState, RootState> = {
             properties: ['openFile'],
             filters: [{ name: 'Json File', extensions: ['json'] }],
           });
-          return (filePaths.length > 0
-            ? importJson(filePaths[0])
-            : Promise.resolve([])) as Promise<Clip[]>;
-        })
-      )
-      .pipe(
-        catchError((error) => {
-          Sentry.captureException(error);
-          return of([] as Clip[]);
+          return filePaths.length > 0
+            ? (async () => {
+                const result = await restoreBackup(filePaths[0]);
+                return isSuccess(result) ? result.data : [];
+              })()
+            : Promise.resolve([] as Clip[]);
         })
       )
       .pipe(

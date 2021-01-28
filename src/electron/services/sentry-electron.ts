@@ -1,4 +1,4 @@
-import * as storeService from '../services/electron-store';
+import * as storeService from './electron-store';
 import { init } from '@sentry/electron/dist/main';
 import * as Sentry from '@sentry/electron';
 import log from 'electron-log';

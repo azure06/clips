@@ -1,7 +1,8 @@
 <template>
+  <!-- Class py-2 for Mac -->
   <v-navigation-drawer
     v-model="drawer"
-    class="py-3"
+    class="py-2"
     mini-variant
     app
     permanent

@@ -26,7 +26,7 @@
     "build": "vue-cli-service build",
     "lint": "eslint -c .eslintrc.js --ext ts,vue ./src",
     "lint:fix": "eslint -c .eslintrc.js --ext ts,vue ./src --fix",
-    "electron:build": "vue-cli-service electron:build -m",
+    "electron:build": "vue-cli-service electron:build -mw",
     "electron:publish": "npm run electron:build -- -p always",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",

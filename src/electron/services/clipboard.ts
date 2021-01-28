@@ -60,10 +60,10 @@ export const copyToClipboard = (
 };
 
 export const removeImageDirectory = (): void =>
-  catching(() => fs.rmdirSync(IMAGES_DIR, { recursive: true }));
+  fs.rmdirSync(IMAGES_DIR, { recursive: true });
 
 export const removeFromDirectory = (content: string): void =>
-  catching(() => fs.unlinkSync(toAbsolutePath(toImageName(content))));
+  fs.unlinkSync(toAbsolutePath(toImageName(content)));
 
 export const clipboardAsObservable = interval(1000).pipe(
   map(() => ({

@@ -1,6 +1,6 @@
 import Sentry from './sentry-electron';
 import AutoLaunch from 'auto-launch';
-import { ipcMain } from 'electron';
+import { HandlerResponse } from '../utils/invocation-handler';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -8,9 +8,11 @@ const autoLauncher = new AutoLaunch({
   name: 'Clips',
 });
 
-export function initAutoLauncher(): void {
-  ipcMain.handle('set-startup', (event, startup: boolean) => {
-    return autoLauncher
+export function autoLauncherHandler(): (
+  arg: boolean
+) => Promise<HandlerResponse<boolean>> {
+  return (startup) =>
+    autoLauncher
       .isEnabled()
       .then(async (isEnabled) => {
         if (startup && !isEnabled && !isDevelopment) {
@@ -18,7 +20,10 @@ export function initAutoLauncher(): void {
         } else if (!startup && isEnabled) {
           await autoLauncher.disable();
         }
+        return { status: 'success' as const, data: startup };
       })
-      .catch(Sentry.captureException);
-  });
+      .catch((err: Error) => {
+        Sentry.captureEvent(err);
+        return { status: 'failure' as const, message: err.message };
+      });
 }

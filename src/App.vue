@@ -55,6 +55,7 @@ import { ipcRenderer } from 'electron';
 import { Action, Getter, Mutation } from 'vuex-class';
 import {
   concatMap,
+  debounceTime,
   delay,
   expand,
   mapTo,
@@ -64,7 +65,8 @@ import {
 import { handleTransaction } from './utils/in-app-transaction';
 import { Drive, InAppStatus } from './store/types';
 import { from, of } from 'rxjs';
-import { isGaxiosError, listGoogleDriveFiles } from './utils/invocation';
+import { listGoogleDriveFiles } from './utils/invocation';
+import { isSuccessHttp } from './electron/utils/invocation-handler';
 
 @Component<App>({
   components: { NavDrawer },
@@ -85,22 +87,29 @@ import { isGaxiosError, listGoogleDriveFiles } from './utils/invocation';
             this.setInAppStatus(transaction.transactionState);
           }, transactions)
         ),
-        tap((value) => console.log('transaction:', value))
+        tap((value) => console.info('transaction:', value))
       ),
       syncWithDrive: this.$watchAsObservable(() => this.drive.syncThreshold, {
         immediate: true,
       }).pipe(
+        // Buffer
+        debounceTime(5000),
         switchMap(({ newValue }) =>
           of(newValue).pipe(
             expand((millis) =>
               from(listGoogleDriveFiles())
                 .pipe(
                   concatMap((res) =>
-                    !isGaxiosError(res) && this.drive.sync
+                    isSuccessHttp(res) && res.data && this.drive.sync
                       ? this.retrieveFromDrive({
-                          fileIds: Object.values(res)
+                          fileIds: Object.values(res.data)
                             .flat()
-                            .filter((value) => !value.removed && !!value.fileId)
+                            .filter(
+                              (value) =>
+                                !value.removed &&
+                                !!value.fileId &&
+                                value.file?.name === 'clips.json'
+                            )
                             .map((value) => value.fileId) as string[],
                         })
                       : Promise.resolve()

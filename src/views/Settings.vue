@@ -7,10 +7,12 @@
     scrollable
   >
     <!--  Drawer -->
+    <!-- Class py-2 for Mac -->
     <v-navigation-drawer
       mini-variant
       permanent
       app
+      class="py-2"
       style="-webkit-app-region: drag"
       color="surfaceVariant"
     >
@@ -202,6 +204,7 @@ import { activatePremium } from '@/firebase';
 import { Product } from 'electron';
 import { getProducts } from '@/utils/invocation';
 import { InAppStatus } from '@/store/types';
+import { isSuccess } from '@/electron/utils/invocation-handler';
 
 @Component
 export default class Settings extends ExtendedVue {
@@ -234,7 +237,11 @@ export default class Settings extends ExtendedVue {
   public products: Product[] = [];
 
   public async created(): Promise<void> {
-    this.products = await getProducts();
+    if (process.platform === 'darwin') {
+      const response = await getProducts();
+      this.products = isSuccess(response) ? response.data : [];
+    }
+    // console.warn(this.products);
   }
 
   public onClose(): void {

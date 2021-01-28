@@ -21,6 +21,7 @@ const state: AppConfState = {
     notifications: true,
     startup: false,
     blur: false,
+    alwaysOnTop: false,
     positioningMode: {
       type: 'maintain',
       position: { x, y },

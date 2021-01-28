@@ -381,6 +381,7 @@ import {
   purchaseProduct,
 } from '@/utils/invocation';
 import { replace } from '@/utils/common';
+import { HandlerResponse } from '@/electron/utils/invocation-handler';
 
 type Cycle = {
   oneHour: string;
@@ -489,7 +490,7 @@ export default class Advanced extends Vue {
     };
   }
 
-  public restoreCompletedTransaction(): Promise<void> {
+  public restoreCompletedTransaction(): Promise<HandlerResponse<void>> {
     return restoreCompletedTransactions();
   }
 

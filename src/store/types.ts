@@ -65,6 +65,7 @@ export interface General {
   notifications: boolean;
   startup: boolean;
   blur: boolean;
+  alwaysOnTop: boolean;
   positioningMode: MaintainMode | CursorMode;
 }
 

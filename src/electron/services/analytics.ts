@@ -1,5 +1,5 @@
-import { environment } from './../environment';
-import * as storeService from '../services/electron-store';
+import { environment } from '../environment';
+import * as storeService from './electron-store';
 import ua from 'universal-analytics';
 
 const visitor = ua(environment.analytics.accountId, storeService.getUserId());

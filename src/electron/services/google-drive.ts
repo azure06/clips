@@ -3,6 +3,8 @@ import { drive_v3, google } from 'googleapis';
 import { from, EMPTY, Subject, of, zip, Observable } from 'rxjs';
 import { scan, expand } from 'rxjs/operators';
 import * as stream from 'stream';
+import { GaxiosPromise } from 'gaxios';
+import { Clip } from '@/store/types';
 
 const createStream = (arg: string) => {
   const readableStream = new stream.Readable();
@@ -23,13 +25,13 @@ export class GoogleDriveService {
     });
   }
 
-  public async getStartPageToken(): Promise<string | null | undefined> {
-    return (await this.drive.changes.getStartPageToken()).data.startPageToken;
+  public async getStartPageToken(): GaxiosPromise<
+    drive_v3.Schema$StartPageToken
+  > {
+    return await this.drive.changes.getStartPageToken();
   }
-
-  public async getUserInfo(): Promise<drive_v3.Schema$User | undefined> {
-    const { data } = await this.drive.about.get({ fields: 'user' });
-    return data.user;
+  public async getUserInfo(): GaxiosPromise<drive_v3.Schema$About> {
+    return this.drive.about.get({ fields: 'user' });
   }
 
   public setPageToken(pageToken: string): void {
@@ -42,7 +44,7 @@ export class GoogleDriveService {
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public addFile(json: Array<{ [any: string]: unknown }>) {
+  public addFile(clips: Clip[]) {
     return this.drive.files.create({
       requestBody: {
         name: 'clips.json',
@@ -50,7 +52,7 @@ export class GoogleDriveService {
       },
       media: {
         mimeType: 'application/json',
-        body: createStream(JSON.stringify(json)),
+        body: createStream(JSON.stringify(clips)),
       },
       fields: 'id',
     });
@@ -72,8 +74,8 @@ export class GoogleDriveService {
       );
 
     if (!this.pageToken) {
-      const pageToken = await this.getStartPageToken();
-      if (pageToken) this.setPageToken(pageToken);
+      const { data } = await this.getStartPageToken();
+      if (data.startPageToken) this.setPageToken(data.startPageToken);
     }
 
     return list(this.pageToken || '')
@@ -93,7 +95,7 @@ export class GoogleDriveService {
       .toPromise();
   }
 
-  public retrieveFile(fileId: string): Promise<unknown> {
+  public retrieveFile(fileId: string): Promise<Clip[]> {
     const bufferChunks = [] as Uint8Array[];
     return new Promise((resolve, reject) => {
       return this.drive.files

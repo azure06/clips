@@ -1,134 +1,127 @@
+import { ShortcutFuzzy } from '@/electron/services/shortcuts';
 import { IDevice } from '@/electron/services/socket.io/types';
+import {
+  HandlerHttpResponse,
+  HandlerResponse,
+} from '@/electron/utils/invocation-handler';
 import { MessageDoc } from '@/rxdb/message/model';
-import { Clip, User } from '@/store/types';
+import { Clip } from '@/store/types';
 import { ipcRenderer } from 'electron';
-import { GaxiosError } from 'gaxios';
 import { drive_v3 } from 'googleapis';
-
-/** Drive Response (Retrieve) */
-type SchemaChange = { [token: string]: drive_v3.Schema$Change[] };
-type AurthError = {
-  code: number;
-  config: unknown;
-  errors: unknown[];
-  response: unknown;
-};
-export type GaxiosErrorEx = { error: GaxiosError | AurthError | unknown };
-
-export const isGaxiosError = (
-  response: GaxiosErrorEx | SchemaChange | Clip[]
-): response is GaxiosErrorEx => {
-  return 'error' in response;
-};
-
-/** Drive Response (Upload) */
-type Successful<T> = {
-  status: number;
-  statusText: string;
-  data: T;
-};
-type Unsuccessful<T> = Omit<Successful<T>, 'data'>;
-
-export type DriveResponse<T> = Successful<T> | Unsuccessful<T>;
-
-export const isDriveResponse = <T>(
-  response: unknown
-): response is DriveResponse<T> => {
-  return typeof response === 'object' && !!response && 'status' in response;
-};
-
-export const isSuccessful = <T>(
-  response: unknown
-): response is Successful<T> => {
-  return isDriveResponse(response) && 'data' in response;
-};
 
 export type DataURI = string;
 
 /**  Clipboard */
-export const imagePathToDataURI = (content: string): Promise<DataURI> =>
+export const imagePathToDataURI = (
+  content: string
+): Promise<HandlerResponse<DataURI>> =>
   ipcRenderer.invoke('to-dataURI', content);
 
-export const removeImage = (path: string): Promise<void> =>
+export const removeImage = (path: string): Promise<HandlerResponse<void>> =>
   ipcRenderer.invoke('remove-image', path);
 
-export const removeImageDirectory = (): Promise<void> =>
+export const removeImageDirectory = (): Promise<HandlerResponse<void>> =>
   ipcRenderer.invoke('remove-image-directory');
 
 export const copyToClipboard = (
   type: 'text' | 'image',
   content: string
-): Promise<void> => ipcRenderer.invoke('copy-to-clipboard', type, content);
+): Promise<HandlerResponse<void>> =>
+  ipcRenderer.invoke('copy-to-clipboard', type, content);
 
 export const uploadToDrive = <T>(
-  clips: Clip[]
-): Promise<DriveResponse<T> | unknown> =>
+  clips: T[]
+): Promise<HandlerHttpResponse<drive_v3.Schema$File>> =>
   ipcRenderer.invoke('upload-to-drive', clips);
 
-export const exportJson = (filePath: string, clips: Clip[]): Promise<void> =>
+export const createBackup = (
+  filePath: string,
+  clips: Clip[]
+): Promise<HandlerResponse<void>> =>
   ipcRenderer.invoke('createBackup', filePath, clips);
 
-export const importJson = (filePath: string): Promise<void> =>
+export const restoreBackup = (
+  filePath: string
+): Promise<HandlerResponse<Clip[]>> =>
   ipcRenderer.invoke('restoreBackup', filePath);
 
 /**  Authentication */
-export const signIn = (): Promise<User | undefined> =>
+export const signIn = (): Promise<HandlerHttpResponse<drive_v3.Schema$About>> =>
   ipcRenderer.invoke('sign-in');
 
-export const signOut = (): Promise<void> => ipcRenderer.invoke('sign-out');
+export const signOut = (): Promise<HandlerHttpResponse<{ success: boolean }>> =>
+  ipcRenderer.invoke('sign-out');
 
 /**  Google Drive */
-export const changePageToken = (token?: string): Promise<string> =>
+export const changePageToken = (
+  token?: string
+): Promise<HandlerHttpResponse<drive_v3.Schema$StartPageToken>> =>
   ipcRenderer.invoke('change-page-token', token);
 
-export const listGoogleDriveFiles = (): Promise<SchemaChange | GaxiosErrorEx> =>
-  ipcRenderer.invoke('list-files');
+export const listGoogleDriveFiles = (): Promise<HandlerHttpResponse<{
+  [token: string]: drive_v3.Schema$Change[];
+}>> => ipcRenderer.invoke('list-files');
 
 export const retrieveFileFromDrive = (
   fileId?: string | null
-): Promise<Clip[] | GaxiosErrorEx> =>
+): Promise<HandlerHttpResponse<Clip[]>> =>
   ipcRenderer.invoke('retrieve-file', fileId);
 
 /**  Settings */
-export const setShortcut = (shortcut: string): Promise<void> =>
+export const setShortcut = (
+  shortcut: string
+): Promise<HandlerResponse<ShortcutFuzzy>> =>
   ipcRenderer.invoke('set-shortcut', shortcut);
 
-export const setStartup = (startup: unknown): Promise<void> =>
+export const setStartup = (
+  startup: unknown
+): Promise<HandlerResponse<boolean>> =>
   ipcRenderer.invoke('set-startup', startup);
+
+export const setAlwaysOnTop = (
+  alwaysOnTop: boolean
+): Promise<HandlerResponse<boolean>> =>
+  ipcRenderer.invoke('set-always-on-top', alwaysOnTop);
 
 /**  Socket io */
 export const handleIoServer = (
   action: 'start' | 'close'
-): Promise<IDevice | undefined> => ipcRenderer.invoke('handle-server', action);
+): Promise<HandlerResponse<IDevice>> =>
+  ipcRenderer.invoke('handle-server', action);
 
-export const getMyDevice = (): Promise<IDevice | undefined> =>
+export const getMyDevice = (): Promise<HandlerResponse<IDevice>> =>
   ipcRenderer.invoke('my-device');
 
 export const sendFile = (
   sender: IDevice,
   receiver: IDevice,
   message: MessageDoc
-): Promise<void> =>
-  ipcRenderer.invoke('send-file', sender, receiver, message) as Promise<void>;
+): Promise<HandlerResponse<void>> =>
+  ipcRenderer.invoke('send-file', sender, receiver, message);
 
 /** In App Purchase */
-export const canMakePayments = (): Promise<boolean> =>
+export const canMakePayments = (): Promise<HandlerResponse<boolean>> =>
   ipcRenderer.invoke('can-make-payments');
 
-export const getReceiptURL = (): Promise<string> =>
+export const getReceiptURL = (): Promise<HandlerResponse<string>> =>
   ipcRenderer.invoke('get-receipt-url');
 
 export const getProducts = (
   productIds?: string[]
-): Promise<Electron.Product[]> =>
+): Promise<HandlerResponse<Electron.Product[]>> =>
   ipcRenderer.invoke('get-products', productIds);
 
 // Returns if product is valid
-export const purchaseProduct = (product: Electron.Product): Promise<boolean> =>
+export const purchaseProduct = (
+  product: Electron.Product
+): Promise<HandlerResponse<boolean>> =>
   ipcRenderer.invoke('purchase-product', product);
 
-export const restoreCompletedTransactions = (): Promise<void> =>
-  ipcRenderer.invoke('restore-completed-transactions');
+export const restoreCompletedTransactions = (): Promise<HandlerResponse<
+  void
+>> => ipcRenderer.invoke('restore-completed-transactions');
 
-export const finishTransactionByDate = (date: string): Promise<void> =>
+export const finishTransactionByDate = (
+  date: string
+): Promise<HandlerResponse<void>> =>
   ipcRenderer.invoke('finish-transaction-by-date', date);

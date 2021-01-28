@@ -12,7 +12,6 @@ import {
 } from 'rxjs/operators';
 import {
   discoverDevices,
-  sendFile,
   sendMessage,
 } from '@/electron/services/socket.io/client';
 import * as Sentry from '@sentry/electron';
@@ -21,7 +20,8 @@ import { MessageDoc, stringifyContent } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
 import { toDictionary } from '@/utils/common';
-import { getMyDevice, handleIoServer } from '@/utils/invocation';
+import { getMyDevice, handleIoServer, sendFile } from '@/utils/invocation';
+import { isSuccess } from '@/electron/utils/invocation-handler';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 
@@ -46,12 +46,12 @@ const actions: ActionTree<NetworkState, RootState> = {
   handleServer: async ({ commit, dispatch }, action: 'start' | 'close') =>
     from(handleIoServer(action))
       .pipe(
-        tap(async (device) => {
+        tap(async (response) => {
           commit('setServerStatus', action === 'start' ? 'started' : 'closed');
           // Set this user
-          if (device) {
+          if (isSuccess(response)) {
             const thisUser = await dispatch('upsertUser', {
-              device,
+              device: response.data,
             });
             commit('setThisUser', thisUser);
           }
@@ -68,17 +68,10 @@ const actions: ActionTree<NetworkState, RootState> = {
       range(1, 1)
         .pipe(
           tap(() => commit('setLoadingDevices', true)),
-          concatMap(() =>
-            from(getMyDevice()).pipe(
-              catchError((error) => {
-                Sentry.captureException(error);
-                return of<undefined>();
-              })
-            )
-          ),
-          switchMap((thisDevice) =>
-            thisDevice
-              ? discoverDevices(thisDevice.ip).pipe(
+          concatMap(() => from(getMyDevice())),
+          switchMap((response) =>
+            isSuccess(response)
+              ? discoverDevices(response.data.ip).pipe(
                   concatMap((device) =>
                     dispatch('upsertUser', {
                       device,
@@ -95,7 +88,7 @@ const actions: ActionTree<NetworkState, RootState> = {
         .subscribe({
           complete: () => {
             commit('setLoadingDevices', false);
-            resolve();
+            resolve(null);
           },
         })
     ),
@@ -413,7 +406,6 @@ const actions: ActionTree<NetworkState, RootState> = {
                   ? sendFile(args.sender, args.receiver, message)
                   : Promise.reject(new Error('Sender absent'));
               })
-              .catch((error) => Sentry.captureException(error))
           )
         )
       )

@@ -1,18 +1,53 @@
-import { BrowserWindow, ipcMain, IpcMainInvokeEvent } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  IpcMainInvokeEvent,
+  Menu,
+  MenuItem,
+  shell,
+} from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import * as clipboardService from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
 import { GoogleDriveService } from './services/google-drive';
 import { environment } from './environment';
-import { mainWindow } from './helpers/main-win';
-import { tray } from './helpers/tray';
-import Sentry from './helpers/sentry-electron';
+import { mainWindow } from './services/main-win';
+import { tray } from './services/tray';
+import Sentry from './services/sentry-electron';
 import * as storeService from './services/electron-store';
-import { initEvents } from './helpers/events';
-import { initShortcuts } from './helpers/shortcuts';
-import { initAutoLauncher } from './helpers/autolauncher';
+import {
+  onCanMakePayments,
+  eventHandler,
+  onGetReceiptUrl,
+  onCopyToClipboard,
+  onCreateBackup,
+  onHandleServer,
+  onMyDevice,
+  onRemoveImage,
+  onRemoveImageDirectory,
+  onRestoreBackup,
+  onSendFile,
+  onSetShortcut,
+  onSetStartup,
+  onToDataURI,
+  runCatching,
+  onGetProducts,
+  onPurchaseProduct,
+  onRestoreCompletedTransactions,
+  onFinishTransactionByDate,
+  runCatchingHttpError,
+  onSignIn,
+  onSignOut,
+  onChangePageToken,
+  onListFiles,
+  onRetrieveFile,
+  onUploadToDrive,
+} from './utils/invocation-handler';
+import { shortcutHandler } from './services/shortcuts';
+import { autoLauncherHandler } from './services/auto-launcher';
 import * as socketIoService from './services/socket.io/server';
-import './helpers/analytics';
+import './services/analytics';
 import { iDevice as getIDevice } from './services/socket.io/utils/network';
 import { IDevice } from './services/socket.io/types';
 import { tap } from 'rxjs/operators';
@@ -22,6 +57,7 @@ import { Subscription } from 'rxjs';
 import { sendFile } from './services/socket.io/client';
 import { MessageDoc } from '@/rxdb/message/model';
 import * as inAppPurchaseService from './services/in-app-purachase';
+import defaultMenu from 'electron-default-menu';
 
 Sentry.init(environment.sentry);
 
@@ -59,77 +95,56 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
     .pipe(tap(storeService.setPageToken))
     .subscribe();
 
-  ipcMain.handle('sign-in', () => {
-    return authService
-      .openAuthWindowAndSetCredentials()
-      .then(() => driveService.getUserInfo())
-      .catch(Sentry.captureException);
-  });
+  onSignIn(
+    runCatchingHttpError(() =>
+      authService
+        .openAuthWindowAndSetCredentials()
+        .then(() => driveService.getUserInfo())
+    )
+  );
 
-  ipcMain.handle('sign-out', () => {
-    storeService.removeCredentials();
-    return authService
-      .revokeCredentials()
-      .then((value) => value.data)
-      .catch(Sentry.captureException);
-  });
+  onSignOut(
+    runCatchingHttpError(() => {
+      storeService.removeCredentials();
+      return authService.revokeCredentials();
+    })
+  );
 
-  ipcMain.handle(
-    'change-page-token',
-    async (_, pageToken: string | undefined) =>
+  onChangePageToken(
+    runCatchingHttpError((pageToken) =>
       pageToken
         ? (() => {
             driveService.setPageToken(pageToken);
-            return pageToken;
+            return Promise.resolve({
+              status: 200,
+              data: { startPageToken: pageToken },
+            });
           })()
-        : driveService
-            .getStartPageToken()
-            .then((token) => {
-              if (token) driveService.setPageToken(token);
-              return token;
-            })
-            .catch(() => '')
+        : driveService.getStartPageToken().then((res) => {
+            if (res.data.startPageToken)
+              driveService.setPageToken(res.data.startPageToken);
+            return res;
+          })
+    )
   );
 
-  ipcMain.handle('list-files', () =>
-    driveService.listFiles().catch((error) => {
-      Sentry.captureException(error);
-      return { error };
-    })
+  onListFiles(
+    runCatchingHttpError(() =>
+      driveService.listFiles().then((files) => ({
+        status: 200,
+        data: files,
+      }))
+    )
   );
 
-  ipcMain.handle('retrieve-file', (_, data: string) =>
-    driveService.retrieveFile(data).catch((error) => {
-      Sentry.captureException(error);
-      return { error };
-    })
+  onRetrieveFile(
+    runCatchingHttpError(async (fileId) => ({
+      status: 200,
+      data: await driveService.retrieveFile(fileId),
+    }))
   );
 
-  ipcMain.handle(
-    'upload-to-drive',
-    (_, data: Array<{ [any: string]: unknown }>) =>
-      driveService
-        .addFile(data)
-        .then((response) =>
-          response.status >= 200 && response.status < 400
-            ? {
-                status: response.status,
-                statusText: response.statusText,
-                data: response.data,
-              }
-            : (() => {
-                Sentry.captureException(response);
-                return {
-                  status: response.status,
-                  statusText: response.statusText,
-                };
-              })()
-        )
-        .catch((error) => {
-          Sentry.captureException(error);
-          return error;
-        })
-  );
+  onUploadToDrive(runCatchingHttpError((clips) => driveService.addFile(clips)));
 }
 
 function subscribeToClipboard(mainWindow: BrowserWindow) {
@@ -141,46 +156,57 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
     )
     .subscribe();
 
-  ipcMain.handle('copy-to-clipboard', (event, type, content) => {
-    return clipboardService.copyToClipboard(type, content);
-  });
+  onCopyToClipboard(
+    runCatching(
+      clipboardService.copyToClipboard,
+      'Something went wrong while removing the image'
+    )
+  );
 
-  ipcMain.handle('to-dataURI', (event, content) => {
-    return clipboardService.convertToDataURI(content);
-  });
-  ipcMain.handle('remove-image', (event, content) => {
-    return clipboardService.removeFromDirectory(content);
-  });
-  ipcMain.handle('remove-image-directory', () => {
-    return clipboardService.removeImageDirectory();
-  });
+  onToDataURI(
+    runCatching(
+      clipboardService.convertToDataURI,
+      'Something went wrong during dataURI conversion'
+    )
+  );
 
-  ipcMain.handle('createBackup', (event, path, clips) => {
-    return new Promise((resolve, reject) => {
-      fs.writeFile(path, JSON.stringify(clips), function(err) {
-        return err ? reject(err) : resolve(clips);
-      });
-    });
-  });
-  ipcMain.handle('restoreBackup', (event, path) => {
-    return new Promise((resolve, reject) => {
-      fs.readFile(path, 'utf-8', function(err, data) {
-        return err
-          ? reject(err)
-          : (() => {
-              try {
-                resolve(JSON.parse(data));
-              } catch (err) {
-                reject(err);
-              }
-            })();
-      });
-    });
-  });
+  onRemoveImage(
+    runCatching(
+      clipboardService.removeFromDirectory,
+      'Something went wrong while removing the image'
+    )
+  );
+
+  onRemoveImageDirectory(
+    runCatching(
+      clipboardService.removeImageDirectory,
+      'Something went wrong while removing the image'
+    )
+  );
+
+  onCreateBackup(
+    runCatching(
+      (path, clips) => fs.writeFileSync(path, JSON.stringify(clips)),
+      'Something went wrong while creating the backup'
+    )
+  );
+
+  onRestoreBackup(
+    runCatching(
+      (path) => JSON.parse(fs.readFileSync(path, 'utf-8')),
+      'Something went wrong while restoring the backup'
+    )
+  );
 }
 
 async function subscribeToSocketIo(mainWindow: BrowserWindow) {
-  ipcMain.handle('my-device', getIDevice);
+  onMyDevice(() =>
+    getIDevice().then((value) =>
+      value
+        ? { status: 'success' as const, data: value }
+        : { status: 'failure' as const, message: '' }
+    )
+  );
   const authorize = (device: IDevice) => {
     return new Promise<boolean>((resolve) => {
       mainWindow.webContents.send('authorize', device);
@@ -191,27 +217,25 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
     httpServer: http.Server | null = null,
     status: 'started' | 'closed' = 'closed',
     subscription: Subscription = Subscription.EMPTY
-  ) => async (event: IpcMainInvokeEvent, action: 'start' | 'close') => {
+  ) => async (action: 'start' | 'close') => {
     const iDevice = await getIDevice(); //TODO Consider to use only one lib
     // If it's started close the server
     if (status === 'started' && httpServer) {
       await new Promise((resolve) => {
         httpServer?.once('close', () => {
           status = 'closed';
-          resolve();
+          resolve(null);
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         httpServer?.once('error', (err: any) => {
           console.error('err', err);
-          resolve(); // TODO For now resolve anyway
+          resolve(null); // TODO For now resolve anyway
         });
         subscription.unsubscribe();
         httpServer?.close();
       });
     }
-    // If address is not available maybe is offline
-    if (!iDevice) return Promise.reject('Maybe offline? 🤐');
-    if (action === 'start') {
+    if (iDevice && action === 'start') {
       return socketIoService
         .listen(authorize, iDevice.port, iDevice.ip)
         .then(([httpServer_, messageStream]) => {
@@ -223,9 +247,10 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
           return iDevice;
         });
     }
+    // If address is not available maybe is offline
+    return Promise.reject('Maybe offline? 🤐');
   })();
   const handleSendFile = async (
-    _: unknown,
     sender: IDevice,
     receiver: IDevice,
     message: MessageDoc
@@ -233,7 +258,7 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
     sendFile(sender, receiver, message).subscribe({
       next: (progress) => {
         mainWindow.webContents.send(
-          'status',
+          'progress-status',
           'next',
           receiver.mac,
           message.id,
@@ -243,7 +268,7 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
       error: (error) => {
         console.info(error);
         mainWindow.webContents.send(
-          'status',
+          'progress-status',
           'error',
           receiver.mac,
           message.id
@@ -251,7 +276,7 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
       },
       complete: () => {
         mainWindow.webContents.send(
-          'status',
+          'progress-status',
           'complete',
           receiver.mac,
           message.id
@@ -259,25 +284,21 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
       },
     });
   };
-  ipcMain.handle('handle-server', handleServer);
-  ipcMain.handle('send-file', handleSendFile);
+
+  onHandleServer(runCatching(handleServer, "Couldn't handle the server"));
+  onSendFile(runCatching(handleSendFile, "Couldn't send the file"));
 }
 
 function subscribeToInAppPurchase(mainWindow: BrowserWindow) {
-  ipcMain.handle('can-make-payments', inAppPurchaseService.canMakePayments);
-  ipcMain.handle('get-receipt-url', inAppPurchaseService.getReceiptURL);
-  ipcMain.handle('get-products', (event, productIds) =>
-    inAppPurchaseService.getProducts(productIds)
+  onCanMakePayments(runCatching(inAppPurchaseService.canMakePayments));
+  onGetReceiptUrl(runCatching(inAppPurchaseService.getReceiptURL));
+  onGetProducts(runCatching(inAppPurchaseService.getProducts));
+  onPurchaseProduct(runCatching(inAppPurchaseService.purchaseProduct));
+  onRestoreCompletedTransactions(
+    runCatching(inAppPurchaseService.restoreCompletedTransactions)
   );
-  ipcMain.handle('purchase-product', (event, product) =>
-    inAppPurchaseService.purchaseProduct(product)
-  );
-  ipcMain.handle(
-    'restore-completed-transactions',
-    inAppPurchaseService.restoreCompletedTransactions
-  );
-  ipcMain.handle('finish-transaction-by-date', (event, date: string) =>
-    inAppPurchaseService.finishTransactionByDate(date)
+  onFinishTransactionByDate(
+    runCatching(inAppPurchaseService.finishTransactionByDate)
   );
   inAppPurchaseService.onTransactionUpdate((event, transactions) =>
     mainWindow.webContents.send('transactions-updated', transactions)
@@ -288,9 +309,9 @@ export function onReady(): void {
   const win = mainWindow.create();
   tray.create(win);
 
-  initEvents(win);
-  initShortcuts(win);
-  initAutoLauncher();
+  eventHandler(win);
+  onSetShortcut(shortcutHandler(storeService.getAppConf, win));
+  onSetStartup(autoLauncherHandler());
 
   /** Subscribe to all services */
   subscribeToClipboard(win);

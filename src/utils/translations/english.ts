@@ -59,7 +59,7 @@ export const en = {
   pictures: 'Pictures',
   privacyAndSecurity: 'Privacy and security',
   remove: 'Remove',
-  removeUnusedItemsOlderThen: 'Remove unused items older then:',
+  removeUnusedItemsOlderThen: 'Remove unused items older than:',
   restoreFactoryDefault: 'Restore to factory default',
   richText: 'Rich Text',
   runAtStartup: 'Run at startup',

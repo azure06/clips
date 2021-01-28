@@ -41,11 +41,11 @@ function create(mainWindow: BrowserWindow): void {
   _tray.setToolTip('Clips');
   _tray.setContextMenu(contextMenu);
   _tray.on('click', () => {
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-    }
+    // if (mainWindow.isVisible()) {
+    //   mainWindow.hide();
+    // } else {
+    //   mainWindow.show();
+    // }
   });
 }
 
