@@ -14,13 +14,17 @@ module.exports = {
         productName: 'Clips',
         publish: ['github'],
         afterSign: 'scripts/notarize.js',
-        buildVersion: '0.1.15',
+        buildVersion: '0.1.19',
+        // win: {
+        //   publisherName: ['Gabriele Sato'],
+        //   target: ['nsis'],
+        // },
         mac: {
+          gatekeeperAssess: false,
           hardenedRuntime: true,
           type: 'distribution',
           category: 'public.app-category.utilities',
           target: ['mas', 'mas-dev', 'pkg', 'dmg', 'zip'],
-          gatekeeperAssess: false,
           entitlements: 'build/entitlements.mac.plist',
           entitlementsInherit: 'build/entitlements.mac.plist',
           provisioningProfile: 'build/embedded.provisionprofile',
@@ -34,8 +38,8 @@ module.exports = {
           provisioningProfile: 'build/embedded.provisionprofile',
         },
         masDev: {
-          hardenedRuntime: false, //IMPORTANT!!!!
           gatekeeperAssess: false,
+          hardenedRuntime: false, //IMPORTANT!!!!
           type: 'development',
           category: 'public.app-category.utilities',
           entitlements: 'build/entitlements.mas.plist',

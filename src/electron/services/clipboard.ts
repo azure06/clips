@@ -1,11 +1,15 @@
 import { ClipDoc, Format } from '../../rxdb/clips/model';
 import { app, clipboard, nativeImage, NativeImage, protocol } from 'electron';
-import { interval, of } from 'rxjs';
-import { map, scan, filter, catchError } from 'rxjs/operators';
+import { interval, ObservableInput, of } from 'rxjs';
+import { map, scan, filter, tap, concatMap } from 'rxjs/operators';
 import path from 'path';
 import fs from 'fs';
 import { uuid } from 'uuidv4';
-import log from 'electron-log';
+import {
+  HandlerResponse,
+  isSuccess,
+  runCatching,
+} from '@/utils/invocation-handler';
 interface Clipboard {
   plainText: string;
   htmlText: string;
@@ -15,19 +19,18 @@ interface Clipboard {
   formats: string[];
 }
 
-const IMAGES_DIR = path.join(app.getPath('userData'), 'images');
-const SKIP_PATTERN = '\t\t\t\t';
-
-const catching = <T>(func: (...args: unknown[]) => T) => {
-  try {
-    return func();
-  } catch (e) {
-    // file doesn't exist, no permissions, etc..
-    // full list of possible errors is here
-    // http://man7.org/linux/man-pages/man2/unlink.2.html#ERRORS
-    log.error(e);
-  }
+export type Data = {
+  text?: string;
+  html?: string;
+  image?: string;
+  rtf?: string;
+  /**
+   * The title of the URL at `text`.
+   */
+  bookmark?: string;
 };
+
+const IMAGES_DIR = path.join(app.getPath('userData'), 'images');
 
 const isImagePath = (content: string): boolean => {
   return content.startsWith('image://');
@@ -50,13 +53,11 @@ export const convertToDataURI = (content: string): string => {
   return toNativeImage(content).toDataURL();
 };
 
-export const copyToClipboard = (
-  type: 'text' | 'image',
-  content: string
-): void => {
-  type === 'image'
-    ? clipboard.write({ text: SKIP_PATTERN, image: toNativeImage(content) })
-    : clipboard.writeText(content);
+export const copyToClipboard = (type: 'text' | 'image', data: Data): void => {
+  switch (data) {
+    default:
+      clipboard.write({ ...data, image: toNativeImage(data.image || '') });
+  }
 };
 
 export const removeImageDirectory = (): void =>
@@ -81,60 +82,67 @@ export const clipboardAsObservable = interval(1000).pipe(
     }),
     {} as Partial<{ previous: Clipboard; current: Clipboard }>
   ),
-  map(({ previous, current }): Omit<ClipDoc, 'id'> | undefined => {
-    const isText = current
-      ? !!current.formats.find((format) => format.includes('text'))
-      : false;
-    const isImage = current
-      ? !!current.formats.find((format) => format.includes('image'))
-      : false;
-    const isBoth = isImage && isText;
-    const imageEq = (current: Clipboard, previous: Clipboard) =>
-      current.image.getBitmap().equals(previous.buffer);
-    const textEq = (current: Clipboard, previous: Clipboard) =>
-      current.plainText === previous.plainText;
-    const skipCopyPattern = (current: Clipboard) =>
-      current.plainText === SKIP_PATTERN;
-
-    if (current) {
-      const equals = previous
-        ? isBoth
-          ? (imageEq(current, previous) && textEq(current, previous)) ||
-            skipCopyPattern(current)
-          : isImage
-          ? imageEq(current, previous)
-          : isText
-          ? textEq(current, previous)
-          : false
+  concatMap(
+    ({
+      previous,
+      current,
+    }): ObservableInput<Omit<ClipDoc, 'id'> | undefined> => {
+      const isText = current
+        ? !!current.formats.find((format) => format.includes('text'))
         : false;
+      const isImage = current
+        ? !!current.formats.find((format) => format.includes('image'))
+        : false;
+      const isBoth = isImage && isText;
+      const imageEq = (current: Clipboard, previous: Clipboard) =>
+        current.image.getBitmap().equals(previous.buffer);
+      const textEq = (current: Clipboard, previous: Clipboard) =>
+        current.plainText === previous.plainText;
+      const equals = (current: Clipboard) =>
+        previous
+          ? isBoth
+            ? imageEq(current, previous) && textEq(current, previous)
+            : isImage
+            ? imageEq(current, previous)
+            : isText
+            ? textEq(current, previous)
+            : false
+          : false;
 
-      if (equals) {
-        return;
-      }
-
-      const saveImage = () => {
-        if (current.image.isEmpty()) return '';
-        const dir = path.join(app.getPath('userData'), 'images');
-        const imageNm = `${uuid()}.png`;
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-        fs.writeFileSync(path.join(dir, imageNm), current.image.toPNG());
-        return `image://${imageNm}`;
-      };
-
-      return {
-        plainText: current.plainText,
-        htmlText: current.htmlText,
-        richText: current.richText,
-        dataURI: saveImage(),
-        category: 'none',
-        type: isImage ? 'image' : 'text',
-        formats: current.formats as Format[],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
+      return current && !equals(current)
+        ? runCatching(() => {
+            const saveImage = (imageNm: string) => {
+              if (current.image.isEmpty()) return '';
+              const dir = path.join(app.getPath('userData'), 'images');
+              const removeExt = (fileNm: string) =>
+                fileNm.replace(/\.[^/.]+$/, '');
+              const truncate = (fileNm: string) => fileNm.substring(0, 16);
+              const imagePath = `${truncate(removeExt(imageNm))}.png`;
+              if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+              fs.writeFileSync(
+                path.join(dir, imagePath),
+                current.image.toPNG()
+              );
+              return `image://${imagePath}`;
+            };
+            const plainText = current.plainText || uuid();
+            return {
+              plainText,
+              htmlText: current.htmlText,
+              richText: current.richText,
+              dataURI: saveImage(plainText),
+              category: 'none',
+              type: isImage ? ('image' as const) : ('text' as const),
+              formats: current.formats as Format[],
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            };
+          })().then((response) =>
+            isSuccess(response) ? response.data : undefined
+          )
+        : of(undefined);
     }
-  }),
-  catchError((err) => of(log.error(err))),
+  ),
   filter((value) => !!value)
 );
 

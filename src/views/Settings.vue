@@ -12,19 +12,10 @@
       mini-variant
       permanent
       app
-      class="py-2"
       style="-webkit-app-region: drag"
       color="surfaceVariant"
     >
-      <v-list dense nav>
-        <v-list-item class="px-1">
-          <v-list-item-avatar tile>
-            <v-icon large>mdi-language-haskell</v-icon>
-          </v-list-item-avatar>
-        </v-list-item>
-
-        <v-divider class="mb-1"></v-divider>
-
+      <v-list dense nav :class="isMacOS ? 'pt-6' : ''">
         <v-tooltip top>
           <template v-slot:activator="{ on }">
             <v-list-item
@@ -129,8 +120,13 @@
 
     <div class="ma-0 pa-0 container">
       <!-- Toolbar -->
-      <v-toolbar flat color="surfaceVariant">
-        <v-btn icon @click="onClose">
+      <v-toolbar
+        flat
+        dense
+        color="surfaceVariant"
+        style="-webkit-app-region: drag"
+      >
+        <v-btn style="-webkit-app-region: no-drag" icon @click="onClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
 
@@ -140,7 +136,7 @@
       <v-divider></v-divider>
 
       <!-- Rooter -->
-      <div :class="`content ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`">
+      <div class="content">
         <router-view
           :translations="$translations"
           :general="general"
@@ -204,7 +200,8 @@ import { activatePremium } from '@/firebase';
 import { Product } from 'electron';
 import { getProducts } from '@/utils/invocation';
 import { InAppStatus } from '@/store/types';
-import { isSuccess } from '@/electron/utils/invocation-handler';
+import { isSuccess } from '@/utils/invocation-handler';
+import { isMacOS, whenMacOS } from '@/utils/environment';
 
 @Component
 export default class Settings extends ExtendedVue {
@@ -237,11 +234,14 @@ export default class Settings extends ExtendedVue {
   public products: Product[] = [];
 
   public async created(): Promise<void> {
-    if (process.platform === 'darwin') {
+    whenMacOS(async () => {
       const response = await getProducts();
       this.products = isSuccess(response) ? response.data : [];
-    }
-    // console.warn(this.products);
+    });
+  }
+
+  public get isMacOS(): boolean {
+    return isMacOS;
   }
 
   public onClose(): void {
@@ -297,11 +297,8 @@ $drawer-width: 64px;
 }
 
 .content {
-  height: calc(100vh - 65px);
+  height: calc(100vh - 49px);
   overflow: auto;
-}
-.content.small {
-  height: calc(100vh - 57px);
 }
 
 .fade-enter-active,

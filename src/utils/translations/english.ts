@@ -23,6 +23,7 @@ export const en = {
   clearData: 'Clear data',
   clipboard: 'Clips',
   confirm: 'Confirm',
+  copiedToClipboard: 'Copied to clipboard',
   cursor: 'Cursor',
   darkTheme: 'Dark theme',
   positioningMode: 'Positioning mode',

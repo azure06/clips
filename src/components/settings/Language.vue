@@ -15,7 +15,7 @@
           dense
         ></v-text-field>
         <v-text-field
-          :style="`max-width: ${isDarwin ? 40 : 60}px;`"
+          :style="`max-width: ${isMacOS ? 40 : 60}px;`"
           class="mr-2"
           background-color="background"
           flat
@@ -99,6 +99,7 @@
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { language } from '@/utils/common';
 import { Advanced } from '@/store/types';
+import { isMacOS } from '@/utils/environment';
 
 @Component
 export default class Shortcuts extends Vue {
@@ -135,16 +136,16 @@ export default class Shortcuts extends Vue {
     'Z',
   ];
 
-  get isDarwin(): boolean {
-    return process.platform === 'darwin';
+  get isMacOS(): boolean {
+    return isMacOS;
   }
 
   get key1(): '⌘' | 'Ctrl' {
-    return this.isDarwin ? '⌘' : 'Ctrl';
+    return this.isMacOS ? '⌘' : 'Ctrl';
   }
 
   get key2(): 'shift' | 'Alt' {
-    return this.isDarwin ? 'shift' : 'Alt';
+    return this.isMacOS ? 'shift' : 'Alt';
   }
 
   get languages(): string[] {

@@ -3,11 +3,12 @@ import { IDevice } from '@/electron/services/socket.io/types';
 import {
   HandlerHttpResponse,
   HandlerResponse,
-} from '@/electron/utils/invocation-handler';
+} from '@/utils/invocation-handler';
 import { MessageDoc } from '@/rxdb/message/model';
 import { Clip } from '@/store/types';
 import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
+import { Data } from '@/electron/services/clipboard';
 
 export type DataURI = string;
 
@@ -25,9 +26,9 @@ export const removeImageDirectory = (): Promise<HandlerResponse<void>> =>
 
 export const copyToClipboard = (
   type: 'text' | 'image',
-  content: string
+  data: Data
 ): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke('copy-to-clipboard', type, content);
+  ipcRenderer.invoke('copy-to-clipboard', type, data);
 
 export const uploadToDrive = <T>(
   clips: T[]

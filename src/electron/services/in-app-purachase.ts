@@ -1,4 +1,5 @@
 // Main process
+import { isMacOS } from '@/utils/environment';
 import { inAppPurchase } from 'electron';
 
 export const PRODUCT_IDS = ['clips_premium'];
@@ -6,7 +7,8 @@ export const PRODUCT_IDS = ['clips_premium'];
 // Listen for transactions as soon as possible.
 export const onTransactionUpdate = (
   func: (event: Event, transactions: Electron.Transaction[]) => void
-): Electron.InAppPurchase => inAppPurchase.on('transactions-updated', func);
+): Electron.InAppPurchase | undefined =>
+  isMacOS ? inAppPurchase.on('transactions-updated', func) : undefined;
 
 // Retrieve and display the product descriptions.
 export const getProducts = (

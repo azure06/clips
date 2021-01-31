@@ -23,7 +23,9 @@ import {
   retrieveFileFromDrive,
   uploadToDrive,
 } from '@/utils/invocation';
-import { isSuccess, isSuccessHttp } from '@/electron/utils/invocation-handler';
+import { isSuccess, isSuccessHttp } from '@/utils/invocation-handler';
+import { isAuthenticated } from '@/utils/common';
+import { Data } from '@/electron/services/clipboard';
 
 const collection = () => getCollection('clips');
 
@@ -93,22 +95,23 @@ const actions: ActionTree<ClipsState, RootState> = {
     collection()
       .pipe(tap(() => commit('setLoadingStatus', true)))
       .pipe(
-        concatMap((concat) =>
+        concatMap((methods) =>
           from(
-            concat
+            methods
               .findClips({
                 filters: clip.dataURI
-                  ? { dataURI: clip.dataURI }
-                  : clip.richText
-                  ? { richText: clip.richText }
-                  : clip.htmlText
-                  ? { htmlText: clip.htmlText }
-                  : { plainText: clip.plainText },
+                  ? {
+                      plainText: clip.plainText || undefined,
+                      dataURI: clip.dataURI || undefined,
+                    }
+                  : {
+                      plainText: clip.plainText || undefined,
+                    },
               })
               .then(async ([targetClip]) => {
                 clip = !targetClip
-                  ? await concat.insertClip(clip)
-                  : await concat.modifyClip(targetClip);
+                  ? await methods.insertClip(clip)
+                  : await methods.modifyClip(targetClip);
                 return { action: targetClip ? 'modifyClip' : 'addClip', clip };
               })
           ).pipe(
@@ -216,9 +219,9 @@ const actions: ActionTree<ClipsState, RootState> = {
       .toPromise(),
   copyToClipboard: async (
     _,
-    { type, payload }: { type: 'text' | 'image'; payload: string }
+    { type, data }: { type: 'text' | 'image'; data: Data }
   ) =>
-    from(copyToClipboard(type, payload))
+    from(copyToClipboard(type, data))
       .pipe(take(1))
       .toPromise(),
   // force:
@@ -280,9 +283,12 @@ const actions: ActionTree<ClipsState, RootState> = {
         ? [...storeService.getClips(), args.clip]
         : storeService.getClips();
     if (
-      !args ||
-      (args.threshold === undefined && clips.length > 0) ||
-      (!!args && args.threshold !== undefined && clips.length >= args.threshold)
+      isAuthenticated() &&
+      (!args ||
+        (args.threshold === undefined && clips.length > 0) ||
+        (!!args &&
+          args.threshold !== undefined &&
+          clips.length >= args.threshold))
     ) {
       commit('setSyncStatus', 'pending');
       const response = await uploadToDrive(clips);

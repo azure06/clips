@@ -1,10 +1,5 @@
 <template>
-  <v-card
-    color="surfaceVariant"
-    tile
-    flat
-    :height="`calc(100vh - ${$vuetify.breakpoint.smAndDown ? '58' : `66`}px)`"
-  >
+  <v-card color="surfaceVariant" tile flat :height="`calc(100vh - 49px)`">
     <v-list v-if="!premium" subheader dense color="surfaceVariant">
       <v-progress-linear
         v-if="fetching"
@@ -13,7 +8,7 @@
       ></v-progress-linear>
       <v-subheader class="font-weight-bold">Premium features</v-subheader>
       <v-card flat class="px-6" color="transparent">
-        <v-row v-if="isDarwin" justify="center">
+        <v-row v-if="isMacOS" justify="center">
           <v-card
             color="blue darken-3"
             class="ma-2"
@@ -29,7 +24,7 @@
             <v-card-subtitle class="overline">
               Clips Community Edition
             </v-card-subtitle>
-            <div style="max-height: calc(100vh - 240px); overflow: scroll;">
+            <div style="max-height: calc(100vh - 240px); overflow-y: scroll;">
               <v-card color="blue darken-4" flat tile>
                 <h4 class="text-center display-3 py-6 font-weight-medium">
                   {{ product ? product.formattedPrice.charAt(0) + 0 : 0 }}
@@ -48,7 +43,7 @@
                 </div>
                 <v-divider class="my-2"> </v-divider>
                 <div class="pa-1">
-                  <v-icon color="blue"> mdi-check </v-icon> Google Drive Sync
+                  <v-icon color="blue"> mdi-check </v-icon> Google Drive Backup
                 </div>
               </v-card-text>
             </div>
@@ -67,7 +62,7 @@
             <v-card-subtitle class="overline">
               Clips Premium Edition
             </v-card-subtitle>
-            <div style="max-height: calc(100vh - 300px); overflow: scroll;">
+            <div style="max-height: calc(100vh - 300px); overflow-y: scroll;">
               <v-card color="grey darken-4" flat tile>
                 <h4 class="text-center display-3 py-6 font-weight-medium">
                   {{ product ? product.formattedPrice : undefined }}
@@ -87,15 +82,16 @@
                   </div>
                   <v-divider class="my-2"> </v-divider>
                   <div class="pa-1">
-                    <v-icon color="blue"> mdi-check </v-icon> Google Drive Sync
+                    <v-icon color="blue"> mdi-check </v-icon> Google Drive
+                    Backup
                   </div>
                   <v-divider class="my-2"> </v-divider>
                   <div class="pa-1">
-                    <v-icon color="blue"> mdi-check </v-icon> Save RTF and Html
+                    <v-icon color="blue"> mdi-check </v-icon> Save RTF and HTML
                     Text
                   </div>
                   <div class="pa-1">
-                    <v-icon color="blue"> mdi-check </v-icon> Clipboard Auto
+                    <v-icon color="blue"> mdi-check </v-icon> Google Drive Auto
                     Sync
                   </div>
                   <div class="pa-1">
@@ -381,7 +377,8 @@ import {
   purchaseProduct,
 } from '@/utils/invocation';
 import { replace } from '@/utils/common';
-import { HandlerResponse } from '@/electron/utils/invocation-handler';
+import { HandlerResponse } from '@/utils/invocation-handler';
+import { isMacOS } from '@/utils/environment';
 
 type Cycle = {
   oneHour: string;
@@ -432,8 +429,8 @@ export default class Advanced extends Vue {
     );
   }
 
-  get isDarwin(): boolean {
-    return process.platform === 'darwin';
+  get isMacOS(): boolean {
+    return isMacOS;
   }
 
   public openLink(link: string): void {

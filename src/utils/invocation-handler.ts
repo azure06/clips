@@ -1,11 +1,12 @@
-import { Clip } from '@/store/types';
+import { AppConfState, Clip } from '@/store/types';
 import { BrowserWindow, ipcMain } from 'electron';
-import { ShortcutFuzzy } from '../services/shortcuts';
+import { ShortcutFuzzy } from '../electron/services/shortcuts';
 import * as Sentry from '@sentry/electron';
 import { IDevice } from '@/electron/services/socket.io/types.ts';
 import { MessageDoc } from '@/rxdb/message/model';
-import { GaxiosPromise, GaxiosError } from 'gaxios';
+import { GaxiosError } from 'gaxios';
 import { drive_v3 } from 'googleapis';
+import { Data } from '@/electron/services/clipboard';
 
 export interface HttpSuccess<T> {
   status: number;
@@ -31,19 +32,21 @@ export type HandlerResponse<T> = Success<T> | Failure;
 export type HandlerHttpResponse<T> = HttpSuccess<T> | HttpFailure;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const runCatching = <P extends any[], T>(
+export function runCatching<P extends any[], T>(
   func: (...args: P) => T,
   message?: string
-): ((
-  ...args: P
-) => Promise<HandlerResponse<T extends Promise<infer U> ? U : T>>) => {
+): (...args: P) => Promise<HandlerResponse<T extends Promise<infer U> ? U : T>>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function runCatching<P extends any[], T>(
+  func: (...args: P) => T,
+  message?: string
+): (...args: P) => Promise<HandlerResponse<T>> {
   return async (...args) =>
     Promise.resolve(func) // Wrap inside a promise
-      .then((func) => func(...args))
+      .then((func) => func(...args)) //  We execute the function inside a promise to capture the exception in case of fail
       .then((data) => ({
         status: 'success' as const,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: data as any,
+        data,
       }))
       .catch((e) => {
         Sentry.captureException(e);
@@ -58,7 +61,7 @@ export const runCatching = <P extends any[], T>(
           };
         }
       });
-};
+}
 
 export const runCatchingHttpError = <
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,7 +74,7 @@ export const runCatchingHttpError = <
 ): ((...args: P) => Promise<HandlerHttpResponse<T2>>) => {
   return async (...args) =>
     Promise.resolve(func) // Wrap inside a promise
-      .then((func) => func(...args))
+      .then((func) => func(...args)) //  We execute the function inside a promise to capture the exception in case of fail
       .then((res) => ({
         status: res.status,
         data: res.data,
@@ -111,12 +114,22 @@ export function isSuccessHttp<T>(
   );
 }
 
-export function eventHandler(mainWindow: BrowserWindow): void {
+export function eventHandler(
+  func: () => AppConfState | undefined,
+  mainWindow: BrowserWindow
+): void {
   // Handle new window event
   mainWindow.webContents.on('new-window', (event) => {
     /** Avoid opening any new window */
     event.preventDefault();
     // shell.openExternal(url);
+  });
+
+  mainWindow.on('blur', () => {
+    const appConf = func();
+    if (appConf && appConf.general.blur) {
+      mainWindow.hide();
+    }
   });
 }
 
@@ -140,14 +153,9 @@ export const onSetAlwaysOnTop = (
 //   Clipboard
 
 export const onCopyToClipboard = (
-  func: (
-    type: 'image' | 'text',
-    content: string
-  ) => Promise<HandlerResponse<void>>
+  func: (type: 'text' | 'image', data: Data) => Promise<HandlerResponse<void>>
 ): void =>
-  ipcMain.handle('copy-to-clipboard', (event, type, content) =>
-    func(type, content)
-  );
+  ipcMain.handle('copy-to-clipboard', (event, type, data) => func(type, data));
 
 export const onToDataURI = (
   func: (content: string) => Promise<HandlerResponse<string>>
@@ -217,7 +225,7 @@ export const onPurchaseProduct = (
     quantity?: number
   ) => Promise<HandlerResponse<boolean>>
 ): void =>
-  ipcMain.handle('purchase-products', (_, product, quantity) =>
+  ipcMain.handle('purchase-product', (_, product, quantity) =>
     func(product, quantity)
   );
 

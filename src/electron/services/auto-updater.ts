@@ -1,30 +1,40 @@
 import Sentry from './sentry-electron';
 import { dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import { interval, of } from 'rxjs';
+import { catchError, concatMap, map, startWith } from 'rxjs/operators';
+import log from 'electron-log';
 
-export const startAutoUpdater = async (): Promise<void> => {
-  await autoUpdater.checkForUpdatesAndNotify().catch(Sentry.captureException);
-  setInterval(() => {
-    autoUpdater.checkForUpdates().catch(Sentry.captureException);
-  }, 6 * 3600 * 1000);
+const ONE_HOUR = 1000 * (60 * 60);
+const INTERVAL = 6 * ONE_HOUR;
 
-  autoUpdater.on(
-    'update-downloaded',
-    async (event, releaseNotes, releaseName) => {
-      const { response } = await dialog.showMessageBox({
-        type: 'info',
-        buttons: ['Restart', 'Later'],
-        title: 'Application Update',
-        message: process.platform === 'win32' ? releaseNotes : releaseName,
-        detail:
-          'A new version has been downloaded. Restart the application to apply the updates.',
-      });
+export const autoUpdaterObservable = interval(INTERVAL).pipe(
+  startWith(-1),
+  concatMap(() => autoUpdater.checkForUpdates()),
+  map((data) => ({ status: 'success' as const, data })),
+  catchError((e) => {
+    const e_ = { status: 'failure' as const, message: e };
+    log.error(e_);
+    return of(e_);
+  })
+);
 
-      if (response === 0) {
-        autoUpdater.quitAndInstall();
-      }
+autoUpdater.on(
+  'update-downloaded',
+  async (event, releaseNotes, releaseName) => {
+    const { response } = await dialog.showMessageBox({
+      type: 'info',
+      buttons: ['Restart', 'Later'],
+      title: 'Application Update',
+      message: process.platform === 'win32' ? releaseNotes : releaseName,
+      detail:
+        'A new version has been downloaded. Restart the application to apply the updates.',
+    });
+
+    if (response === 0) {
+      autoUpdater.quitAndInstall();
     }
-  );
+  }
+);
 
-  autoUpdater.on('error', Sentry.captureException);
-};
+autoUpdater.on('error', Sentry.captureException);

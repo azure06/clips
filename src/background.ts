@@ -3,10 +3,10 @@
 import { onReady, onActivate } from './electron';
 import { app, protocol, globalShortcut } from 'electron';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
-const isDevelopment = process.env.NODE_ENV !== 'production';
+import { isMacOS, isMas, isDevelopment } from './utils/environment';
 
 // The return value of this method indicates whether or not this instance of your application successfully obtained the lock
-const appLocked = process.mas || app.requestSingleInstanceLock();
+const appLocked = isMas || app.requestSingleInstanceLock();
 
 !appLocked
   ? app.quit()
@@ -20,7 +20,7 @@ const appLocked = process.mas || app.requestSingleInstanceLock();
       app.on('window-all-closed', () => {
         // On macOS it is common for applications and their menu bar
         // to stay active until the user quits explicitly with Cmd + Q
-        if (process.platform !== 'darwin') {
+        if (!isMacOS) {
           app.quit();
         }
       });

@@ -1,13 +1,7 @@
 <template>
-  <div>
-    <v-container
-      :class="
-        `container ${
-          $vuetify.breakpoint.smAndDown ? 'small' : ''
-        }  fill-height ma-0 pa-0`
-      "
-      fluid
-    >
+  <div class="fill-height">
+    <AppBar style="width: 100%" :translations="$translations" />
+    <v-container class="container ma-0 pa-0 d-flex" fluid>
       <v-row v-if="loading" align="center" justify="center">
         <v-progress-circular
           indeterminate
@@ -15,12 +9,8 @@
           color="cyan darken-2"
         ></v-progress-circular>
       </v-row>
-      <v-row
-        v-if="!loading"
-        align="start"
-        justify="center"
-        class="ma-0 pa-0 fill-height"
-      >
+      <!-- Not sure why, but this does the trick max-height: 0px -->
+      <v-row v-else align="start" class="ma-0 pa-0" style="max-height: 0px">
         <v-expansion-panels title="File">
           <v-expansion-panel
             v-for="([token, changes], index) in driveChanges"
@@ -202,12 +192,10 @@ import {
   listGoogleDriveFiles,
   retrieveFileFromDrive,
 } from '@/utils/invocation';
-import {
-  HttpFailure,
-  isSuccessHttp,
-} from '@/electron/utils/invocation-handler';
+import { HttpFailure, isSuccessHttp } from '@/utils/invocation-handler';
+import AppBar from '@/components/AppBar.vue';
 
-@Component
+@Component({ components: { AppBar } })
 export default class GoogleDrive extends ExtendedVue {
   @Action('signOut', { namespace: 'configuration' })
   public signOut!: () => Promise<void>;
@@ -320,14 +308,12 @@ export default class GoogleDrive extends ExtendedVue {
 
 <style scoped lang="scss">
 .container {
-  height: calc(100vh - 65px);
+  height: calc(100% - 106px);
   overflow: auto;
+  overflow-x: hidden;
   background-image: url('./../assets/icons/clip.png');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 30%;
-}
-.container.small {
-  height: calc(100vh - 56px);
 }
 </style>

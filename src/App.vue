@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app style="overflow-y: hidden;">
     <NavDrawer :style="dragActive ? '-webkit-app-region: drag' : ''" />
     <!-- Router View -->
     <v-main
@@ -66,7 +66,8 @@ import { handleTransaction } from './utils/in-app-transaction';
 import { Drive, InAppStatus } from './store/types';
 import { from, of } from 'rxjs';
 import { listGoogleDriveFiles } from './utils/invocation';
-import { isSuccessHttp } from './electron/utils/invocation-handler';
+import { isSuccessHttp } from './utils/invocation-handler';
+import { isAuthenticated } from './utils/common';
 
 @Component<App>({
   components: { NavDrawer },
@@ -97,7 +98,11 @@ import { isSuccessHttp } from './electron/utils/invocation-handler';
         switchMap(({ newValue }) =>
           of(newValue).pipe(
             expand((millis) =>
-              from(listGoogleDriveFiles())
+              from(
+                isAuthenticated()
+                  ? listGoogleDriveFiles()
+                  : Promise.resolve({ status: 403, message: 'Not authorize' })
+              )
                 .pipe(
                   concatMap((res) =>
                     isSuccessHttp(res) && res.data && this.drive.sync

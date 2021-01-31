@@ -1,6 +1,6 @@
 import Sentry from './sentry-electron';
 import AutoLaunch from 'auto-launch';
-import { HandlerResponse } from '../utils/invocation-handler';
+import { HandlerResponse } from '../../utils/invocation-handler';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 

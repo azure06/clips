@@ -80,6 +80,7 @@
             </v-row>
             <v-virtual-scroll
               :items="labels.filter((label) => label.id !== 'starred')"
+              style="overflow-x: hidden"
               height="140"
               item-height="36"
             >
@@ -184,8 +185,9 @@
               v-if="clipboardMode !== 'select'"
             >
               <div>
+                <!-- This is not required anymore -->
                 <v-menu
-                  v-if="clip.formats.length > 1"
+                  v-if="false && clip.formats.length > 1"
                   offset-x
                   max-height="170"
                 >
@@ -219,6 +221,7 @@
                     </v-list-item-group>
                   </v-list>
                 </v-menu>
+                <!-- Not required until here -->
 
                 <v-menu offset-x max-height="170">
                   <template v-slot:activator="{ on, attrs }">

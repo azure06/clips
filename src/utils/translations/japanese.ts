@@ -24,6 +24,7 @@ export const ja: Translation = {
   clearClipboardHistory: 'クリップボードの履歴を完全削除する',
   clearData: 'データの削除',
   clipboard: 'Clips',
+  copiedToClipboard: 'クリップボードにコピーしました',
   confirm: '決定',
   cursor: 'マウスカーソル',
   darkTheme: 'ダークテーマ',

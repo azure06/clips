@@ -28,6 +28,7 @@ export const chinese: {
 
     clearData: '清除本地记录',
     clipboard: 'Clips',
+    copiedToClipboard: '复制到剪贴板',
     confirm: '确认',
     cursor: '鼠标跟随',
     darkTheme: '暖灰',
@@ -122,6 +123,7 @@ export const chinese: {
     clearClipboardHistory: '立即清理您的所有本地紀錄',
     clearData: '清楚本地紀錄',
     clipboard: 'Clips',
+    copiedToClipboard: '複製到剪貼板',
     confirm: '確認',
     cursor: '鼠標跟隨',
     darkTheme: '暖灰',
