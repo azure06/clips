@@ -21,7 +21,7 @@ import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
 import { toDictionary } from '@/utils/common';
 import { getMyDevice, handleIoServer, sendFile } from '@/utils/invocation';
-import { isSuccess } from '@/electron/utils/invocation-handler';
+import { isSuccess } from '@/utils/invocation-handler';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 

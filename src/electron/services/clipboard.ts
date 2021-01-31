@@ -15,19 +15,18 @@ interface Clipboard {
   formats: string[];
 }
 
-const IMAGES_DIR = path.join(app.getPath('userData'), 'images');
-const SKIP_PATTERN = '\t\t\t\t';
-
-const catching = <T>(func: (...args: unknown[]) => T) => {
-  try {
-    return func();
-  } catch (e) {
-    // file doesn't exist, no permissions, etc..
-    // full list of possible errors is here
-    // http://man7.org/linux/man-pages/man2/unlink.2.html#ERRORS
-    log.error(e);
-  }
+export type Data = {
+  text?: string;
+  html?: string;
+  image?: string;
+  rtf?: string;
+  /**
+   * The title of the URL at `text`.
+   */
+  bookmark?: string;
 };
+
+const IMAGES_DIR = path.join(app.getPath('userData'), 'images');
 
 const isImagePath = (content: string): boolean => {
   return content.startsWith('image://');
@@ -50,13 +49,11 @@ export const convertToDataURI = (content: string): string => {
   return toNativeImage(content).toDataURL();
 };
 
-export const copyToClipboard = (
-  type: 'text' | 'image',
-  content: string
-): void => {
-  type === 'image'
-    ? clipboard.write({ text: SKIP_PATTERN, image: toNativeImage(content) })
-    : clipboard.writeText(content);
+export const copyToClipboard = (type: 'text' | 'image', data: Data): void => {
+  switch (data) {
+    default:
+      clipboard.write({ ...data, image: toNativeImage(data.image || '') });
+  }
 };
 
 export const removeImageDirectory = (): void =>
@@ -93,14 +90,11 @@ export const clipboardAsObservable = interval(1000).pipe(
       current.image.getBitmap().equals(previous.buffer);
     const textEq = (current: Clipboard, previous: Clipboard) =>
       current.plainText === previous.plainText;
-    const skipCopyPattern = (current: Clipboard) =>
-      current.plainText === SKIP_PATTERN;
 
     if (current) {
       const equals = previous
         ? isBoth
-          ? (imageEq(current, previous) && textEq(current, previous)) ||
-            skipCopyPattern(current)
+          ? imageEq(current, previous) && textEq(current, previous)
           : isImage
           ? imageEq(current, previous)
           : isText
@@ -112,20 +106,21 @@ export const clipboardAsObservable = interval(1000).pipe(
         return;
       }
 
-      const saveImage = () => {
+      const saveImage = (imageNm: string) => {
         if (current.image.isEmpty()) return '';
         const dir = path.join(app.getPath('userData'), 'images');
-        const imageNm = `${uuid()}.png`;
+        const removeExt = (fileNm: string) => fileNm.replace(/\.[^/.]+$/, '');
+        const imagePath = `${removeExt(imageNm)}.png`;
         if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-        fs.writeFileSync(path.join(dir, imageNm), current.image.toPNG());
-        return `image://${imageNm}`;
+        fs.writeFileSync(path.join(dir, imagePath), current.image.toPNG());
+        return `image://${imagePath}`;
       };
-
+      const plainText = current.plainText || uuid();
       return {
-        plainText: current.plainText,
+        plainText,
         htmlText: current.htmlText,
         richText: current.richText,
-        dataURI: saveImage(),
+        dataURI: saveImage(plainText),
         category: 'none',
         type: isImage ? 'image' : 'text',
         formats: current.formats as Format[],

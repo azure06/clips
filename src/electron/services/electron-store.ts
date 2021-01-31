@@ -32,7 +32,12 @@ export function getAppConf(
 /** Clips for Google Drive */
 
 export function getClips(defaultValue: Clip[] = []): Clip[] {
-  return store.get(indexes.clips, defaultValue) as Clip[];
+  return localStorage
+    ? (() => {
+        const clips = localStorage.getItem(indexes.clips);
+        return clips ? JSON.parse(clips) : defaultValue;
+      })()
+    : defaultValue;
 }
 
 /** Google Drive */
@@ -54,7 +59,7 @@ export function getCredentials(
 }
 
 export function setClips(value: Clip[]): void {
-  store.set(indexes.clips, value);
+  if (localStorage) localStorage.setItem(indexes.clips, JSON.stringify(value));
 }
 
 export function setPageToken(value: string): void {
@@ -70,7 +75,7 @@ export function setAppConf(value: AppConfState): void {
 }
 
 export function removeClips(): void {
-  return store.delete(indexes.clips);
+  if (localStorage) localStorage.removeItem(indexes.clips);
 }
 
 export function removeCredentials(): void {

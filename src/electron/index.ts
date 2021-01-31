@@ -1,12 +1,4 @@
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  IpcMainInvokeEvent,
-  Menu,
-  MenuItem,
-  shell,
-} from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import * as clipboardService from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
@@ -43,7 +35,7 @@ import {
   onListFiles,
   onRetrieveFile,
   onUploadToDrive,
-} from './utils/invocation-handler';
+} from '../utils/invocation-handler';
 import { shortcutHandler } from './services/shortcuts';
 import { autoLauncherHandler } from './services/auto-launcher';
 import * as socketIoService from './services/socket.io/server';
@@ -57,7 +49,7 @@ import { Subscription } from 'rxjs';
 import { sendFile } from './services/socket.io/client';
 import { MessageDoc } from '@/rxdb/message/model';
 import * as inAppPurchaseService from './services/in-app-purachase';
-import defaultMenu from 'electron-default-menu';
+import { isMas } from '@/utils/environment';
 
 Sentry.init(environment.sentry);
 
@@ -309,15 +301,15 @@ export function onReady(): void {
   const win = mainWindow.create();
   tray.create(win);
 
-  eventHandler(win);
+  eventHandler(storeService.getAppConf, win);
   onSetShortcut(shortcutHandler(storeService.getAppConf, win));
   onSetStartup(autoLauncherHandler());
 
   /** Subscribe to all services */
   subscribeToClipboard(win);
   subscribeToGoogle(win);
-  subscribeToSocketIo(win);
   subscribeToInAppPurchase(win);
+  if (!isMas) subscribeToSocketIo(win);
 }
 
 export function onActivate(): void {

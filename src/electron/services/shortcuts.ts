@@ -1,6 +1,7 @@
 import { BrowserWindow, screen, globalShortcut } from 'electron';
-import { HandlerResponse } from '../utils/invocation-handler';
+import { HandlerResponse } from '../../utils/invocation-handler';
 import { AppConfState } from '@/store/types';
+import { isMacOS } from '@/utils/environment';
 
 export type ShortcutFuzzy = MacOSFuzzy | WindowsOSFuzzy;
 export type Shortcut = MacOS | WindowsOS;
@@ -11,10 +12,9 @@ type MacOSFuzzy = ['⌘', 'shift', string];
 type WindowsOS = ['Ctrl', 'Alt', string];
 type WindowsOSFuzzy = ['ctrl', 'alt', string];
 
-const defaultConfig: MacOS | WindowsOS =
-  process.platform === 'darwin'
-    ? ['Command', 'Shift', 'V']
-    : ['Ctrl', 'Alt', 'V'];
+const defaultConfig: MacOS | WindowsOS = isMacOS
+  ? ['Command', 'Shift', 'V']
+  : ['Ctrl', 'Alt', 'V'];
 
 let currentConfig: Shortcut | undefined;
 
@@ -55,17 +55,18 @@ export function shortcutHandler(
       const halfHeight = Math.round(height / 2);
       const targetX = point.x - halfWidth;
       const targetY = point.y - halfHeight;
+
       const x =
-        point.x + halfWidth > display.bounds.width
-          ? display.bounds.width - width
-          : point.x - halfWidth < 0
-          ? 0
+        point.x + halfWidth > display.bounds.x + display.bounds.width
+          ? display.bounds.x + display.bounds.width - width
+          : point.x - halfWidth < display.bounds.x
+          ? display.bounds.x
           : targetX;
       const y =
-        point.y + halfHeight > display.bounds.height
-          ? display.bounds.height - height
-          : point.y - halfHeight < 0
-          ? 0
+        point.y + halfHeight > display.bounds.y + display.bounds.height
+          ? display.bounds.y + display.bounds.height - height
+          : point.y - halfHeight < display.bounds.y
+          ? display.bounds.y
           : targetY;
       mainWindow.setPosition(x, y);
     }
@@ -92,8 +93,3 @@ export function shortcutHandler(
     return Promise.resolve(result);
   };
 }
-
-// if (isSuccess) {
-//   unregister();
-//   currentConfig = nextConfig;
-// }

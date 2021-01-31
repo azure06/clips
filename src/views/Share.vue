@@ -1,5 +1,6 @@
 <template>
   <div>
+    <AppBar style="width: 100%" :translations="$translations" />
     <div v-if="roomStream">
       <router-view
         :room="roomStream"
@@ -20,14 +21,7 @@
     </div>
     <div v-else>
       <!-- Container -->
-      <v-container
-        :class="
-          `container ${
-            $vuetify.breakpoint.smAndDown ? 'small' : ''
-          }  fill-height ma-0 pa-0 align-start`
-        "
-        fluid
-      >
+      <v-container :class="`container fill-height ma-0 pa-0 align-start`" fluid>
         <v-list subheader color="surfaceVariant" width="100%">
           <v-subheader>Users</v-subheader>
           <v-list-item
@@ -120,11 +114,8 @@
       </v-dialog>
 
       <!-- Toolbar -->
-      <v-toolbar bottom color="surfaceVariant">
-        <v-toolbar-items
-          :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
-        >
-        </v-toolbar-items>
+      <v-toolbar bottom color="surfaceVariant" dense>
+        <v-toolbar-items> </v-toolbar-items>
 
         <!-- Scanning... -->
         <v-card
@@ -132,11 +123,11 @@
           color="surfaceVariant"
           tile
           flat
-          :height="$vuetify.breakpoint.smAndDown ? 56 : 64"
+          :height="49"
         >
           <v-card-text
             v-if="loadingDevices"
-            class="ma-0 pa-3"
+            class="ma-0 pa-2"
             @click="() => {}"
           >
             <div class="overline text-center" style="user-select: none">
@@ -233,6 +224,8 @@ import { Getter, Action } from 'vuex-class';
 import { Dictionary } from 'vue-router/types/router';
 import { ExtendedVue } from '@/utils/basevue';
 import Room from '@/components/Room.vue';
+import AppBar from '@/components/AppBar.vue';
+
 import { Room as RoomType } from '@/store/types';
 import { UserDoc } from '@/rxdb/user/model';
 import { MessageDoc } from '@/rxdb/message/model';
@@ -249,7 +242,7 @@ import {
 import { combineLatest, from, Subject } from 'rxjs';
 
 @Component<Share>({
-  components: { Room },
+  components: { AppBar, Room },
   subscriptions() {
     const roomIdStream = this.$watchAsObservable(() => this.$route.params, {
       immediate: true,
@@ -464,11 +457,8 @@ export default class Share extends ExtendedVue {
 
 <style scoped lang="scss">
 .container {
-  height: calc(100vh - 65px);
+  height: calc(100vh - 49px);
   overflow: auto;
-}
-.container.small {
-  height: calc(100vh - 56px);
 }
 .custom-loader {
   animation: loader 1s infinite;

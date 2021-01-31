@@ -1,5 +1,5 @@
 import { ActionTree } from 'vuex';
-import { RootState, AppConfState, Clip, User } from '@/store/types';
+import { RootState, AppConfState, Clip } from '@/store/types';
 import {
   setAlwaysOnTop,
   setShortcut,
@@ -10,7 +10,7 @@ import {
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { from } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { isSuccess, isSuccessHttp } from '@/electron/utils/invocation-handler';
+import { isSuccess, isSuccessHttp } from '@/utils/invocation-handler';
 
 const actions: ActionTree<AppConfState, RootState> = {
   signIn: async ({ commit }) => {

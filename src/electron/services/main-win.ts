@@ -1,10 +1,11 @@
-import { startAutoUpdater } from './auto-updater';
+import { autoUpdaterObservable } from './auto-updater';
 import * as storeService from './electron-store';
 import { app, BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
 import { AppConfState } from '@/store/types';
-import { onSetAlwaysOnTop } from '../utils/invocation-handler';
+import { onSetAlwaysOnTop } from '../../utils/invocation-handler';
+import { isMacOS, isMas } from '@/utils/environment';
 
 declare const __static: string;
 
@@ -41,8 +42,8 @@ const flags = {
     nodeIntegration: true,
     //  (process.env.ELECTRON_NODE_INTEGRATION as unknown) as boolean,
   },
-  frame: true,
-  titleBarStyle: 'hidden' as const,
+  frame: false,
+  ...(isMacOS ? { titleBarStyle: 'hidden' as const } : {}),
   show: true,
   resizable: true,
   skipTaskbar: true,
@@ -75,9 +76,9 @@ function create(): BrowserWindow {
     // Load the index.html when not in development
     win.loadURL('app://./index.html');
     // Start auto-updater
-    startAutoUpdater();
+    if (!isMas) autoUpdaterObservable.subscribe();
   }
-  win.on('close', (event) => {
+  win.on('close', () => {
     app.quit();
   });
   win.on('closed', () => {

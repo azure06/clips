@@ -45,9 +45,8 @@
     </v-dialog>
 
     <!-- Dialog -->
-    <v-snackbar v-model="snackbar">
+    <v-snackbar v-model="snackbar" timeout="1000">
       {{ snackbarText }}
-      <v-btn color="blue darken-2" text @click="snackbar = false">Close</v-btn>
     </v-snackbar>
 
     <!-- Search bar -->
@@ -97,6 +96,7 @@ import {
   startWith,
   scan,
 } from 'rxjs/operators';
+import { Data } from '@/electron/services/clipboard';
 
 export type ClipFormat = 'plainText' | 'richText' | 'htmlText' | 'dataURI';
 
@@ -180,8 +180,8 @@ export default class Home extends ExtendedVue {
   public removeClips!: (ids: string[]) => Promise<Clip[]>;
   @Action('copyToClipboard', { namespace: 'clips' })
   public copyToClipboard!: (args: {
-    type: 'text' | 'image';
-    payload: string;
+    type: 'image' | 'text';
+    data: Data;
   }) => Promise<void>;
   @Action('restoreBackup', { namespace: 'clips' })
   public restoreBackup!: () => Promise<Clip[]>;
@@ -237,14 +237,32 @@ export default class Home extends ExtendedVue {
     this.dateTime = this.clips[clipIndex].updatedAt;
   }
 
-  public onClipClick(
+  public async onClipClick(
     clipIndex: number,
-    displayType: 'plainText' | 'richText' | 'dataURI'
-  ): void {
-    this.copyToClipboard({
-      type: displayType === 'dataURI' ? 'image' : 'text',
-      payload: this.clips[clipIndex][displayType],
+    displayType: 'plainText' | 'richText' | 'dataURI' | 'htmlText'
+  ): Promise<void> {
+    await this.copyToClipboard({
+      type: (() => {
+        switch (displayType) {
+          case 'plainText':
+            return 'text';
+          case 'richText':
+            return 'text';
+          case 'dataURI':
+            return 'image';
+          case 'htmlText':
+            return 'text';
+        }
+      })(),
+      data: {
+        text: this.clips[clipIndex].plainText,
+        html: this.clips[clipIndex].htmlText,
+        image: this.clips[clipIndex].dataURI,
+        rtf: this.clips[clipIndex].richText,
+      },
     });
+    this.snackbarText = this.$translations.copiedToClipboard;
+    this.snackbar = true;
     const mainWindow = electron.remote.getCurrentWindow();
     if (mainWindow.isVisible() && this.general.blur) {
       setTimeout(mainWindow.hide, 0);
@@ -301,7 +319,10 @@ export default class Home extends ExtendedVue {
     | string {
     try {
       const { type, label, search } = JSON.parse(searchQuery);
-      if (!args) {
+      if (search === undefined) {
+        // ex. JSON.parse("8") === 8
+        throw Error('Query absent');
+      } else if (!args) {
         return { type, label, search };
       } else if ('type' in args) {
         return { type: args.type, label, search };
@@ -336,7 +357,6 @@ export default class Home extends ExtendedVue {
   ): void {
     if (this.timeout) clearTimeout(this.timeout);
     const search = typeof args === 'string' ? args : args.search;
-
     this.timeout = setTimeout(async () => {
       const regex = (() => {
         if (search) {
@@ -442,11 +462,8 @@ export default class Home extends ExtendedVue {
 
 <style scoped lang="scss">
 .container {
-  height: calc(100vh - 129px);
+  height: calc(100vh - 98px);
   overflow: auto;
-}
-.container.small {
-  height: calc(100vh - 113px);
 }
 
 .fade-enter-active,

@@ -4,6 +4,7 @@ import mutations from './mutations';
 import { RootState, AppConfState } from '@/store/types';
 import { Module } from 'vuex';
 import { remote } from 'electron';
+import { isMacOS } from '@/utils/environment';
 
 const currentWindow = remote.getCurrentWindow();
 const { x, y } = currentWindow.getBounds();
@@ -49,10 +50,7 @@ const state: AppConfState = {
       dataURI: true,
     },
     language: 'Auto',
-    shortcut:
-      remote.process.platform === 'darwin'
-        ? ['⌘', 'shift', 'V']
-        : ['ctrl', 'alt', 'V'],
+    shortcut: isMacOS ? ['⌘', 'shift', 'V'] : ['ctrl', 'alt', 'V'],
   },
   premium: false,
   inAppStatus: 'none',

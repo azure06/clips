@@ -1,3 +1,5 @@
+import { getCredentials } from '@/electron/services/electron-store';
+
 export type Language = typeof language;
 export type Dictionary<T> = { [id: string]: T };
 export type StringProp<T> = {
@@ -13,9 +15,7 @@ export const language = {
   'zh-TW': '繁體中文',
 } as const;
 
-/**
- * String
- */
+// String
 export function replace(
   template: string,
   data: { [key: string]: string | number }
@@ -24,9 +24,7 @@ export function replace(
   return template.replace(pattern, (_, target) => '' + data[target] || '');
 }
 
-/**
- * Dictionary
- */
+// Dictionary
 export function toDictionary<T extends { id: string }>(
   values: T[]
 ): Dictionary<T>;
@@ -44,6 +42,10 @@ export function toDictionary<T>(
     }
     return acc;
   }, {} as Dictionary<T>);
+}
+
+export function isAuthenticated(): boolean {
+  return getCredentials() !== undefined;
 }
 
 // https://stackoverflow.com/questions/56415826/is-it-possible-to-precisely-type-invert-in-typescript

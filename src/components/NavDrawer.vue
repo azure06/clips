@@ -2,21 +2,21 @@
   <!-- Class py-2 for Mac -->
   <v-navigation-drawer
     v-model="drawer"
-    class="py-2"
     mini-variant
     app
     permanent
     color="surfaceVariant"
   >
-    <v-list dense nav>
-      <v-list-item class="px-1">
-        <v-list-item-avatar>
-          <v-icon v-if="!user" large>mdi-language-haskell</v-icon>
-          <img v-else :src="user.photoLink" />
-        </v-list-item-avatar>
-      </v-list-item>
+    <v-list dense nav :class="isMacOS ? 'pt-6' : ''">
+      <div v-if="user">
+        <v-list-item class="px-1">
+          <v-list-item-avatar>
+            <img :src="user.photoLink" />
+          </v-list-item-avatar>
+        </v-list-item>
 
-      <v-divider class="pb-1"></v-divider>
+        <v-divider class="pb-1"></v-divider>
+      </div>
 
       <v-tooltip top>
         <template v-slot:activator="{ on }">
@@ -60,7 +60,7 @@
       </v-tooltip>
 
       <!-- Lan -->
-      <v-tooltip top>
+      <v-tooltip top v-if="!isMas">
         <template v-slot:activator="{ on }">
           <v-list-item
             v-on="on"
@@ -157,6 +157,7 @@
 <script lang="ts">
 // @ is an alias to /src
 import { ExtendedVue } from '@/utils/basevue';
+import { isMacOS, isMas } from '@/utils/environment';
 import { Component } from 'vue-property-decorator';
 import { Getter } from 'vuex-class';
 
@@ -170,6 +171,14 @@ export default class NavDrawer extends ExtendedVue {
 
   @Getter('unreadMessagesTotal', { namespace: 'network' })
   public unreadMessagesTotal!: number;
+
+  public get isMacOS(): boolean {
+    return isMacOS;
+  }
+
+  public get isMas(): boolean {
+    return isMas;
+  }
 }
 </script>
 

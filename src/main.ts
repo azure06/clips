@@ -22,7 +22,8 @@ import Sentry from '@/sentry-vue';
 import { mapActions, mapMutations, mapGetters } from 'vuex';
 import { Format } from './rxdb/clips/model';
 import { imagePathToDataURI } from './utils/invocation';
-import { isSuccess } from './electron/utils/invocation-handler';
+import { isSuccess } from './utils/invocation-handler';
+import { isMas } from './utils/environment';
 
 Vue.config.productionTip = false;
 Sentry.init(environment.sentry);
@@ -290,6 +291,6 @@ const vm = new Vue({
       }
     );
 
-    this.handleServer('start');
+    if (!isMas) this.handleServer('start');
   },
 }).$mount('#app');

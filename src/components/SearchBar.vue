@@ -1,13 +1,11 @@
 <template>
-  <v-toolbar bottom color="surfaceVariant">
-    <v-toolbar-items
-      :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
-    >
+  <v-toolbar bottom color="surfaceVariant" dense>
+    <v-toolbar-items :class="`toolbar`">
       <v-text-field
         :value="searchQuery"
         @input="(value) => $emit('query-change', value)"
         @focus="$emit('focus', $event)"
-        class="pa-2"
+        class="pa-1"
         :label="translations.search + '...'"
         prepend-inner-icon="mdi-magnify"
         clearable
@@ -196,12 +194,7 @@ export default class SearchBar extends Vue {
 <style scoped lang="scss">
 .toolbar {
   width: 100%;
-  margin-top: 8px;
 }
-.toolbar.small {
-  margin-top: 0;
-}
-
 .infinite-spinning {
   animation: infinite-spinning 2s infinite;
 }
