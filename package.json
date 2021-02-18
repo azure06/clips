@@ -42,6 +42,7 @@
     "electron-store": "^6.0.1",
     "electron-updater": "^4.3.5",
     "firebase": "^8.2.1",
+    "firebase-admin": "^9.5.0",
     "fullname": "^4.0.1",
     "get-port": "^5.1.1",
     "google-auth-library": "^6.1.1",

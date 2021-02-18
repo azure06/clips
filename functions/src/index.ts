@@ -2,6 +2,8 @@ import * as functions from 'firebase-functions';
 import admin from 'firebase-admin';
 import sendGrid from '@sendgrid/mail';
 import cors from 'cors';
+import Stripe from 'stripe';
+import querystring from 'querystring';
 
 const corsHandler = cors({ origin: true });
 
@@ -12,26 +14,80 @@ const corsHandler = cors({ origin: true });
 //  response.send("Hello from Firebase!");
 // });
 
+const stripe = new Stripe(functions.config().stripe.sk, {
+  apiVersion: '2020-08-27',
+});
 sendGrid.setApiKey(functions.config().sendgrid.apikey);
 admin.initializeApp();
 
-export const sendContactMail = functions.https.onCall(
+// Stripe
+
+export const createCheckoutSession = functions.https.onRequest((req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async (data: any, context) => {
-    const { fullName, email, content, to } = data;
-    const msgbody = {
-      to: to || 'info@infiniticlips.com',
-      from: 'info@infiniticlips.com',
-      subject: `Info - Contact us`,
-      text: `${content}\n\nfrom ${fullName} - ${email}`,
-      html: `${content}<br><strong>from ${fullName} - ${email}</strong>`,
-    };
-    return sendGrid
-      .send(msgbody)
-      .then(([requestResponse]) => requestResponse.toJSON())
-      .catch((error) => error);
-  }
-);
+  corsHandler(req as any, res as any, async () => {
+    const domain = 'https://infiniticlips.com';
+    const price = (await stripe.prices.list()).data;
+    return stripe.checkout.sessions
+      .create({
+        payment_method_types: ['card'],
+        line_items: price.map((item) => ({
+          // price_data: {
+          //   currency: 'usd',
+          //   product_data: {
+          //     name: 'Clips Premium',
+          //     images: ['https://infiniticlips.com/logo.svg'],
+          //   },
+          //   unit_amount: 599,
+          // },
+          price: item.id,
+          quantity: 1,
+        })),
+        mode: 'payment',
+        success_url: `https://us-central1-infiniti-clips.cloudfunctions.net/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${domain}/premium`,
+      })
+      .then((session) => res.status(200).send({ id: session.id }))
+      .catch((err) => res.status(500).send(err));
+  });
+});
+
+export const success = functions.https.onRequest((req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  corsHandler(req as any, res as any, async () => {
+    const session = await stripe.checkout.sessions.retrieve(
+      req.query.session_id
+    );
+
+    const isString = (args: typeof session.customer): args is string =>
+      typeof args === 'string';
+    // prettier-ignore
+    const isCustomer = (args: typeof session.customer): args is Stripe.Customer =>
+      args !== null && !isString(args) && args.deleted === undefined;
+
+    const isAvailable = (
+      args: typeof session.customer
+    ): args is string | Stripe.Customer => isCustomer(args) || isString(args);
+
+    const redirect = await (isAvailable(session.customer)
+      ? stripe.customers
+          .retrieve(
+            isString(session.customer) ? session.customer : session.customer.id
+          )
+          .then((customer) =>
+            isCustomer(customer)
+              ? `https://infiniticlips.com/success?email=${querystring.escape(
+                  customer.email || ''
+                )}`
+              : 'https://infiniticlips.com/premium'
+          )
+          .catch((error) => 'https://infiniticlips.com/premium')
+      : Promise.resolve('https://infiniticlips.com/premium'));
+
+    res.redirect(redirect);
+  });
+});
+
+// Activation
 
 export const activatePremium = functions.https.onRequest((req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +97,7 @@ export const activatePremium = functions.https.onRequest((req, res) => {
   });
 });
 
-exports.activateByEmail = functions.https.onRequest((req, res) => {
+export const activateByEmail = functions.https.onRequest((req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   corsHandler(req as any, res as any, async () => {
     const { email } = req.query;
@@ -73,7 +129,10 @@ exports.activateByEmail = functions.https.onRequest((req, res) => {
   });
 });
 
-exports.sendEmail = functions.https.onRequest((req, res) => {
+// Send email with SendGrid
+
+export const sendEmail = functions.https.onRequest((req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   corsHandler(req as any, res as any, async () => {
     const { email } = req.query;
     // Push the new message into the Realtime Database using the Firebase Admin SDK.
