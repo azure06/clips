@@ -145,7 +145,7 @@
           :appearance="appearance"
           :premium="premium"
           :in-app-status="inAppStatus"
-          :licenseKey="licenseKey"
+          :email="email"
           :fetching="fetching"
           :products="products"
           @set-general="setGeneral"
@@ -158,7 +158,7 @@
           @set-startup="setStartup"
           @set-in-app-status="setInAppStatus"
           @action="openDialog"
-          @change-licensekey="(value) => (licenseKey = value)"
+          @change-email="(value) => (email = value)"
           @activate-premium="activatePremium"
         />
       </div>
@@ -174,6 +174,44 @@
               class="mb-0"
             ></v-progress-linear>
           </v-card-text>
+        </v-card>
+      </v-dialog>
+
+      <!-- OTP Dialog -->
+      <v-dialog
+        v-model="dialogOTP"
+        persistent
+        max-width="420"
+        style="z-index: 10000"
+      >
+        <v-card>
+          <v-card-title class="headline">
+            Insert the OTP verification Code
+          </v-card-title>
+          <v-card-text>
+            <v-text-field
+              v-model="otpCode"
+              prepend-inner-icon="mdi-numeric"
+              label="OTP CODE"
+              outlined
+              dense
+              style="margin: 15px 0"
+              color="blue darken-2"
+          /></v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="dialogOTP = false">
+              Close
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              :disabled="activateOTP"
+              text
+              @click="activateOTP = true"
+            >
+              Activate
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
 
@@ -196,7 +234,7 @@ import { ExtendedVue } from '@/utils/basevue';
 import { Component } from 'vue-property-decorator';
 
 import { Mutation, Action } from 'vuex-class';
-import { activatePremium } from '@/firebase';
+import { activatePremium, createActivationCode } from '@/firebase';
 import { Product } from 'electron';
 import { getProducts } from '@/utils/invocation';
 import { InAppStatus } from '@/store/types';
@@ -227,8 +265,11 @@ export default class Settings extends ExtendedVue {
   public restoreFactoryDefault!: () => Promise<boolean>;
   public dialog = false;
   public dialog_ = false;
+  public dialogOTP = false;
+  public activateOTP = false;
+  public otpCode = '';
   public action?: 'clear-data' | 'factory-default';
-  public licenseKey = '';
+  public email = '';
   public fetching = false;
   public errorDialog = false;
   public products: Product[] = [];
@@ -249,18 +290,57 @@ export default class Settings extends ExtendedVue {
     this.$nextTick(() => this.$router.push({ name: 'home' }));
   }
 
-  public async activatePremium(licenseKey: string): Promise<void> {
-    if (licenseKey.trim() === '') return;
+  public async activatePremium(email: string): Promise<void> {
+    if (email.trim() === '') return;
     this.fetching = true;
-    const premium = await activatePremium(licenseKey)
-      .then((response) => response.text())
-      .then((body) => JSON.parse(body))
-      .then(({ valid }) => valid)
-      .catch(() => false);
+    await Promise.all([
+      createActivationCode(email.trim()),
+      Promise.resolve((this.dialogOTP = true)).then(
+        () =>
+          new Promise<void | Response>((resolve, reject) => {
+            const timeout = setInterval(() => {
+              if (!this.dialogOTP) {
+                clearInterval(timeout);
+                resolve();
+              } else if (this.activateOTP) {
+                clearInterval(timeout);
+                this.otpCode === ''
+                  ? reject()
+                  : resolve(activatePremium(this.otpCode));
+              }
+            }, 1000);
+          })
+      ),
+    ])
+      .then(([, response]) => {
+        return response
+          ? response
+              .text()
+              .then((body) => JSON.parse(body))
+              .then(({ valid }) => {
+                this.errorDialog = !valid;
+                this.setPremium(valid);
+              })
+          : Promise.resolve();
+      })
+      .catch((error) => console.warn(error));
+
     this.fetching = false;
-    this.errorDialog = !premium;
-    this.setPremium(premium);
+    this.dialogOTP = false;
+    this.otpCode = '';
   }
+
+  // public async activatePremium(email: string): Promise<void> {
+  //   if (email.trim() === '') return;
+  //   this.fetching = true;
+  //   const premium = await activatePremium(email)
+  //     .then((response) => response.text())
+  //     .then((body) => JSON.parse(body))
+  //     .then(({ valid }) => valid)
+  //     .catch((value) => console.warn('value'))
+  //     .catch(() => false);
+
+  // }
 
   public async openDialog(
     action: 'clear-data' | 'factory-default'

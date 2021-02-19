@@ -8,7 +8,7 @@
       ></v-progress-linear>
       <v-subheader class="font-weight-bold">Premium features</v-subheader>
       <v-card flat class="px-6" color="transparent">
-        <v-row v-if="isMacOS" justify="center">
+        <v-row v-if="isMas" justify="center">
           <v-card
             color="blue darken-3"
             class="ma-2"
@@ -122,21 +122,23 @@
         </v-row>
         <div v-else>
           <v-subheader>
-            Please provide a license key. If you don't have a license key you
-            can find more information at
-            <a
-              style="margin-left: 0.25rem;"
-              @click.prevent="openLink('https://infiniticlips.com')"
-            >
-              inifniticlips.com
-            </a>
+            <div>
+              Please provide your purchase email address. An OTP verification
+              code will be sent to your email address. Copy the OTP code from
+              the email into the corresponding dialog. Then, click the “Submit”
+              button. You can find more information at
+              <a @click.prevent="openLink('https://infiniticlips.com')">
+                inifniticlips.com
+              </a>
+            </div>
           </v-subheader>
           <v-text-field
-            prepend-inner-icon="mdi-numeric"
-            label="Insert your code"
+            prepend-inner-icon="mdi-email-outline"
+            label="Insert your email address"
             outlined
-            @change="(value) => $emit('change-licensekey', value)"
+            @change="(value) => $emit('change-email', value)"
             dense
+            style="margin: 15px 0"
             color="blue darken-2"
           >
           </v-text-field>
@@ -146,7 +148,7 @@
               color="blue darken-2"
               dark
               depressed
-              @click="$emit('activate-premium', licenseKey)"
+              @click="$emit('activate-premium', email)"
             >
               Activate
             </v-btn>
@@ -378,7 +380,7 @@ import {
 } from '@/utils/invocation';
 import { replace } from '@/utils/common';
 import { HandlerResponse } from '@/utils/invocation-handler';
-import { isMacOS } from '@/utils/environment';
+import { isMas } from '@/utils/environment';
 
 type Cycle = {
   oneHour: string;
@@ -405,7 +407,7 @@ export default class Advanced extends Vue {
   @Prop({ required: true })
   public fetching!: boolean;
   @Prop({ required: true })
-  public licenseKey!: string;
+  public email!: string;
 
   public get replacer(): typeof replace {
     return replace;
@@ -429,8 +431,8 @@ export default class Advanced extends Vue {
     );
   }
 
-  get isMacOS(): boolean {
-    return isMacOS;
+  get isMas(): boolean {
+    return isMas;
   }
 
   public openLink(link: string): void {
