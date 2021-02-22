@@ -259,6 +259,7 @@ import {
 import { MessageDoc, MessageStatus, parseContent } from '@/rxdb/message/model';
 import moment from 'moment';
 import { WatchObservable } from 'vue-rx';
+import { INVOCATION } from '@/utils/constants';
 
 type RoomEx = Omit<RoomType, 'messages'> & {
   messages: Array<
@@ -329,7 +330,7 @@ type EventName = 'drop' | 'dragenter' | 'dragleave' | 'dragover';
         tap(([eventNm, event]) => {
           if (eventNm === 'drop' && event.dataTransfer) {
             this.$emit(
-              'send-file',
+              INVOCATION.SEND_FILE,
               this.room,
               event.dataTransfer.files[0].path
             );

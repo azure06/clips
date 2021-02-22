@@ -1,10 +1,10 @@
-import { autoUpdaterObservable } from './auto-updater';
-import * as storeService from './electron-store';
+import { autoUpdaterObservable } from '../auto-updater';
+import * as storeService from '../electron-store';
 import { app, BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
 import { AppConfState } from '@/store/types';
-import { onSetAlwaysOnTop } from '../../utils/invocation-handler';
+import { onSetAlwaysOnTop } from '../../../utils/invocation-handler';
 import { isMacOS, isMas } from '@/utils/environment';
 
 declare const __static: string;
@@ -70,6 +70,7 @@ function create(): BrowserWindow {
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
+    console.warn(process.env.WEBPACK_DEV_SERVER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
     createProtocol('app');

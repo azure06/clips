@@ -9,6 +9,7 @@ import { Clip } from '@/store/types';
 import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
 import { Data } from '@/electron/services/clipboard';
+import { INVOCATION } from './constants';
 
 export type DataURI = string;
 
@@ -16,113 +17,117 @@ export type DataURI = string;
 export const imagePathToDataURI = (
   content: string
 ): Promise<HandlerResponse<DataURI>> =>
-  ipcRenderer.invoke('to-dataURI', content);
+  ipcRenderer.invoke(INVOCATION.TO_DATA_URI, content);
 
 export const removeImage = (path: string): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke('remove-image', path);
+  ipcRenderer.invoke(INVOCATION.REMOVE_IMAGE, path);
 
 export const removeImageDirectory = (): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke('remove-image-directory');
+  ipcRenderer.invoke(INVOCATION.REMOVE_IMAGE_DIRECTORY);
 
 export const copyToClipboard = (
   type: 'text' | 'image',
   data: Data
 ): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke('copy-to-clipboard', type, data);
+  ipcRenderer.invoke(INVOCATION.COPY_TO_CLIPBOARD, type, data);
 
 export const uploadToDrive = <T>(
   clips: T[]
 ): Promise<HandlerHttpResponse<drive_v3.Schema$File>> =>
-  ipcRenderer.invoke('upload-to-drive', clips);
+  ipcRenderer.invoke(INVOCATION.UPLOAD_TO_DRIVE, clips);
 
 export const createBackup = (
   filePath: string,
   clips: Clip[]
 ): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke('createBackup', filePath, clips);
+  ipcRenderer.invoke(INVOCATION.CREATE_BACKUP, filePath, clips);
 
 export const restoreBackup = (
   filePath: string
 ): Promise<HandlerResponse<Clip[]>> =>
-  ipcRenderer.invoke('restoreBackup', filePath);
+  ipcRenderer.invoke(INVOCATION.RESTORE_BACKUP, filePath);
 
 /**  Authentication */
 export const signIn = (): Promise<HandlerHttpResponse<drive_v3.Schema$About>> =>
-  ipcRenderer.invoke('sign-in');
+  ipcRenderer.invoke(INVOCATION.SIGN_IN);
 
 export const signOut = (): Promise<HandlerHttpResponse<{ success: boolean }>> =>
-  ipcRenderer.invoke('sign-out');
+  ipcRenderer.invoke(INVOCATION.SIGN_OUT);
 
 /**  Google Drive */
 export const changePageToken = (
   token?: string
 ): Promise<HandlerHttpResponse<drive_v3.Schema$StartPageToken>> =>
-  ipcRenderer.invoke('change-page-token', token);
+  ipcRenderer.invoke(INVOCATION.CHANGE_PAGE_TOKEN, token);
 
 export const listGoogleDriveFiles = (): Promise<HandlerHttpResponse<{
   [token: string]: drive_v3.Schema$Change[];
-}>> => ipcRenderer.invoke('list-files');
+}>> => ipcRenderer.invoke(INVOCATION.LIST_FILES);
 
 export const retrieveFileFromDrive = (
   fileId?: string | null
 ): Promise<HandlerHttpResponse<Clip[]>> =>
-  ipcRenderer.invoke('retrieve-file', fileId);
+  ipcRenderer.invoke(INVOCATION.RETRIEVE_FILE, fileId);
 
 /**  Settings */
 export const setShortcut = (
   shortcut: string
 ): Promise<HandlerResponse<ShortcutFuzzy>> =>
-  ipcRenderer.invoke('set-shortcut', shortcut);
+  ipcRenderer.invoke(INVOCATION.SET_SHORTCUT, shortcut);
 
 export const setStartup = (
   startup: unknown
 ): Promise<HandlerResponse<boolean>> =>
-  ipcRenderer.invoke('set-startup', startup);
+  ipcRenderer.invoke(INVOCATION.SET_STARTUP, startup);
 
 export const setAlwaysOnTop = (
   alwaysOnTop: boolean
 ): Promise<HandlerResponse<boolean>> =>
-  ipcRenderer.invoke('set-always-on-top', alwaysOnTop);
+  ipcRenderer.invoke(INVOCATION.SET_ALWAYS_ON_TOP, alwaysOnTop);
 
 /**  Socket io */
 export const handleIoServer = (
   action: 'start' | 'close'
 ): Promise<HandlerResponse<IDevice>> =>
-  ipcRenderer.invoke('handle-server', action);
+  ipcRenderer.invoke(INVOCATION.HANDLE_SERVER, action);
 
 export const getMyDevice = (): Promise<HandlerResponse<IDevice>> =>
-  ipcRenderer.invoke('my-device');
+  ipcRenderer.invoke(INVOCATION.MY_DEVICE);
 
 export const sendFile = (
   sender: IDevice,
   receiver: IDevice,
   message: MessageDoc
 ): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke('send-file', sender, receiver, message);
+  ipcRenderer.invoke(INVOCATION.SEND_FILE, sender, receiver, message);
 
 /** In App Purchase */
 export const canMakePayments = (): Promise<HandlerResponse<boolean>> =>
-  ipcRenderer.invoke('can-make-payments');
+  ipcRenderer.invoke(INVOCATION.CAN_MAKE_PAYMENTS);
 
 export const getReceiptURL = (): Promise<HandlerResponse<string>> =>
-  ipcRenderer.invoke('get-receipt-url');
+  ipcRenderer.invoke(INVOCATION.GET_RECEIPT_URL);
 
 export const getProducts = (
   productIds?: string[]
 ): Promise<HandlerResponse<Electron.Product[]>> =>
-  ipcRenderer.invoke('get-products', productIds);
+  ipcRenderer.invoke(INVOCATION.GET_PRODUCTS, productIds);
 
 // Returns if product is valid
 export const purchaseProduct = (
   product: Electron.Product
 ): Promise<HandlerResponse<boolean>> =>
-  ipcRenderer.invoke('purchase-product', product);
+  ipcRenderer.invoke(INVOCATION.PURCHASE_PRODUCT, product);
 
 export const restoreCompletedTransactions = (): Promise<HandlerResponse<
   void
->> => ipcRenderer.invoke('restore-completed-transactions');
+>> => ipcRenderer.invoke(INVOCATION.RESTORE_COMPLETED_TRANSACTION);
 
 export const finishTransactionByDate = (
   date: string
 ): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke('finish-transaction-by-date', date);
+  ipcRenderer.invoke(INVOCATION.FINISH_TRANSACTION_BY_DATE, date);
+
+// Image Editor
+export const openEditor = (clipId: string): Promise<HandlerResponse<void>> =>
+  ipcRenderer.invoke(INVOCATION.OPEN_EDITOR, clipId);

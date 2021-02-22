@@ -27,6 +27,7 @@
         @edit-label="modifyLabel"
         @remove-label="removeLabel"
         @create-label="addLabel"
+        @edit-image="editImage"
       />
     </v-container>
 
@@ -194,6 +195,8 @@ export default class Home extends ExtendedVue {
     clip: Clip;
     threshold: number;
   }) => Promise<Clip[]>;
+  @Action('editImage', { namespace: 'clips' })
+  public editImage!: (clipId: Clip) => void;
   @Action('removeLabel', { namespace: 'configuration' })
   public removeLabel!: (labelId: string) => void;
   @Mutation('modifyLabel', { namespace: 'configuration' })

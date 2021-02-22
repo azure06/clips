@@ -22,6 +22,7 @@ import {
   removeImageDirectory,
   retrieveFileFromDrive,
   uploadToDrive,
+  openEditor,
 } from '@/utils/invocation';
 import { isSuccess, isSuccessHttp } from '@/utils/invocation-handler';
 import { isAuthenticated } from '@/utils/common';
@@ -148,6 +149,7 @@ const actions: ActionTree<ClipsState, RootState> = {
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise(),
+  editImage: async ({ commit }, clip: Clip) => openEditor(clip.id),
   removeClips: async ({ commit }, ids: string[]) =>
     collection()
       .pipe(tap(() => commit('setLoadingStatus', true)))

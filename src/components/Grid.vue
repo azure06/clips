@@ -223,6 +223,16 @@
                 </v-menu>
                 <!-- Not required until here -->
 
+                <!-- Edit Image -->
+                <v-btn
+                  v-if="isImage[clip.type]"
+                  icon
+                  @click.stop="$emit('edit-image', clip)"
+                >
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+
+                <!-- Star -->
                 <v-menu offset-x max-height="170">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn icon v-bind="attrs" v-on="on">
@@ -338,6 +348,13 @@ export default class Grid extends Vue {
       }),
       {}
     );
+  }
+
+  public get isImage(): { text: false; image: true } {
+    return {
+      text: false,
+      image: true,
+    };
   }
 
   public get translationByFormat(): { [P in Format]: string } {

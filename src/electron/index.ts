@@ -4,7 +4,7 @@ import * as clipboardService from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
 import { GoogleDriveService } from './services/google-drive';
 import { environment } from './environment';
-import { mainWindow } from './services/main-win';
+import { mainWindow } from './services/windows/main';
 import { tray } from './services/tray';
 import Sentry from './services/sentry-electron';
 import * as storeService from './services/electron-store';
@@ -35,6 +35,7 @@ import {
   onListFiles,
   onRetrieveFile,
   onUploadToDrive,
+  onOpenEditor,
 } from '../utils/invocation-handler';
 import { shortcutHandler } from './services/shortcuts';
 import { autoLauncherHandler } from './services/auto-launcher';
@@ -50,6 +51,7 @@ import { sendFile } from './services/socket.io/client';
 import { MessageDoc } from '@/rxdb/message/model';
 import * as inAppPurchaseService from './services/in-app-purachase';
 import { isMas } from '@/utils/environment';
+import { editorWindow } from './services/windows/editor';
 
 Sentry.init(environment.sentry);
 
@@ -304,6 +306,11 @@ export function onReady(): void {
   eventHandler(storeService.getAppConf, win);
   onSetShortcut(shortcutHandler(storeService.getAppConf, win));
   onSetStartup(autoLauncherHandler());
+  onOpenEditor(
+    runCatching((clipId) => {
+      editorWindow.create(clipId);
+    })
+  );
 
   /** Subscribe to all services */
   subscribeToClipboard(win);

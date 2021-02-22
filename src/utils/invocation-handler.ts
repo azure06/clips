@@ -7,6 +7,7 @@ import { MessageDoc } from '@/rxdb/message/model';
 import { GaxiosError } from 'gaxios';
 import { drive_v3 } from 'googleapis';
 import { Data } from '@/electron/services/clipboard';
+import { INVOCATION } from './constants';
 
 export interface HttpSuccess<T> {
   status: number;
@@ -138,61 +139,73 @@ export function eventHandler(
 export const onSetStartup = (
   func: (args: boolean) => Promise<HandlerResponse<boolean>>
 ): void =>
-  ipcMain.handle('set-startup', (event, startup: boolean) => func(startup));
+  ipcMain.handle(INVOCATION.SET_STARTUP, (event, startup: boolean) =>
+    func(startup)
+  );
 
 export const onSetShortcut = (
   func: (args: ShortcutFuzzy) => Promise<HandlerResponse<ShortcutFuzzy>>
 ): void =>
-  ipcMain.handle('set-shortcut', (event, args: ShortcutFuzzy) => func(args));
+  ipcMain.handle(INVOCATION.SET_SHORTCUT, (event, args: ShortcutFuzzy) =>
+    func(args)
+  );
 
 export const onSetAlwaysOnTop = (
   func: (args: boolean) => Promise<HandlerResponse<boolean>>
 ): void =>
-  ipcMain.handle('set-always-on-top', (event, args: boolean) => func(args));
+  ipcMain.handle(INVOCATION.SET_ALWAYS_ON_TOP, (event, args: boolean) =>
+    func(args)
+  );
 
 //   Clipboard
 
 export const onCopyToClipboard = (
   func: (type: 'text' | 'image', data: Data) => Promise<HandlerResponse<void>>
 ): void =>
-  ipcMain.handle('copy-to-clipboard', (event, type, data) => func(type, data));
+  ipcMain.handle(INVOCATION.COPY_TO_CLIPBOARD, (event, type, data) =>
+    func(type, data)
+  );
 
 export const onToDataURI = (
   func: (content: string) => Promise<HandlerResponse<string>>
 ): void =>
-  ipcMain.handle('to-dataURI', (event, content) => {
+  ipcMain.handle(INVOCATION.TO_DATA_URI, (event, content) => {
     return func(content);
   });
 
 export const onRemoveImage = (
   func: (content: string) => Promise<HandlerResponse<void>>
 ): void =>
-  ipcMain.handle('remove-image', (event, content) => {
+  ipcMain.handle(INVOCATION.REMOVE_IMAGE, (event, content) => {
     return func(content);
   });
 
 export const onRemoveImageDirectory = (
   func: () => Promise<HandlerResponse<void>>
-): void => ipcMain.handle('remove-image-directory', func);
+): void => ipcMain.handle(INVOCATION.REMOVE_IMAGE_DIRECTORY, func);
 
 export const onCreateBackup = (
   func: (path: string, clips: Clip[]) => Promise<HandlerResponse<void>>
 ): void =>
-  ipcMain.handle('createBackup', (event, path, clips) => func(path, clips));
+  ipcMain.handle(INVOCATION.CREATE_BACKUP, (event, path, clips) =>
+    func(path, clips)
+  );
 
 export const onRestoreBackup = (
   func: (path: string) => Promise<HandlerResponse<Clip[]>>
-): void => ipcMain.handle('restoreBackup', (event, path) => func(path));
+): void =>
+  ipcMain.handle(INVOCATION.RESTORE_BACKUP, (event, path) => func(path));
 
 // SocketIO
 
 export const onMyDevice = (
   func: () => Promise<HandlerResponse<IDevice>>
-): void => ipcMain.handle('my-device', () => func());
+): void => ipcMain.handle(INVOCATION.MY_DEVICE, () => func());
 
 export const onHandleServer = (
   func: (action: 'start' | 'close') => Promise<HandlerResponse<IDevice>>
-): void => ipcMain.handle('handle-server', (event, action) => func(action));
+): void =>
+  ipcMain.handle(INVOCATION.HANDLE_SERVER, (event, action) => func(action));
 
 export const onSendFile = (
   func: (
@@ -201,7 +214,7 @@ export const onSendFile = (
     message: MessageDoc
   ) => Promise<HandlerResponse<void>>
 ): void =>
-  ipcMain.handle('send-file', (event, sender, receiver, message) =>
+  ipcMain.handle(INVOCATION.SEND_FILE, (event, sender, receiver, message) =>
     func(sender, receiver, message)
   );
 
@@ -209,15 +222,16 @@ export const onSendFile = (
 
 export const onCanMakePayments = (
   func: () => Promise<HandlerResponse<boolean>>
-): void => ipcMain.handle('can-make-payments', func);
+): void => ipcMain.handle(INVOCATION.CAN_MAKE_PAYMENTS, func);
 
 export const onGetReceiptUrl = (
   func: () => Promise<HandlerResponse<string>>
-): void => ipcMain.handle('get-receipt-url', func);
+): void => ipcMain.handle(INVOCATION.GET_RECEIPT_URL, func);
 
 export const onGetProducts = (
   func: (productIds: string[]) => Promise<HandlerResponse<Electron.Product[]>>
-): void => ipcMain.handle('get-products', (_, productIds) => func(productIds));
+): void =>
+  ipcMain.handle(INVOCATION.GET_PRODUCTS, (_, productIds) => func(productIds));
 
 export const onPurchaseProduct = (
   func: (
@@ -225,28 +239,30 @@ export const onPurchaseProduct = (
     quantity?: number
   ) => Promise<HandlerResponse<boolean>>
 ): void =>
-  ipcMain.handle('purchase-product', (_, product, quantity) =>
+  ipcMain.handle(INVOCATION.PURCHASE_PRODUCT, (_, product, quantity) =>
     func(product, quantity)
   );
 
 export const onRestoreCompletedTransactions = (
   func: () => Promise<HandlerResponse<void>>
-): void => ipcMain.handle('restore-completed-transactions', func);
+): void => ipcMain.handle(INVOCATION.RESTORE_COMPLETED_TRANSACTION, func);
 
 export const onFinishTransactionByDate = (
   func: (date: string) => Promise<HandlerResponse<void>>
 ): void =>
-  ipcMain.handle('finish-transaction-by-date', (_, date) => func(date));
+  ipcMain.handle(INVOCATION.FINISH_TRANSACTION_BY_DATE, (_, date) =>
+    func(date)
+  );
 
 // SignIn
 
 export const onSignIn = (
   func: () => Promise<HandlerHttpResponse<drive_v3.Schema$About>>
-): void => ipcMain.handle('sign-in', func);
+): void => ipcMain.handle(INVOCATION.SIGN_IN, func);
 
 export const onSignOut = (
   func: () => Promise<HandlerHttpResponse<{ success: boolean }>>
-): void => ipcMain.handle('sign-out', func);
+): void => ipcMain.handle(INVOCATION.SIGN_OUT, func);
 
 // Drive Sync
 
@@ -255,18 +271,27 @@ export const onChangePageToken = (
     pageToken?: string
   ) => Promise<HandlerHttpResponse<drive_v3.Schema$StartPageToken>>
 ): void =>
-  ipcMain.handle('change-page-token', (event, pageToken) => func(pageToken));
+  ipcMain.handle(INVOCATION.CHANGE_PAGE_TOKEN, (event, pageToken) =>
+    func(pageToken)
+  );
 
 export const onListFiles = (
   func: () => Promise<
     HandlerHttpResponse<{ [token: string]: drive_v3.Schema$Change[] }>
   >
-): void => ipcMain.handle('list-files', func);
+): void => ipcMain.handle(INVOCATION.LIST_FILES, func);
 
 export const onRetrieveFile = (
   func: (fileId: string) => Promise<HandlerHttpResponse<Clip[]>>
-): void => ipcMain.handle('retrieve-file', (_, fileId) => func(fileId));
+): void =>
+  ipcMain.handle(INVOCATION.RETRIEVE_FILE, (_, fileId) => func(fileId));
 
 export const onUploadToDrive = (
   func: (clips: Clip[]) => Promise<HandlerHttpResponse<drive_v3.Schema$File>>
-): void => ipcMain.handle('upload-to-drive', (_, clips) => func(clips));
+): void =>
+  ipcMain.handle(INVOCATION.UPLOAD_TO_DRIVE, (_, clips) => func(clips));
+
+// Image Editor
+export const onOpenEditor = (
+  func: (fileId: string) => Promise<HandlerResponse<void>>
+): void => ipcMain.handle(INVOCATION.OPEN_EDITOR, (_, clipId) => func(clipId));
