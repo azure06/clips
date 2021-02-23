@@ -330,18 +330,6 @@ export default class Settings extends ExtendedVue {
     this.otpCode = '';
   }
 
-  // public async activatePremium(email: string): Promise<void> {
-  //   if (email.trim() === '') return;
-  //   this.fetching = true;
-  //   const premium = await activatePremium(email)
-  //     .then((response) => response.text())
-  //     .then((body) => JSON.parse(body))
-  //     .then(({ valid }) => valid)
-  //     .catch((value) => console.warn('value'))
-  //     .catch(() => false);
-
-  // }
-
   public async openDialog(
     action: 'clear-data' | 'factory-default'
   ): Promise<void> {

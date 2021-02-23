@@ -123,7 +123,11 @@ const actions: ActionTree<ClipsState, RootState> = {
           )
         )
       )
-      .pipe(tap(({ action, clip }) => commit(action, { clip })))
+      .pipe(
+        tap(({ action, clip }) =>
+          commit(action, { clip, options: { silently: true } })
+        )
+      )
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise(),
@@ -219,13 +223,7 @@ const actions: ActionTree<ClipsState, RootState> = {
       )
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .toPromise(),
-  copyToClipboard: async (
-    _,
-    { type, data }: { type: 'text' | 'image'; data: Data }
-  ) =>
-    from(copyToClipboard(type, data))
-      .pipe(take(1))
-      .toPromise(),
+  copyToClipboard: async (_, data: Data) => copyToClipboard(data),
   // force:
   retrieveFromDrive: async (
     { commit, dispatch, rootState },

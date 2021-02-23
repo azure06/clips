@@ -53,11 +53,8 @@ export const convertToDataURI = (content: string): string => {
   return toNativeImage(content).toDataURL();
 };
 
-export const copyToClipboard = (type: 'text' | 'image', data: Data): void => {
-  switch (data) {
-    default:
-      clipboard.write({ ...data, image: toNativeImage(data.image || '') });
-  }
+export const copyToClipboard = (data: Data): void => {
+  clipboard.write({ ...data, image: toNativeImage(data.image || '') });
 };
 
 export const removeImageDirectory = (): void =>
@@ -125,12 +122,11 @@ export const clipboardAsObservable = interval(1000).pipe(
               );
               return `image://${imagePath}`;
             };
-            const plainText = current.plainText || uuid();
             return {
-              plainText,
+              plainText: current.plainText,
               htmlText: current.htmlText,
               richText: current.richText,
-              dataURI: saveImage(plainText),
+              dataURI: saveImage(current.plainText || uuid()),
               category: 'none',
               type: isImage ? ('image' as const) : ('text' as const),
               formats: current.formats as Format[],

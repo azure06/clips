@@ -2,7 +2,7 @@
   "name": "clips",
   "author": "Gabriele Sato",
   "description": "Simple, Reliable Clipboard",
-  "version": "0.1.17",
+  "version": "0.1.19",
   "private": true,
   "homepage": "https://infiniticlips.com",
   "repository": {
@@ -35,8 +35,8 @@
   },
   "main": "background.js",
   "dependencies": {
-    "@sentry/electron": "^2.2.0",
-    "@sentry/integrations": "^5.30.0",
+    "@sentry/electron": "^2.3.0",
+    "@sentry/integrations": "^6.2.0",
     "@toast-ui/vue-image-editor": "^3.12.0",
     "core-js": "^3.6.5",
     "electron-log": "^4.2.4",

@@ -144,20 +144,20 @@
     >
       <v-card-text :class="!isGridMode ? 'ma-0 pa-0' : ''">
         <div v-if="isGridMode">Clips</div>
-        <v-list two-line dense nav color="surfaceVariant" class="pt-1">
+        <v-list dense nav color="surfaceVariant" class="pt-1">
           <v-list-item
             v-for="(clip, index) in clipsObserver"
+            class="list-item-icon"
             :key="clip.id"
             @mouseover="$emit('clip-hover', index)"
             @click="$emit('clip-click', index, clip.displayingFormat)"
           >
             <v-list-item-content>
-              <v-list-item-title
-                v-if="clip.displayingFormat === 'plainText'"
-                v-text="clip.preview"
-              ></v-list-item-title>
               <v-img
-                v-else-if="clip.displayingFormat === 'dataURI'"
+                v-if="
+                  clip.displayingFormat === 'dataURI' ||
+                    (!clip.displayingFormat && clip.type !== 'text')
+                "
                 style="border-radius: 5px; max-height: 64px;"
                 :src="clip.dataURI"
                 :alt="clip.preview"
@@ -175,6 +175,10 @@
                 v-text="clip.richText"
               >
               </v-list-item-title>
+              <v-list-item-title
+                v-else
+                v-text="clip.preview"
+              ></v-list-item-title>
               <v-list-item-subtitle
                 v-text="clip.fromNow"
               ></v-list-item-subtitle>
@@ -187,13 +191,13 @@
               <div>
                 <!-- This is not required anymore -->
                 <v-menu
-                  v-if="false && clip.formats.length > 1"
+                  v-if="clip.formats.length > 1"
                   offset-x
                   max-height="170"
                 >
                   <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
-                      <v-icon>mdi-format-letter-case</v-icon>
+                    <v-btn class="show-icon" icon v-bind="attrs" v-on="on">
+                      <v-icon>mdi-check-all</v-icon>
                     </v-btn>
                   </template>
                   <v-list dense width="190">
@@ -206,7 +210,10 @@
                         :key="`${format}-${formatIndex}-format`"
                         @click="
                           $emit('change-format', {
-                            [clip.id]: toClipProp(format),
+                            [clip.id]:
+                              clip.displayingFormat !== toClipProp(format)
+                                ? toClipProp(format)
+                                : 'all',
                           })
                         "
                         dense
@@ -223,13 +230,18 @@
                 </v-menu>
                 <!-- Not required until here -->
 
-                <!-- Edit Image -->
+                <!-- Edit Text/Image -->
                 <v-btn
-                  v-if="isImage[clip.type]"
+                  class="show-icon"
                   icon
-                  @click.stop="$emit('edit-image', clip)"
+                  @click.stop="
+                    $emit(
+                      isImage[clip.type] ? 'edit-image' : 'edit-text',
+                      index
+                    )
+                  "
                 >
-                  <v-icon>mdi-pencil</v-icon>
+                  <v-icon>mdi-monitor-edit</v-icon>
                 </v-btn>
 
                 <!-- Star -->
@@ -392,10 +404,10 @@ export default class Grid extends Vue {
   }
 
   public indexSelectedFormat(clip: ClipExtended): number {
-    const value = clip.formats.findIndex(
-      (format) => toClipProp(format) === clip.displayingFormat
+    return clip.formats.findIndex(
+      (format) =>
+        !!clip.displayingFormat && toClipProp(format) === clip.displayingFormat
     );
-    return value === -1 ? 0 : value;
   }
 
   public indexSelectedLabel(clip: Clip): number {
@@ -421,6 +433,13 @@ export default class Grid extends Vue {
 }
 .slide-move.delay {
   animation: move 1.7s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.list-item-icon .show-icon {
+  display: none;
+  transition: display 1s;
+}
+.list-item-icon:hover .show-icon {
+  display: initial;
 }
 
 @keyframes move {

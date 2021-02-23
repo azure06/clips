@@ -68,6 +68,7 @@ export const ja: Translation = {
   richText: 'リッチテキスト',
   runAtStartup: 'Clipsの自動起動',
   saveFollowingFormats: '次の形式を保存する',
+  save: 'Salva',
   search: '検索',
   searchType: '検索タイプ',
   settings: '設定',

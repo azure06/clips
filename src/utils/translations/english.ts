@@ -65,6 +65,7 @@ export const en = {
   richText: 'Rich Text',
   runAtStartup: 'Run at startup',
   saveFollowingFormats: 'Save following formats from clipboard',
+  save: 'Save',
   search: 'Search',
   searchType: 'Search type',
   settings: 'Settings',

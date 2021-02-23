@@ -9,20 +9,20 @@ import './firebase';
 import { initAnalytics } from './analytics-vue';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
 import Sentry from '@/sentry-vue';
-import { isEditorView } from './utils/environment';
+import { isDevelopment, isEditorView } from './utils/environment';
 import { environment } from './environment';
 
 Vue.config.productionTip = false;
-if (!isEditorView(window.process.argv)) Sentry.init(environment.sentry);
-
 Vue.use(VueRx);
+
 Vue.use(VueDOMPurifyHTML, {
   default: {
     FORBID_TAGS: ['a'],
   },
 });
 
-initAnalytics(router);
+if (!isEditorView(window.process.argv)) Sentry.init(environment.sentry);
+if (!isDevelopment) initAnalytics(router);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const vm = new Vue({

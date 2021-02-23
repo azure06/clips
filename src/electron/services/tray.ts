@@ -1,3 +1,4 @@
+import { isWindows } from '@/utils/environment';
 import { app, nativeImage, Tray, Menu, BrowserWindow } from 'electron';
 import path from 'path';
 
@@ -41,8 +42,9 @@ function create(mainWindow: BrowserWindow): void {
   _tray.setToolTip('Clips');
   _tray.setContextMenu(contextMenu);
   _tray.on('click', () => {
+    if (isWindows) mainWindow.show();
     // if (mainWindow.isVisible()) {
-    //   mainWindow.hide();
+    //    mainWindow.hide();
     // } else {
     //   mainWindow.show();
     // }

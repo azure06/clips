@@ -56,3 +56,11 @@ export function isAuthenticated(): boolean {
 // type InvertResult<T extends Record<PropertyKey, PropertyKey>> = {
 //   [P in AllValues<T>['value']]: Extract<AllValues<T>, { value: P }>['key'];
 // };
+
+export function loadImage(url: string): Promise<HTMLImageElement> {
+  const img = new Image();
+  return new Promise((resolve) => {
+    img.onload = () => resolve(img);
+    img.src = url;
+  });
+}

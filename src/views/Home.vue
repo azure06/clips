@@ -2,16 +2,9 @@
   <div class="fill-height">
     <!-- Application bar -->
     <AppBar :translations="$translations" :time="dateTime" :count="clipCount" />
-    <v-container
-      fluid
-      pa-0
-      ma-0
-      :class="`container ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
-      ref="scroll-target"
-    >
+    <v-container fluid pa-0 ma-0 class="container" ref="scroll-target">
       <Grid
         :clipsObserver="clipsObserver"
-        :clips="clips"
         :labels="labels"
         :loading="loading"
         :clipboardMode="clipboardMode"
@@ -27,9 +20,52 @@
         @edit-label="modifyLabel"
         @remove-label="removeLabel"
         @create-label="addLabel"
-        @edit-image="editImage"
+        @edit-image="(index) => editImage(clips[index])"
+        @edit-text="editText"
       />
     </v-container>
+
+    <!-- Edit Text -->
+    <v-dialog v-model="editingOpen" width="500">
+      <v-card>
+        <v-card-title>
+          Edit Text
+        </v-card-title>
+        <v-card-text>
+          <v-textarea
+            v-model="editingText"
+            label="Edit text"
+            counter
+            full-width
+            outlined
+          ></v-textarea>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            text
+            @click="
+              () => {
+                editingOpen = false;
+                modifyClip({
+                  clip: {
+                    ...clips[editingClipIndex],
+                    plainText: editingText,
+                  },
+                  options: { silently: true },
+                });
+              }
+            "
+          >
+            {{ $translations.save }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Dialog -->
     <v-dialog v-model="processing" hide-overlay persistent width="300">
@@ -99,14 +135,19 @@ import {
 } from 'rxjs/operators';
 import { Data } from '@/electron/services/clipboard';
 
-export type ClipFormat = 'plainText' | 'richText' | 'htmlText' | 'dataURI';
+export type ClipFormat =
+  | 'all'
+  | 'plainText'
+  | 'richText'
+  | 'htmlText'
+  | 'dataURI';
 
 export type ClipsFormatMap = { [clipdId: string]: ClipFormat | undefined };
 
 export type ClipExtended = Clip & {
   fromNow?: string;
   preview?: string;
-  displayingFormat: ClipFormat;
+  displayingFormat?: ClipFormat;
 };
 
 export const toClipProp = (type?: Format | string): ClipFormat => {
@@ -151,10 +192,7 @@ export const toClipProp = (type?: Format | string): ClipFormat => {
               preview: (clip.plainText || '').substring(0, 255),
               displayingFormat:
                 clipsFormatMap[clip.id] ||
-                (clip.type === 'image' &&
-                clip.formats.find((f) => f === 'image/png' || f === 'image/jpg')
-                  ? 'dataURI'
-                  : toClipProp(clip.formats[0])),
+                (clip.type === 'image' ? 'dataURI' : 'plainText'),
               fromNow: moment(clip.updatedAt).fromNow(),
             })
           )
@@ -180,10 +218,7 @@ export default class Home extends ExtendedVue {
   @Action('removeClips', { namespace: 'clips' })
   public removeClips!: (ids: string[]) => Promise<Clip[]>;
   @Action('copyToClipboard', { namespace: 'clips' })
-  public copyToClipboard!: (args: {
-    type: 'image' | 'text';
-    data: Data;
-  }) => Promise<void>;
+  public copyToClipboard!: (data: Data) => Promise<void>;
   @Action('restoreBackup', { namespace: 'clips' })
   public restoreBackup!: () => Promise<Clip[]>;
   @Action('fromDump', { namespace: 'clips' })
@@ -229,6 +264,9 @@ export default class Home extends ExtendedVue {
   public snackbarText = '';
   public viewMode: 'list' | 'grid' = 'list';
   public searchQuery = '';
+  public editingOpen = false;
+  public editingClipIndex?: number;
+  public editingText = '';
 
   public get clipCount(): number {
     return this.clipboardMode === 'select'
@@ -240,30 +278,51 @@ export default class Home extends ExtendedVue {
     this.dateTime = this.clips[clipIndex].updatedAt;
   }
 
+  public editText(clipIndex: number): void {
+    // Shallow copy
+    this.editingClipIndex = clipIndex;
+    this.editingText = this.clips[clipIndex].plainText;
+    this.editingOpen = true;
+  }
+
   public async onClipClick(
     clipIndex: number,
-    displayType: 'plainText' | 'richText' | 'dataURI' | 'htmlText'
+    displayingFormat:
+      | 'plainText'
+      | 'richText'
+      | 'dataURI'
+      | 'htmlText'
+      | undefined
   ): Promise<void> {
-    await this.copyToClipboard({
-      type: (() => {
-        switch (displayType) {
+    await this.copyToClipboard(
+      (() => {
+        switch (displayingFormat) {
           case 'plainText':
-            return 'text';
+            return {
+              text: this.clips[clipIndex].plainText,
+            };
           case 'richText':
-            return 'text';
+            return {
+              rtf: this.clips[clipIndex].richText,
+            };
           case 'dataURI':
-            return 'image';
+            return {
+              image: this.clips[clipIndex].dataURI,
+            };
           case 'htmlText':
-            return 'text';
+            return {
+              html: this.clips[clipIndex].htmlText,
+            };
+          default:
+            return {
+              text: this.clips[clipIndex].plainText,
+              html: this.clips[clipIndex].htmlText,
+              image: this.clips[clipIndex].dataURI,
+              rtf: this.clips[clipIndex].richText,
+            };
         }
-      })(),
-      data: {
-        text: this.clips[clipIndex].plainText,
-        html: this.clips[clipIndex].htmlText,
-        image: this.clips[clipIndex].dataURI,
-        rtf: this.clips[clipIndex].richText,
-      },
-    });
+      })()
+    );
     this.snackbarText = this.$translations.copiedToClipboard;
     this.snackbar = true;
     const mainWindow = electron.remote.getCurrentWindow();

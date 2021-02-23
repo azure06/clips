@@ -2,7 +2,7 @@
   <div>
     <!-- Toolbar -->
     <v-toolbar style="-webkit-app-region: drag" color="surfaceVariant" dense>
-      <v-btn icon @click="$emit('close')">
+      <v-btn style="-webkit-app-region: no-drag" icon @click="$emit('close')">
         <v-icon>mdi-close</v-icon>
       </v-btn>
       <v-toolbar-title>{{ roomStream.roomName }}</v-toolbar-title>

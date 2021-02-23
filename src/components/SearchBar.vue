@@ -71,7 +71,7 @@
             @click="$emit('change-mode', 'select')"
             v-on="on"
           >
-            <v-icon>mdi-delete-circle</v-icon>
+            <v-icon>mdi-delete-outline</v-icon>
           </v-btn>
         </template>
         <span>{{ translations.remove }} </span>

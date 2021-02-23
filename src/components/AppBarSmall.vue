@@ -5,7 +5,11 @@
         class="d-flex justify-center"
         style="height: 30px; width: 100%; marginBottom: 7px;"
       >
-        <div style="font-size: 0.85rem; letter-spacing: 2px;">{{ title }}</div>
+        <div
+          style="max-width: 50%; font-size: 0.85rem; letter-spacing: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+        >
+          {{ title }}
+        </div>
       </div>
       <v-spacer></v-spacer>
       <div

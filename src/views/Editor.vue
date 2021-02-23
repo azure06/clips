@@ -15,7 +15,7 @@
           right
           absolute
           class="v-btn--example"
-          style="top: 45px"
+          style="top: 45px; right: 25px"
           @click="copy"
         >
           <v-icon>mdi-content-copy</v-icon>
@@ -33,7 +33,7 @@
           right
           absolute
           class="v-btn--example"
-          style="top: 115px"
+          style="top: 115px; right: 25px"
           @click="download"
         >
           <v-icon>mdi-download</v-icon>
@@ -68,10 +68,11 @@ import 'tui-image-editor/dist/tui-image-editor.css';
 // @ts-ignore
 import { ImageEditor } from '@toast-ui/vue-image-editor';
 import { getClipId } from '@/utils/environment';
-import { Action } from 'vuex-class';
+import { Action, Getter } from 'vuex-class';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { Clip } from '@/store/types';
 import { Data } from '@/electron/services/clipboard';
+import { loadImage } from '@/utils/common';
 
 @Component<Editor>({
   components: {
@@ -83,13 +84,12 @@ import { Data } from '@/electron/services/clipboard';
   },
 })
 export default class Editor extends ExtendedVue {
+  @Getter('premium', { namespace: 'configuration' })
+  public premium!: boolean;
   @Action('findClips', { namespace: 'clips' })
   public findClips!: (condition: Partial<ClipSearchConditions>) => Clip[];
   @Action('copyToClipboard', { namespace: 'clips' })
-  public copyToClipboard!: (args: {
-    type: 'image' | 'text';
-    data: Data;
-  }) => Promise<void>;
+  public copyToClipboard!: (data: Data) => Promise<void>;
 
   public clip: Clip | null = null;
 
@@ -119,14 +119,13 @@ export default class Editor extends ExtendedVue {
     editor
       .invoke('loadImageFromURL', this.clip?.dataURI, 'My sample image')
       .then(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (result: {
           newHeight: number;
           newWidth: number;
           oldHeight: number;
           oldWidth: number;
         }) => {
-          console.warn(result);
-          // let actions = this.$refs.tuiImageEditor.invoke('getActions');
           editor.invoke('ui.activeMenuEvent');
         }
       );
@@ -144,22 +143,39 @@ export default class Editor extends ExtendedVue {
     }
   }
 
-  public copy(): void {
+  public async embedWatermark(): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const canvas = this.$el.querySelector('.lower-canvas') as any;
+    if (!this.premium) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const image = await loadImage(require('./../assets/icons/watermark.png'));
+      const targetWidth = Math.floor(canvas.width / 5);
+      canvas
+        .getContext('2d')
+        .drawImage(
+          image,
+          canvas.width - targetWidth,
+          canvas.height - Math.floor(targetWidth / 2),
+          targetWidth,
+          Math.floor(targetWidth / 2)
+        );
+    }
+    return canvas.toDataURL();
+  }
+
+  public async copy(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.copyToClipboard({
-      type: 'image',
-      data: {
-        text: this.clip?.plainText,
-        html: this.clip?.htmlText,
-        image: this.clip?.dataURI,
-        rtf: this.clip?.richText,
-      },
+      // text: this.clip?.plainText,
+      // html: this.clip?.htmlText,
+      image: await this.embedWatermark(),
+      // rtf: this.clip?.richText,
     });
   }
 
-  public download(): void {
+  public async download(): Promise<void> {
+    const url = await this.embedWatermark();
     const a = document.createElement('a');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const url = (this.$el.querySelector('.lower-canvas') as any).toDataURL();
     a.style.display = 'none';
     a.setAttribute('href', url);
     a.setAttribute('download', this.clip?.plainText || 'Untitled');

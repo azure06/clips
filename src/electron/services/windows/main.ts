@@ -34,7 +34,7 @@ const storeFlags = (
 const flags = {
   width: 820,
   height: 410,
-  minWidth: 640,
+  minWidth: 480,
   minHeight: 360,
   webPreferences: {
     // Use pluginOptions.nodeIntegration, leave this alone
@@ -70,7 +70,6 @@ function create(): BrowserWindow {
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
-    console.warn(process.env.WEBPACK_DEV_SERVER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
     createProtocol('app');

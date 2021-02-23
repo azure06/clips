@@ -8,7 +8,7 @@
       <v-card
         v-if="!user"
         class="mx-auto"
-        min-width="460"
+        :min-width="$vuetify.breakpoint.xsOnly ? 360 : 460"
         color="surfaceVariant"
       >
         <v-row>
@@ -44,7 +44,7 @@
       <v-card
         v-if="!!user"
         class="mx-auto"
-        min-width="460"
+        :min-width="$vuetify.breakpoint.xsOnly ? 360 : 460"
         color="surfaceVariant"
       >
         <v-row>

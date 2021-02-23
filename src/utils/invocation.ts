@@ -25,11 +25,8 @@ export const removeImage = (path: string): Promise<HandlerResponse<void>> =>
 export const removeImageDirectory = (): Promise<HandlerResponse<void>> =>
   ipcRenderer.invoke(INVOCATION.REMOVE_IMAGE_DIRECTORY);
 
-export const copyToClipboard = (
-  type: 'text' | 'image',
-  data: Data
-): Promise<HandlerResponse<void>> =>
-  ipcRenderer.invoke(INVOCATION.COPY_TO_CLIPBOARD, type, data);
+export const copyToClipboard = (data: Data): Promise<HandlerResponse<void>> =>
+  ipcRenderer.invoke(INVOCATION.COPY_TO_CLIPBOARD, data);
 
 export const uploadToDrive = <T>(
   clips: T[]

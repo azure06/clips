@@ -160,11 +160,9 @@ export const onSetAlwaysOnTop = (
 //   Clipboard
 
 export const onCopyToClipboard = (
-  func: (type: 'text' | 'image', data: Data) => Promise<HandlerResponse<void>>
+  func: (data: Data) => Promise<HandlerResponse<void>>
 ): void =>
-  ipcMain.handle(INVOCATION.COPY_TO_CLIPBOARD, (event, type, data) =>
-    func(type, data)
-  );
+  ipcMain.handle(INVOCATION.COPY_TO_CLIPBOARD, (event, data) => func(data));
 
 export const onToDataURI = (
   func: (content: string) => Promise<HandlerResponse<string>>
