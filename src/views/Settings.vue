@@ -334,7 +334,7 @@ export default class Settings extends ExtendedVue {
     action: 'clear-data' | 'factory-default'
   ): Promise<void> {
     this.dialog_ = true;
-    const response = confirm('Are you sure you want to continue?');
+    const response = confirm(this.$translations.youWantToContinue);
     response
       ? await this.restoreFactoryDefault()
           .catch((_) => _)

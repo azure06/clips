@@ -66,7 +66,7 @@ onSetAlwaysOnTop((alwaysOnTop) => {
 });
 
 function create(): BrowserWindow {
-  win = new BrowserWindow({ ...flags, ...storeFlags(appConf) });
+  win = new BrowserWindow({ ...flags, ...storeFlags(appConf), show: false });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
@@ -83,6 +83,9 @@ function create(): BrowserWindow {
   });
   win.on('closed', () => {
     win = null;
+  });
+  win.webContents.once('did-finish-load', () => {
+    win?.show();
   });
   return win;
 }

@@ -1,7 +1,7 @@
 import { ActionTree } from 'vuex';
 import { ClipsState, Clip, RootState, AppConfState } from '@/store/types';
 import { createClipsRxDB, removeClipsRxDB, getCollection } from '@/rxdb';
-import { from, EMPTY, of, range } from 'rxjs';
+import { from, EMPTY, of, range, BehaviorSubject } from 'rxjs';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import {
   concatMap,
@@ -10,6 +10,8 @@ import {
   catchError,
   expand,
   mapTo,
+  withLatestFrom,
+  map,
 } from 'rxjs/operators';
 import * as Sentry from '@sentry/electron';
 import { remote } from 'electron';
@@ -28,6 +30,7 @@ import { isSuccess, isSuccessHttp } from '@/utils/invocation-handler';
 import { isAuthenticated } from '@/utils/common';
 import { Data } from '@/electron/services/clipboard';
 
+export const copySilently = new BehaviorSubject(false);
 const collection = () => getCollection('clips');
 
 const actions: ActionTree<ClipsState, RootState> = {
@@ -123,10 +126,18 @@ const actions: ActionTree<ClipsState, RootState> = {
           )
         )
       )
+      .pipe(withLatestFrom(copySilently.asObservable()))
       .pipe(
-        tap(({ action, clip }) =>
-          commit(action, { clip, options: { silently: true } })
-        )
+        map(([props, silently]) => ({
+          ...props,
+          silently,
+        }))
+      )
+      .pipe(
+        tap(({ action, clip, silently }) => {
+          copySilently.next(false);
+          commit(action, { clip, options: { silently } });
+        })
       )
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .pipe(take(1))

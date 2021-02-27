@@ -89,6 +89,7 @@ import {
 import { Format } from './rxdb/clips/model';
 import { IDevice } from './electron/services/socket.io/types';
 import { isMas } from './utils/environment';
+import { ExtendedVue } from './utils/basevue';
 
 @Component<App>({
   components: { NavDrawer },

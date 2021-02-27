@@ -7,6 +7,7 @@ import {
   Advanced,
   InAppStatus,
   Label,
+  Drive,
 } from '@/store/types';
 import { Getter } from 'vuex-class';
 import { Vue, Component } from 'vue-property-decorator';
@@ -46,7 +47,7 @@ export class ExtendedVue extends BaseVue {
   @Getter('appearance', { namespace: 'configuration' })
   public appearance!: Appearance;
   @Getter('drive', { namespace: 'configuration' })
-  public drive!: Advanced;
+  public drive!: Drive;
   @Getter('advanced', { namespace: 'configuration' })
   public advanced!: Advanced;
   @Getter('labels', { namespace: 'configuration' })
