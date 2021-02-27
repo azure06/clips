@@ -156,6 +156,7 @@
           @set-advanced="setAdvanced"
           @set-shortcut="setShortcut"
           @set-startup="setStartup"
+          @set-skip-taskbar="setSkipTaskbar"
           @set-in-app-status="setInAppStatus"
           @action="openDialog"
           @change-email="(value) => (email = value)"
@@ -261,6 +262,8 @@ export default class Settings extends ExtendedVue {
   public setShortcut!: (payload: unknown) => Promise<void>;
   @Action('setStartup', { namespace: 'configuration' })
   public setStartup!: (payload: boolean) => Promise<void>;
+  @Action('setSkipTaskbar', { namespace: 'configuration' })
+  public setSkipTaskbar!: (payload: boolean) => Promise<void>;
   @Action('restoreFactoryDefault', { namespace: 'clips' })
   public restoreFactoryDefault!: () => Promise<boolean>;
   public dialog = false;
@@ -323,7 +326,7 @@ export default class Settings extends ExtendedVue {
               })
           : Promise.resolve();
       })
-      .catch((error) => console.warn(error));
+      .catch((error) => console.error(error));
 
     this.fetching = false;
     this.dialogOTP = false;
@@ -334,7 +337,7 @@ export default class Settings extends ExtendedVue {
     action: 'clear-data' | 'factory-default'
   ): Promise<void> {
     this.dialog_ = true;
-    const response = confirm('Are you sure you want to continue?');
+    const response = confirm(this.$translations.youWantToContinue);
     response
       ? await this.restoreFactoryDefault()
           .catch((_) => _)

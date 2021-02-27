@@ -1,8 +1,3 @@
-import firebase from 'firebase';
-import { environment } from '@/environment';
-
-firebase.initializeApp(environment.firebaseConfig);
-
 export const createActivationCode = (email: string): Promise<Response> => {
   const encode = (data: { [key: string]: string }) => {
     return Object.keys(data)

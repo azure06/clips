@@ -66,6 +66,7 @@ export interface General {
   startup: boolean;
   blur: boolean;
   alwaysOnTop: boolean;
+  skipTaskbar: boolean; // only for windows
   positioningMode: MaintainMode | CursorMode;
 }
 

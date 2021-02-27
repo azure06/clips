@@ -29,12 +29,12 @@
     <v-dialog v-model="editingOpen" width="500">
       <v-card>
         <v-card-title>
-          Edit Text
+          {{ $translations.edit }}
         </v-card-title>
         <v-card-text>
           <v-textarea
             v-model="editingText"
-            label="Edit text"
+            :label="$translations.text"
             counter
             full-width
             outlined
@@ -134,6 +134,7 @@ import {
   scan,
 } from 'rxjs/operators';
 import { Data } from '@/electron/services/clipboard';
+import { copySilently } from '@/store/clips/actions';
 
 export type ClipFormat =
   | 'all'
@@ -286,6 +287,7 @@ export default class Home extends ExtendedVue {
   }
 
   public async onClipClick(
+    event: MouseEvent,
     clipIndex: number,
     displayingFormat:
       | 'plainText'
@@ -294,40 +296,46 @@ export default class Home extends ExtendedVue {
       | 'htmlText'
       | undefined
   ): Promise<void> {
-    await this.copyToClipboard(
-      (() => {
-        switch (displayingFormat) {
-          case 'plainText':
-            return {
-              text: this.clips[clipIndex].plainText,
-            };
-          case 'richText':
-            return {
-              rtf: this.clips[clipIndex].richText,
-            };
-          case 'dataURI':
-            return {
-              image: this.clips[clipIndex].dataURI,
-            };
-          case 'htmlText':
-            return {
-              html: this.clips[clipIndex].htmlText,
-            };
-          default:
-            return {
-              text: this.clips[clipIndex].plainText,
-              html: this.clips[clipIndex].htmlText,
-              image: this.clips[clipIndex].dataURI,
-              rtf: this.clips[clipIndex].richText,
-            };
-        }
-      })()
-    );
-    this.snackbarText = this.$translations.copiedToClipboard;
-    this.snackbar = true;
-    const mainWindow = electron.remote.getCurrentWindow();
-    if (mainWindow.isVisible() && this.general.blur) {
-      setTimeout(mainWindow.hide, 0);
+    if (event.shiftKey || this.clipboardMode === 'select') {
+      this.clipboardMode = 'select';
+      this.onRemoveClick(event, clipIndex);
+    } else {
+      copySilently.next(true);
+      await this.copyToClipboard(
+        (() => {
+          switch (displayingFormat) {
+            case 'plainText':
+              return {
+                text: this.clips[clipIndex].plainText,
+              };
+            case 'richText':
+              return {
+                rtf: this.clips[clipIndex].richText,
+              };
+            case 'dataURI':
+              return {
+                image: this.clips[clipIndex].dataURI,
+              };
+            case 'htmlText':
+              return {
+                html: this.clips[clipIndex].htmlText,
+              };
+            default:
+              return {
+                text: this.clips[clipIndex].plainText,
+                html: this.clips[clipIndex].htmlText,
+                image: this.clips[clipIndex].dataURI,
+                rtf: this.clips[clipIndex].richText,
+              };
+          }
+        })()
+      );
+      this.snackbarText = this.$translations.copiedToClipboard;
+      this.snackbar = true;
+      const mainWindow = electron.remote.getCurrentWindow();
+      if (mainWindow.isVisible() && this.general.blur) {
+        setTimeout(mainWindow.hide, 0);
+      }
     }
   }
 

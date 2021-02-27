@@ -152,7 +152,7 @@
               <v-icon left>
                 mdi-account-search
               </v-icon>
-              Find
+              {{ $translations.find }}
               <template v-slot:loader>
                 <span class="custom-loader">
                   <v-icon>mdi-cached</v-icon>
@@ -160,7 +160,7 @@
               </template>
             </v-btn>
           </template>
-          <span>Discover new devices</span>
+          <span>{{ $translations.discoverNewDevice }}</span>
         </v-tooltip>
 
         <v-tooltip top>
@@ -185,7 +185,7 @@
               {{ serverStatus === 'started' ? 'off' : 'on' }}
             </v-btn>
           </template>
-          <span>Turn ON/OFF the server</span>
+          <span>{{ $translations.turnOnOffTheServer }}</span>
         </v-tooltip>
 
         <!-- Help Dialog-->
@@ -203,13 +203,13 @@
           </template>
           <v-card>
             <v-card-title class="subtitle-1 overline">
-              <v-icon class="mx-2">mdi-share-variant</v-icon> Share Locally
+              <v-icon class="mx-2">mdi-share-variant</v-icon>
+              {{ $translations.shareLocally }}
               (βeta)
             </v-card-title>
 
             <v-card-text>
-              Allows you to message or transfer video, music, files and apps
-              from one device to another in a local network.
+              {{ $translations.shareExplanation }}
             </v-card-text>
           </v-card>
         </v-dialog>
@@ -458,7 +458,7 @@ export default class Share extends ExtendedVue {
 <style scoped lang="scss">
 .container {
   height: calc(100vh - 98px); // 48 + 48 + 2
-  overflow: auto; 
+  overflow: auto;
 }
 .custom-loader {
   animation: loader 1s infinite;

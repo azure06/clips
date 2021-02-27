@@ -118,7 +118,7 @@
             <v-icon color="amber darken-1" v-else>mdi-sync-alert</v-icon>
           </v-btn>
         </template>
-        <span>{{ translations.syncWithDrive }}</span>
+        <span>{{ translations.backupWithDrive }}</span>
       </v-tooltip>
 
       <v-menu

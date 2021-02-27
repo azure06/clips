@@ -150,18 +150,19 @@
             class="list-item-icon"
             :key="clip.id"
             @mouseover="$emit('clip-hover', index)"
-            @click="$emit('clip-click', index, clip.displayingFormat)"
+            @click="$emit('clip-click', $event, index, clip.displayingFormat)"
           >
             <v-list-item-content>
-              <v-img
+              <img
                 v-if="
                   clip.displayingFormat === 'dataURI' ||
                     (!clip.displayingFormat && clip.type !== 'text')
                 "
-                style="border-radius: 5px; max-height: 64px;"
+                class="img-preview"
                 :src="clip.dataURI"
                 :alt="clip.preview"
-              ></v-img>
+              />
+
               <v-list-item-title
                 v-else-if="clip.displayingFormat === 'htmlText'"
               >
@@ -197,7 +198,7 @@
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn class="show-icon" icon v-bind="attrs" v-on="on">
-                      <v-icon>mdi-check-all</v-icon>
+                      <v-icon>mdi-format-letter-case-lower</v-icon>
                     </v-btn>
                   </template>
                   <v-list dense width="190">
@@ -236,12 +237,14 @@
                   icon
                   @click.stop="
                     $emit(
-                      isImage[clip.type] ? 'edit-image' : 'edit-text',
+                      clip.displayingFormat === 'dataURI'
+                        ? 'edit-image'
+                        : 'edit-text',
                       index
                     )
                   "
                 >
-                  <v-icon>mdi-monitor-edit</v-icon>
+                  <v-icon>mdi-pencil</v-icon>
                 </v-btn>
 
                 <!-- Star -->
@@ -362,13 +365,6 @@ export default class Grid extends Vue {
     );
   }
 
-  public get isImage(): { text: false; image: true } {
-    return {
-      text: false,
-      image: true,
-    };
-  }
-
   public get translationByFormat(): { [P in Format]: string } {
     return {
       'text/plain': this.translations.text,
@@ -440,6 +436,17 @@ export default class Grid extends Vue {
 }
 .list-item-icon:hover .show-icon {
   display: initial;
+}
+
+.img-preview {
+  object-fit: cover;
+  border-radius: 5px;
+  max-height: 48px;
+  transition: max-height 500ms 500ms ease-in-out;
+}
+.img-preview:hover {
+  object-fit: cover;
+  max-height: 50vh;
 }
 
 @keyframes move {

@@ -26,8 +26,8 @@ function onConnectionStart(data: Start) {
   // prettier-ignore
   const target = path.join(DIR_DOWNLOAD, data.filename);
   fs.unlink(target, (err) => {
-    if (err) console.log(err);
-    else console.log('File deleted');
+    if (err) console.error(err);
+    else console.info('File deleted');
   });
 }
 
@@ -101,7 +101,7 @@ function initSocket(
     });
     socket.on('disconnect', function() {
       // TODO Watch 'messageSubject' and emit error when necessary
-      console.log('Disconnected...🎬');
+      console.info('Disconnected...🎬');
     });
   });
 
@@ -134,7 +134,7 @@ export function listen(
       // Listen to port
       httpServer.listen(port, ip || '0.0.0.0', () => {
         resolve_([httpServer, messageStream]);
-        console.log(
+        console.info(
           `Http server listening on http://${ip || '0.0.0.0'}:${port}🔥`
         );
       });

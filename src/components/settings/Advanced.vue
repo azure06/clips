@@ -497,7 +497,7 @@ export default class Advanced extends Vue {
     if (this.product && (await canMakePayments())) {
       this.$emit('set-in-app-status', 'pre-purchasing');
       purchaseProduct(this.product);
-    } else console.log('Something went wrong');
+    } else console.error('Something went wrong');
   }
 }
 </script>

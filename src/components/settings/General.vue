@@ -64,6 +64,26 @@
       </v-list-item>
     </v-list>
     <v-divider></v-divider>
+    <v-list v-if="isWindows" subheader dense color="surfaceVariant">
+      <v-subheader>{{ translations.taskbar }}</v-subheader>
+      <v-list-item>
+        <v-list-item-action>
+          <v-switch
+            :input-value="general.skipTaskbar"
+            @change="$emit('set-skip-taskbar', !general.skipTaskbar)"
+            dense
+            color="blue darken-2"
+          ></v-switch>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title>{{ translations.hide }}</v-list-item-title>
+          <v-list-item-subtitle>{{
+            translations.hideFromTaskbar
+          }}</v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </v-list>
+    <v-divider></v-divider>
     <v-list subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.theme }}</v-subheader>
       <v-list-item>
@@ -228,6 +248,7 @@ import {
 } from '../../store/types';
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { replace } from '@/utils/common';
+import { isWindows } from '@/utils/environment';
 
 @Component
 export default class General extends Vue {
@@ -242,6 +263,10 @@ export default class General extends Vue {
 
   public get replacer(): typeof replace {
     return replace;
+  }
+
+  public get isWindows(): boolean {
+    return isWindows;
   }
 }
 </script>

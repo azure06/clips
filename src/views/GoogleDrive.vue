@@ -67,27 +67,39 @@
                   </v-list-item-content>
 
                   <v-list-item-action>
-                    <v-btn
-                      v-if="!change.removed"
-                      icon
-                      @click="retrieveFile(change, 'sync')"
-                    >
-                      <v-icon color="grey lighten-1"
-                        >mdi-swap-horizontal</v-icon
-                      >
-                    </v-btn>
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on }">
+                        <v-btn
+                          v-if="!change.removed"
+                          v-on="on"
+                          icon
+                          @click="retrieveFile(change, 'sync')"
+                        >
+                          <v-icon color="grey lighten-1">mdi-sync</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>{{ $translations.syncWithGoogleDrive }}</span>
+                    </v-tooltip>
                   </v-list-item-action>
                   <v-list-item-action>
-                    <v-btn
-                      v-if="!change.removed"
-                      icon
-                      @click="retrieveFile(change, 'downlaod')"
-                    >
-                      <v-icon color="grey lighten-1">mdi-download</v-icon>
-                    </v-btn>
-                    <v-btn v-else icon>
-                      <v-icon color="grey lighten-1">mdi-information</v-icon>
-                    </v-btn>
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on }">
+                        <v-btn
+                          v-if="!change.removed"
+                          v-on="on"
+                          icon
+                          @click="retrieveFile(change, 'downlaod')"
+                        >
+                          <v-icon color="grey lighten-1">mdi-download</v-icon>
+                        </v-btn>
+                        <v-btn v-else icon>
+                          <v-icon color="grey lighten-1"
+                            >mdi-information</v-icon
+                          >
+                        </v-btn>
+                      </template>
+                      <span>{{ $translations.download }}</span>
+                    </v-tooltip>
                   </v-list-item-action>
                 </v-list-item>
                 <v-divider inset></v-divider>
@@ -150,14 +162,12 @@
         </template>
         <v-card>
           <v-card-title class="subtitle-1 overline">
-            <v-icon class="mx-2">mdi-share-variant</v-icon> Sync with Google
-            Drive
+            <v-icon class="mx-2">mdi-share-variant</v-icon>
+            {{ $translations.driveSync }}
           </v-card-title>
 
           <v-card-text>
-            Insert a valid token from another device to retrieve your clipboard
-            history. If you don't have one the newest token will be
-            automatically used.
+            {{ $translations.insertAValidToken }}
           </v-card-text>
         </v-card>
       </v-dialog>

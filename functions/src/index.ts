@@ -141,7 +141,7 @@ export const success = functions.https.onRequest((req, res) => {
         `${CLIPS_DOMAIN}/success?email=${querystring.escape(email)}`
       );
     const redirectFailure = (error?: unknown) => {
-      if (error !== undefined) console.log('Failure:', error);
+      if (error !== undefined) console.info('Failure:', error);
       res.redirect(`${CLIPS_DOMAIN}/premium`);
     };
 

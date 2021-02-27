@@ -29,6 +29,7 @@ const state: AppConfState = {
       width: 820,
       height: 410,
     },
+    skipTaskbar: true,
   },
   appearance: {
     theme: 'light',

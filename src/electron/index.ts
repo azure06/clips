@@ -36,6 +36,8 @@ import {
   onRetrieveFile,
   onUploadToDrive,
   onOpenEditor,
+  onSetSkipTaskbar,
+  onSetAlwaysOnTop,
 } from '../utils/invocation-handler';
 import { shortcutHandler } from './services/shortcuts';
 import { autoLauncherHandler } from './services/auto-launcher';
@@ -305,7 +307,9 @@ export function onReady(): void {
 
   eventHandler(storeService.getAppConf, win);
   onSetShortcut(shortcutHandler(storeService.getAppConf, win));
-  onSetStartup(autoLauncherHandler());
+  onSetStartup(autoLauncherHandler);
+  onSetAlwaysOnTop(runCatching(mainWindow.setAlwaysOnTop(win)));
+  onSetSkipTaskbar(runCatching(mainWindow.setSkipTaskbar(win)));
   onOpenEditor(
     runCatching((clipId) => {
       editorWindow.create(clipId);

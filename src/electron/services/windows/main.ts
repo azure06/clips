@@ -4,7 +4,6 @@ import { app, BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
 import { AppConfState } from '@/store/types';
-import { onSetAlwaysOnTop } from '../../../utils/invocation-handler';
 import { isMacOS, isMas } from '@/utils/environment';
 
 declare const __static: string;
@@ -28,6 +27,7 @@ const storeFlags = (
               height: appConf.general.positioningMode.height,
             }),
         alwaysOnTop: appConf.general.alwaysOnTop,
+        skipTaskbar: appConf.general.skipTaskbar,
       }))()
     : {};
 
@@ -44,26 +44,13 @@ const flags = {
   },
   frame: false,
   ...(isMacOS ? { titleBarStyle: 'hidden' as const } : {}),
-  show: true,
+  show: false,
   resizable: true,
   skipTaskbar: true,
   icon: path.join(__static, 'icon.png'),
-  setSkipTaskbar: true,
 };
 
 let win: BrowserWindow | null = null;
-
-onSetAlwaysOnTop((alwaysOnTop) => {
-  if (win) {
-    win.setAlwaysOnTop(alwaysOnTop);
-    return Promise.resolve({ status: 'success' as const, data: alwaysOnTop });
-  } else {
-    return Promise.resolve({
-      status: 'failure' as const,
-      message: 'Failed to set always on top',
-    });
-  }
-});
 
 function create(): BrowserWindow {
   win = new BrowserWindow({ ...flags, ...storeFlags(appConf) });
@@ -84,7 +71,18 @@ function create(): BrowserWindow {
   win.on('closed', () => {
     win = null;
   });
+  win.webContents.once('did-finish-load', () => {
+    win?.show();
+  });
   return win;
+}
+
+function setAlwaysOnTop(win: BrowserWindow): (alwaysOnTop: boolean) => void {
+  return (alwaysOnTop: boolean) => win.setAlwaysOnTop(alwaysOnTop);
+}
+
+function setSkipTaskbar(win: BrowserWindow): (skip: boolean) => void {
+  return (skip: boolean) => win.setSkipTaskbar(skip);
 }
 
 export const mainWindow = {
@@ -92,4 +90,6 @@ export const mainWindow = {
     return win;
   },
   create,
+  setSkipTaskbar,
+  setAlwaysOnTop,
 };

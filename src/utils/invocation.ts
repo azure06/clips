@@ -77,6 +77,11 @@ export const setStartup = (
 ): Promise<HandlerResponse<boolean>> =>
   ipcRenderer.invoke(INVOCATION.SET_STARTUP, startup);
 
+export const setSkipTaskbar = (
+  skipTaskbar: boolean
+): Promise<HandlerResponse<boolean>> =>
+  ipcRenderer.invoke(INVOCATION.SET_SKIP_TASKBAR, skipTaskbar);
+
 export const setAlwaysOnTop = (
   alwaysOnTop: boolean
 ): Promise<HandlerResponse<boolean>> =>

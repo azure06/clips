@@ -12,16 +12,16 @@ export const handleTransaction = async (
 
       switch (transaction.transactionState) {
         case 'purchasing':
-          console.log(`Purchasing ${payment.productIdentifier}...`);
+          console.info(`Purchasing ${payment.productIdentifier}...`);
           break;
 
         case 'purchased': {
-          console.log(`${payment.productIdentifier} purchased.`);
+          console.info(`${payment.productIdentifier} purchased.`);
 
           // Get the receipt url.
           const receiptURL = await getReceiptURL();
 
-          console.log(`Receipt URL: ${receiptURL}`);
+          console.info(`Receipt URL: ${receiptURL}`);
 
           // Submit the receipt file to the server and check if it is valid.
           // @see https://developer.apple.com/library/content/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html
@@ -36,19 +36,19 @@ export const handleTransaction = async (
         }
 
         case 'failed':
-          console.log(`Failed to purchase ${payment.productIdentifier}.`);
+          console.info(`Failed to purchase ${payment.productIdentifier}.`);
 
           // Finish the transaction.
           await finishTransactionByDate(transaction.transactionDate);
           break;
         case 'restored':
-          console.log(
+          console.info(
             `The purchase of ${payment.productIdentifier} has been restored.`
           );
 
           break;
         case 'deferred':
-          console.log(
+          console.info(
             `The purchase of ${payment.productIdentifier} has been deferred.`
           );
 

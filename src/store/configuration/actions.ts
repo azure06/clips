@@ -3,6 +3,7 @@ import { RootState, AppConfState, Clip } from '@/store/types';
 import {
   setAlwaysOnTop,
   setShortcut,
+  setSkipTaskbar,
   setStartup,
   signIn,
   signOut,
@@ -52,22 +53,21 @@ const actions: ActionTree<AppConfState, RootState> = {
   async setStartup({ commit, state }, startup) {
     if (isSuccess(await setStartup(startup))) {
       commit('setGeneral', { ...state.general, startup });
-    } else {
-      console.error("Something went wrong. Couldn't set at startup");
     }
   },
   async setAlwaysOnTop({ commit, state }, alwaysOnTop) {
     if (isSuccess(await setAlwaysOnTop(alwaysOnTop))) {
       commit('setGeneral', { ...state.general, alwaysOnTop });
-    } else {
-      console.error("Something went wrong. Couldn't set at always on Top");
+    }
+  },
+  async setSkipTaskbar({ commit, state }, skipTaskbar) {
+    if (isSuccess(await setSkipTaskbar(skipTaskbar))) {
+      commit('setGeneral', { ...state.general, skipTaskbar });
     }
   },
   async setShortcut({ commit, state }, shortcut) {
     if (isSuccess(await setShortcut(shortcut))) {
       commit('setAdvanced', { ...state.advanced, shortcut });
-    } else {
-      console.error("Something went wrong. Couldn't set at always on Top");
     }
   },
 };

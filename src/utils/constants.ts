@@ -34,6 +34,7 @@ export const INVOCATION = {
   SET_SHORTCUT: 'set-shortcut',
   SET_STARTUP: 'set-startup',
   SET_ALWAYS_ON_TOP: 'set-always-on-top',
+  SET_SKIP_TASKBAR: 'set-skip-taskbar',
 
   // Editor
   OPEN_EDITOR: 'open-editor',

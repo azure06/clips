@@ -108,8 +108,7 @@ import { isMas } from './utils/environment';
             }
             this.setInAppStatus(transaction.transactionState);
           }, transactions)
-        ),
-        tap((value) => console.info('transaction:', value))
+        )
       ),
       syncWithDrive: this.$watchAsObservable(() => this.drive.syncThreshold, {
         immediate: true,

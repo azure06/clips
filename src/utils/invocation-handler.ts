@@ -151,9 +151,16 @@ export const onSetShortcut = (
   );
 
 export const onSetAlwaysOnTop = (
-  func: (args: boolean) => Promise<HandlerResponse<boolean>>
+  func: (args: boolean) => Promise<HandlerResponse<void>>
 ): void =>
   ipcMain.handle(INVOCATION.SET_ALWAYS_ON_TOP, (event, args: boolean) =>
+    func(args)
+  );
+
+export const onSetSkipTaskbar = (
+  func: (args: boolean) => Promise<HandlerResponse<void>>
+): void =>
+  ipcMain.handle(INVOCATION.SET_SKIP_TASKBAR, (event, args: boolean) =>
     func(args)
   );
 
