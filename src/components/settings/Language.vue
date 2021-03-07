@@ -1,5 +1,5 @@
 <template>
-  <v-list width="100%" height="100%" color="surfaceVariant">
+  <v-list class="fill-height" color="surfaceVariant">
     <v-subheader>{{ translations.wakeOn }}</v-subheader>
     <v-row>
       <v-col cols="12" style="display: flex;">
@@ -99,7 +99,7 @@
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { language } from '@/utils/common';
 import { Advanced } from '@/store/types';
-import { isMacOS } from '@/utils/environment';
+import { always, whenMacOS } from '@/utils/environment';
 
 @Component
 export default class Shortcuts extends Vue {
@@ -137,7 +137,7 @@ export default class Shortcuts extends Vue {
   ];
 
   get isMacOS(): boolean {
-    return isMacOS;
+    return whenMacOS(always(true), always(false));
   }
 
   get key1(): '⌘' | 'Ctrl' {

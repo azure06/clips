@@ -1,6 +1,5 @@
 <template>
   <div class="fill-height">
-    <AppBar style="width: 100%" :translations="$translations" />
     <v-container class="container ma-0 pa-0 d-flex" fluid>
       <v-row v-if="loading" align="center" justify="center">
         <v-progress-circular
@@ -116,14 +115,14 @@
         </v-btn>
       </v-snackbar>
     </v-container>
-    <v-toolbar bottom color="surfaceVariant">
+    <v-toolbar bottom color="surfaceVariant" dense flat>
       <v-toolbar-items
         :class="`toolbar ${$vuetify.breakpoint.smAndDown ? 'small' : ''}`"
       >
         <v-text-field
           :label="$translations.insertValidToken"
           v-model="inputToken"
-          :class="$vuetify.breakpoint.smAndDown ? 'pa-2' : 'pa-3'"
+          class="pa-1"
           prepend-inner-icon="mdi-google"
           color="blue darken-2"
           background-color="background"
@@ -203,9 +202,8 @@ import {
   retrieveFileFromDrive,
 } from '@/utils/invocation';
 import { HttpFailure, isSuccessHttp } from '@/utils/invocation-handler';
-import AppBar from '@/components/AppBar.vue';
 
-@Component({ components: { AppBar } })
+@Component({ components: {} })
 export default class GoogleDrive extends ExtendedVue {
   @Action('signOut', { namespace: 'configuration' })
   public signOut!: () => Promise<void>;
@@ -318,7 +316,7 @@ export default class GoogleDrive extends ExtendedVue {
 
 <style scoped lang="scss">
 .container {
-  height: calc(100% - 106px);
+  height: calc(100% - 48px);
   overflow: auto;
   overflow-x: hidden;
   background-image: url('./../assets/icons/clip.png');

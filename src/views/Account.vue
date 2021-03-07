@@ -1,9 +1,8 @@
 <template>
   <v-container fluid class="d-flex flex-column fill-height" style="padding: 0">
-    <AppBar style="width: 100%" :translations="$translations" />
     <div
       class="d-flex flex-column justify-center"
-      style="height: calc(100% - 49px)"
+      style="height: calc(100% - 30px)"
     >
       <v-card
         v-if="!user"
@@ -92,7 +91,7 @@ import { Getter, Action } from 'vuex-class';
 import { ExtendedVue } from '@/utils/basevue';
 import AppBar from '@/components/AppBar.vue';
 
-@Component({ components: { AppBar } })
+@Component({ components: {} })
 export default class Account extends ExtendedVue {
   @Action('signIn', { namespace: 'configuration' })
   public signIn!: () => Promise<void>;

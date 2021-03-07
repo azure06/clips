@@ -1,5 +1,5 @@
 <template>
-  <v-toolbar bottom color="surfaceVariant" dense>
+  <v-toolbar bottom color="surfaceVariant" dense flat>
     <v-toolbar-items :class="`toolbar`">
       <v-text-field
         :value="searchQuery"

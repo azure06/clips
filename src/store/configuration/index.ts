@@ -4,7 +4,8 @@ import mutations from './mutations';
 import { RootState, AppConfState } from '@/store/types';
 import { Module } from 'vuex';
 import { remote } from 'electron';
-import { isMacOS } from '@/utils/environment';
+import { always, whenMacOS } from '@/utils/environment';
+import { ShortcutFuzzy } from '@/electron/services/shortcuts';
 
 const currentWindow = remote.getCurrentWindow();
 const { x, y } = currentWindow.getBounds();
@@ -51,7 +52,10 @@ const state: AppConfState = {
       dataURI: true,
     },
     language: 'Auto',
-    shortcut: isMacOS ? ['⌘', 'shift', 'V'] : ['ctrl', 'alt', 'V'],
+    shortcut: whenMacOS<ShortcutFuzzy>(
+      always(['⌘', 'shift', 'V']),
+      always(['ctrl', 'alt', 'V'])
+    ),
   },
   premium: false,
   inAppStatus: 'none',

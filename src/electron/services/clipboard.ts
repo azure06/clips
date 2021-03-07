@@ -108,13 +108,10 @@ export const clipboardAsObservable = interval(1000).pipe(
 
       return current && !equals(current)
         ? runCatching(() => {
-            const saveImage = (imageNm: string) => {
+            const saveImage = () => {
               if (current.image.isEmpty()) return '';
               const dir = path.join(app.getPath('userData'), 'images');
-              const removeExt = (fileNm: string) =>
-                fileNm.replace(/\.[^/.]+$/, '');
-              const truncate = (fileNm: string) => fileNm.substring(0, 16);
-              const imagePath = `${truncate(removeExt(imageNm))}.png`;
+              const imagePath = `${uuid()}.png`;
               if (!fs.existsSync(dir)) fs.mkdirSync(dir);
               fs.writeFileSync(
                 path.join(dir, imagePath),
@@ -126,7 +123,7 @@ export const clipboardAsObservable = interval(1000).pipe(
               plainText: current.plainText,
               htmlText: current.htmlText,
               richText: current.richText,
-              dataURI: saveImage(current.plainText || uuid()),
+              dataURI: saveImage(),
               category: 'none',
               type: isImage ? ('image' as const) : ('text' as const),
               formats: current.formats as Format[],

@@ -144,7 +144,7 @@
     >
       <v-card-text :class="!isGridMode ? 'ma-0 pa-0' : ''">
         <div v-if="isGridMode">Clips</div>
-        <v-list dense nav color="surfaceVariant" class="pt-1">
+        <v-list dense nav color="surfaceVariant" class="pt-1 px-0">
           <v-list-item
             v-for="(clip, index) in clipsObserver"
             class="list-item-icon"
@@ -297,7 +297,7 @@
         <!-- Loading circle -->
 
         <transition name="fade">
-          <div style="height: 120px" class="py-4" flat tile>
+          <div style="height: 120px; max-width: 90%" class="py-4" flat tile>
             <v-row v-if="loading" align="center" justify="center">
               <v-progress-circular
                 indeterminate
@@ -447,6 +447,15 @@ export default class Grid extends Vue {
 .img-preview:hover {
   object-fit: cover;
   max-height: 50vh;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 
 @keyframes move {

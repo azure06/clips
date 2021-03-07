@@ -1,6 +1,8 @@
 <template>
   <v-app style="overflow-y: hidden;">
-    <NavDrawer :style="dragActive ? '-webkit-app-region: drag' : ''" />
+    <AppBar />
+    <NavDrawer v-if="isDefaultDrawer" style="-webkit-app-region: drag" />
+    <NavDrawerConfig v-else style="-webkit-app-region: drag" />
     <!-- Router View -->
     <v-main
       class="mvleft"
@@ -46,10 +48,13 @@
 </template>
 
 <script lang="ts">
+import AppBar from '@/components/AppBar.vue';
+import { ExtendedVue } from '@/utils/basevue';
 import { UserDoc } from './rxdb/user/model';
 import { UserUpsert } from './store/network/actions';
-import { Component, Vue } from 'vue-property-decorator';
+import { Component } from 'vue-property-decorator';
 import NavDrawer from '@/components/NavDrawer.vue';
+import NavDrawerConfig from '@/components/NavDrawerConfig.vue';
 import { onAuthorize, onTransactionsUpdated } from '@/utils/subscription';
 import { ipcRenderer } from 'electron';
 import { Action, Getter, Mutation } from 'vuex-class';
@@ -88,10 +93,10 @@ import {
 } from './rxdb/message/model';
 import { Format } from './rxdb/clips/model';
 import { IDevice } from './electron/services/socket.io/types';
-import { isMas } from './utils/environment';
+import { always, whenShareAvailable } from './utils/environment';
 
 @Component<App>({
-  components: { NavDrawer },
+  components: { NavDrawer, NavDrawerConfig, AppBar },
   subscriptions() {
     return {
       transactions: onTransactionsUpdated.pipe(
@@ -149,7 +154,7 @@ import { isMas } from './utils/environment';
     };
   },
 })
-export default class App extends Vue {
+export default class App extends ExtendedVue {
   @Getter('user', { namespace: 'configuration' })
   public user!: User;
   @Getter('general', { namespace: 'configuration' })
@@ -220,7 +225,7 @@ export default class App extends Vue {
     return 1000 * 60 * 60;
   }
 
-  get dragActive(): boolean {
+  get isDefaultDrawer(): boolean {
     switch (this.$route.name) {
       case 'general-settings':
         return false;
@@ -499,7 +504,10 @@ export default class App extends Vue {
       this.dialog = false;
     });
 
-    if (!isMas) this.handleServer('start');
+    whenShareAvailable(
+      () => this.handleServer('start'),
+      always(Promise.resolve(false))
+    );
   }
 }
 </script>

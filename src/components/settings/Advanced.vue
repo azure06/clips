@@ -380,7 +380,7 @@ import {
 } from '@/utils/invocation';
 import { replace } from '@/utils/common';
 import { HandlerResponse } from '@/utils/invocation-handler';
-import { isMas } from '@/utils/environment';
+import { always, whenMas } from '@/utils/environment';
 
 type Cycle = {
   oneHour: string;
@@ -432,7 +432,7 @@ export default class Advanced extends Vue {
   }
 
   get isMas(): boolean {
-    return isMas;
+    return whenMas(always(true), always(false));
   }
 
   public openLink(link: string): void {

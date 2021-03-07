@@ -7,6 +7,7 @@ import log from 'electron-log';
 export default {
   ...Sentry,
   init: (value: Sentry.ElectronOptions): void => {
+    if (value.dsn === undefined) return;
     init(value);
     Sentry.configureScope(function(scope) {
       const user = storeService.getAppConf()?.user;
