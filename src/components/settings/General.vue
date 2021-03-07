@@ -248,7 +248,7 @@ import {
 } from '../../store/types';
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { replace } from '@/utils/common';
-import { isWindows } from '@/utils/environment';
+import { always, whenWindows } from '@/utils/environment';
 
 @Component
 export default class General extends Vue {
@@ -266,7 +266,7 @@ export default class General extends Vue {
   }
 
   public get isWindows(): boolean {
-    return isWindows;
+    return whenWindows(always(true), always(false));
   }
 }
 </script>

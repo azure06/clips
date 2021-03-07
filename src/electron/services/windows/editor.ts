@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
-import { isMacOS } from '@/utils/environment';
+import { always, whenMacOS } from '@/utils/environment';
 
 declare const __static: string;
 
@@ -16,7 +16,7 @@ const flags = {
     additionalArguments: [],
   },
   frame: false,
-  ...(isMacOS ? { titleBarStyle: 'hidden' as const } : {}),
+  ...whenMacOS(always({ titleBarStyle: 'hidden' as const }), always({})),
   show: true,
   resizable: true,
   skipTaskbar: true,

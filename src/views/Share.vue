@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppBar style="width: 100%" :translations="$translations" />
     <div v-if="roomStream">
       <router-view
         :room="roomStream"
@@ -224,8 +223,6 @@ import { Getter, Action } from 'vuex-class';
 import { Dictionary } from 'vue-router/types/router';
 import { ExtendedVue } from '@/utils/basevue';
 import Room from '@/components/Room.vue';
-import AppBar from '@/components/AppBar.vue';
-
 import { Room as RoomType } from '@/store/types';
 import { UserDoc } from '@/rxdb/user/model';
 import { MessageDoc } from '@/rxdb/message/model';
@@ -242,7 +239,7 @@ import {
 import { combineLatest, from, Subject } from 'rxjs';
 
 @Component<Share>({
-  components: { AppBar, Room },
+  components: { Room },
   subscriptions() {
     const roomIdStream = this.$watchAsObservable(() => this.$route.params, {
       immediate: true,
@@ -457,7 +454,7 @@ export default class Share extends ExtendedVue {
 
 <style scoped lang="scss">
 .container {
-  height: calc(100vh - 98px); // 48 + 48 + 2
+  height: calc(100vh - 78px); // 48 + 48 + 2
   overflow: auto;
 }
 .custom-loader {

@@ -8,8 +8,9 @@ import vuetify from './plugins/vuetify';
 import { initAnalytics } from './analytics-vue';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
 import Sentry from '@/sentry-vue';
-import { isDevelopment, isEditorView } from './utils/environment';
+import { isEditorView, whenDevelopment } from './utils/environment';
 import { environment } from './environment';
+import { empty } from 'uuidv4';
 
 Vue.config.productionTip = false;
 Vue.use(VueRx);
@@ -21,7 +22,7 @@ Vue.use(VueDOMPurifyHTML, {
 });
 
 if (!isEditorView(window.process.argv)) Sentry.init(environment.sentry);
-if (!isDevelopment) initAnalytics(router);
+whenDevelopment<unknown>(() => initAnalytics(router), empty);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const vm = new Vue({

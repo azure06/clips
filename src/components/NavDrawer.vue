@@ -1,17 +1,18 @@
 <template>
   <!-- Class py-2 for Mac -->
   <v-navigation-drawer
-    v-model="drawer"
-    mini-variant
     app
+    mini-variant
     permanent
+    floating
     color="surfaceVariant"
   >
-    <v-list dense nav :class="isMacOS ? 'pt-6' : ''">
-      <div v-if="user">
+    <v-list dense nav :class="isMacOS ? 'mt-6' : ''">
+      <div>
         <v-list-item class="px-1">
           <v-list-item-avatar>
-            <img :src="user.photoLink" />
+            <img v-if="user" :src="user.photoLink" />
+            <v-icon v-else large>mdi-account-circle</v-icon>
           </v-list-item-avatar>
         </v-list-item>
 
@@ -24,6 +25,7 @@
             v-on="on"
             class="px-3"
             link
+            color="primary"
             :to="{ name: 'home' }"
             style="-webkit-app-region: no-drag"
           >
@@ -45,6 +47,7 @@
             v-on="on"
             class="px-3"
             link
+            color="primary"
             :to="{ name: 'google-drive' }"
             style="-webkit-app-region: no-drag"
           >
@@ -60,12 +63,13 @@
       </v-tooltip>
 
       <!-- Lan -->
-      <v-tooltip top v-if="!isMas">
+      <v-tooltip top v-if="!isMasOrLinux">
         <template v-slot:activator="{ on }">
           <v-list-item
             v-on="on"
             class="px-3"
             link
+            color="primary"
             :to="{ name: 'share' }"
             style="-webkit-app-region: no-drag"
           >
@@ -90,6 +94,7 @@
             link
             :to="{ name: 'account' }"
             style="-webkit-app-region: no-drag"
+            color="primary"
           >
             <v-list-item-icon>
               <v-icon>mdi-account-circle</v-icon>
@@ -157,7 +162,7 @@
 <script lang="ts">
 // @ is an alias to /src
 import { ExtendedVue } from '@/utils/basevue';
-import { isMacOS, isMas } from '@/utils/environment';
+import { always, whenLinux, whenMacOS, whenMas } from '@/utils/environment';
 import { Component } from 'vue-property-decorator';
 import { Getter } from 'vuex-class';
 
@@ -167,17 +172,19 @@ export default class NavDrawer extends ExtendedVue {
   public loading!: boolean;
   @Getter('user', { namespace: 'configuration' })
   public user!: unknown;
-  public drawer = true;
 
   @Getter('unreadMessagesTotal', { namespace: 'network' })
   public unreadMessagesTotal!: number;
 
   public get isMacOS(): boolean {
-    return isMacOS;
+    return whenMacOS(always(true), always(false));
   }
 
-  public get isMas(): boolean {
-    return isMas;
+  public get isMasOrLinux(): boolean {
+    return (
+      whenMas(always(true), always(false)) ||
+      whenLinux(always(true), always(false))
+    );
   }
 }
 </script>

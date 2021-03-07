@@ -1,8 +1,15 @@
 <template>
   <div class="fill-height">
-    <!-- Application bar -->
-    <AppBar :translations="$translations" :time="dateTime" :count="clipCount" />
-    <v-container fluid pa-0 ma-0 class="container" ref="scroll-target">
+    <div
+      v-if="!isWindowsOrLinux && clipCount !== undefined"
+      style="display: flex; align-items: baseline; user-select: none; position: fixed; top: 0; right: 15px; z-index: 1"
+    >
+      <div class="subtitle-2 pa-1 font-weight-bold">{{ clipCount }}</div>
+      <div class="caption pa-1 font-weight-regular">
+        {{ $translations.items }}
+      </div>
+    </div>
+    <v-container ref="scroll-target" fluid pa-0 ma-0 class="container">
       <Grid
         :clipsObserver="clipsObserver"
         :labels="labels"
@@ -82,7 +89,11 @@
     </v-dialog>
 
     <!-- Dialog -->
-    <v-snackbar v-model="snackbar" timeout="1000">
+    <v-snackbar
+      v-model="snackbar"
+      :color="$vuetify.theme.dark ? 'surface' : 'primary'"
+      timeout="1000"
+    >
       {{ snackbarText }}
     </v-snackbar>
 
@@ -135,6 +146,7 @@ import {
 } from 'rxjs/operators';
 import { Data } from '@/electron/services/clipboard';
 import { copySilently } from '@/store/clips/actions';
+import { always, whenLinux, whenWindows } from '@/utils/environment';
 
 export type ClipFormat =
   | 'all'
@@ -259,7 +271,7 @@ export default class Home extends ExtendedVue {
   public clipboardMode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
   public clipsFormatSubject = new Subject<ClipsFormatMap>();
-  public dateTime: number = Date.now();
+  public dateTime: number = Date.now(); // Not used anymore
 
   public snackbar = false;
   public snackbarText = '';
@@ -268,6 +280,13 @@ export default class Home extends ExtendedVue {
   public editingOpen = false;
   public editingClipIndex?: number;
   public editingText = '';
+
+  public get isWindowsOrLinux(): boolean {
+    return (
+      whenWindows(always(true), always(false)) ||
+      whenLinux(always(true), always(false))
+    );
+  }
 
   public get clipCount(): number {
     return this.clipboardMode === 'select'
@@ -532,8 +551,9 @@ export default class Home extends ExtendedVue {
 
 <style scoped lang="scss">
 .container {
-  height: calc(100vh - 98px);
+  height: calc(100vh - 78px);
   overflow: auto;
+  z-index: -1;
 }
 
 .fade-enter-active,

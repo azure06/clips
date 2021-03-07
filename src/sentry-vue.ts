@@ -6,6 +6,7 @@ import * as storeService from '@/electron/services/electron-store';
 export default {
   ...Sentry,
   init: (value: Sentry.ElectronOptions): void => {
+    if (value.dsn === undefined) return;
     Sentry.init(value);
     Sentry.configureScope(function(scope) {
       const user = storeService.getAppConf()?.user;

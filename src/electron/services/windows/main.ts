@@ -4,7 +4,13 @@ import { app, BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
 import { AppConfState } from '@/store/types';
-import { isMacOS, isMas } from '@/utils/environment';
+import {
+  always,
+  empty,
+  whenAutoUpdateAvailable,
+  whenMacOS,
+} from '@/utils/environment';
+import { Subscription } from 'rxjs';
 
 declare const __static: string;
 
@@ -43,7 +49,7 @@ const flags = {
     //  (process.env.ELECTRON_NODE_INTEGRATION as unknown) as boolean,
   },
   frame: false,
-  ...(isMacOS ? { titleBarStyle: 'hidden' as const } : {}),
+  ...whenMacOS(always({ titleBarStyle: 'hidden' as const }), always({})),
   show: false,
   resizable: true,
   skipTaskbar: true,
@@ -63,7 +69,10 @@ function create(): BrowserWindow {
     // Load the index.html when not in development
     win.loadURL('app://./index.html');
     // Start auto-updater
-    if (!isMas) autoUpdaterObservable.subscribe();
+    whenAutoUpdateAvailable<Subscription | void>(
+      () => autoUpdaterObservable.subscribe(),
+      empty
+    );
   }
   win.on('close', () => {
     app.quit();

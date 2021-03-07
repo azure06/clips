@@ -1,7 +1,7 @@
 import { BrowserWindow, screen, globalShortcut } from 'electron';
 import { HandlerResponse } from '../../utils/invocation-handler';
 import { AppConfState } from '@/store/types';
-import { isMacOS } from '@/utils/environment';
+import { always, whenMacOS } from '@/utils/environment';
 
 export type ShortcutFuzzy = MacOSFuzzy | WindowsOSFuzzy;
 export type Shortcut = MacOS | WindowsOS;
@@ -12,9 +12,10 @@ type MacOSFuzzy = ['⌘', 'shift', string];
 type WindowsOS = ['Ctrl', 'Alt', string];
 type WindowsOSFuzzy = ['ctrl', 'alt', string];
 
-const defaultConfig: MacOS | WindowsOS = isMacOS
-  ? ['Command', 'Shift', 'V']
-  : ['Ctrl', 'Alt', 'V'];
+const defaultConfig: MacOS | WindowsOS = whenMacOS<Shortcut>(
+  always(['Command', 'Shift', 'V']),
+  always(['Ctrl', 'Alt', 'V'])
+);
 
 let currentConfig: Shortcut | undefined;
 

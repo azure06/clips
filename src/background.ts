@@ -3,10 +3,17 @@
 import { onReady, onActivate } from './electron';
 import { app, protocol, globalShortcut } from 'electron';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
-import { isMacOS, isMas, isDevelopment } from './utils/environment';
+import {
+  always,
+  empty,
+  whenDevelopment,
+  whenMacOS,
+  whenMas,
+} from './utils/environment';
 
 // The return value of this method indicates whether or not this instance of your application successfully obtained the lock
-const appLocked = isMas || app.requestSingleInstanceLock();
+const appLocked =
+  whenMas(always(true), always(false)) || app.requestSingleInstanceLock();
 
 !appLocked
   ? app.quit()
@@ -20,9 +27,7 @@ const appLocked = isMas || app.requestSingleInstanceLock();
       app.on('window-all-closed', () => {
         // On macOS it is common for applications and their menu bar
         // to stay active until the user quits explicitly with Cmd + Q
-        if (!isMacOS) {
-          app.quit();
-        }
+        whenMacOS(empty, () => app.quit());
       });
 
       // On macOS it's common to re-create a window in the app when the
@@ -33,20 +38,17 @@ const appLocked = isMas || app.requestSingleInstanceLock();
       // initialization and is ready to create browser windows.
       // Some APIs can only be used after this event occurs.
       app.on('ready', async () => {
-        if (isDevelopment && !process.env.IS_TEST) {
-          // Install Vue Devtools
-          try {
-            await installExtension(VUEJS_DEVTOOLS);
-            // Make it work with vue3 ???
-            await installExtension({
-              id: 'ljjemllljcmogpfapbkkighbhhppjdbg',
-              electron: '>=1.2.1',
-            });
-          } catch (e) {
-            console.error('Vue Devtools failed to install:', e.toString());
-          }
-        }
-
+        whenDevelopment(async () => {
+          if (process.env.IS_TEST) return;
+          await installExtension(VUEJS_DEVTOOLS);
+          // Make it work with vue3 ???
+          await installExtension({
+            id: 'ljjemllljcmogpfapbkkighbhhppjdbg',
+            electron: '>=1.2.1',
+          });
+        }, always(Promise.resolve())).catch((e) =>
+          console.error('Vue Devtools failed to install:', e.toString())
+        );
         onReady();
       });
 
@@ -56,7 +58,7 @@ const appLocked = isMas || app.requestSingleInstanceLock();
       });
 
       // Exit cleanly on request from parent process in development mode.
-      if (isDevelopment) {
+      whenDevelopment(() => {
         if (process.platform === 'win32') {
           process.on('message', (data) => {
             if (data === 'graceful-exit') {
@@ -68,5 +70,5 @@ const appLocked = isMas || app.requestSingleInstanceLock();
             app.quit();
           });
         }
-      }
+      }, empty);
     })();

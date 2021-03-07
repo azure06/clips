@@ -1,7 +1,12 @@
 <template>
   <div>
     <!-- Toolbar -->
-    <v-toolbar style="-webkit-app-region: drag" color="surfaceVariant" dense>
+    <v-toolbar
+      style="-webkit-app-region: drag"
+      color="surfaceVariant"
+      dense
+      flat
+    >
       <v-btn style="-webkit-app-region: no-drag" icon @click="$emit('close')">
         <v-icon>mdi-close</v-icon>
       </v-btn>
@@ -379,15 +384,17 @@ export default class Room extends Vue {
           return 0;
       }
     })();
-    return 57 + offset;
+    return 56 + offset;
   }
 
   public get headerHeight(): number {
-    return 49;
+    return 48;
   }
 
   public get containerCssHeight(): string {
-    return `height: calc(100vh - ${this.toolbarHeight + this.headerHeight}px`;
+    return `height: calc(100vh - ${this.toolbarHeight +
+      this.headerHeight +
+      30}px`;
   }
 
   public get containerStyle(): string {

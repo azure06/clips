@@ -13,7 +13,7 @@
       </div>
       <v-spacer></v-spacer>
       <div
-        v-if="isWindows"
+        v-if="isWindowsOrLinux"
         :class="`window-controls ${$vuetify.theme.dark ? 'dark' : 'light'}`"
       >
         <div class="button min-button" @click="minimize">
@@ -98,7 +98,7 @@
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import moment from 'moment';
 import { remote } from 'electron';
-import { isWindows } from '@/utils/environment';
+import { always, whenLinux, whenWindows } from '@/utils/environment';
 
 @Component
 export default class AppBarSmall extends Vue {
@@ -115,20 +115,26 @@ export default class AppBarSmall extends Vue {
     return remote;
   }
 
-  public get isWindows(): boolean {
-    return isWindows;
+  public get isWindowsOrLinux(): boolean {
+    return (
+      whenWindows(always(true), always(false)) ||
+      whenLinux(always(true), always(false))
+    );
   }
 
   minimize(): void {
     remote.getCurrentWindow().minimize();
+    this.$nextTick(() => this.$forceUpdate());
   }
 
   unmaximize(): void {
     remote.getCurrentWindow().unmaximize();
+    this.$nextTick(() => this.$forceUpdate());
   }
 
   maximize(): void {
     remote.getCurrentWindow().maximize();
+    this.$nextTick(() => this.$forceUpdate());
   }
 
   close(): void {

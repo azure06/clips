@@ -32,12 +32,6 @@ $ cd clips
 $ touch .env
 ```
 
-add a valid sentry DSN in `.env` file (needs some fixes... 🔥).
-
-```env
-VUE_APP_SENTRY_DSN=Any valid sentry dsn in .env file
-```
-
 and finally
 
 ```bash

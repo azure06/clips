@@ -52,7 +52,7 @@ import { Subscription } from 'rxjs';
 import { sendFile } from './services/socket.io/client';
 import { MessageDoc } from '@/rxdb/message/model';
 import * as inAppPurchaseService from './services/in-app-purachase';
-import { isMas } from '@/utils/environment';
+import { always, whenShareAvailable } from '@/utils/environment';
 import { editorWindow } from './services/windows/editor';
 
 Sentry.init(environment.sentry);
@@ -320,7 +320,8 @@ export function onReady(): void {
   subscribeToClipboard(win);
   subscribeToGoogle(win);
   subscribeToInAppPurchase(win);
-  if (!isMas) subscribeToSocketIo(win);
+
+  whenShareAvailable(() => subscribeToSocketIo(win), always(Promise.resolve()));
 }
 
 export function onActivate(): void {
