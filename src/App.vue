@@ -82,7 +82,6 @@ import {
 } from './store/types';
 import { from, interval, of } from 'rxjs';
 import { imagePathToDataURI, listGoogleDriveFiles } from './utils/invocation';
-import { isSuccess, isSuccessHttp } from './utils/invocation-handler';
 import { isAuthenticated } from './utils/common';
 import * as subscriptions from './utils/subscription';
 import { Framework } from 'vuetify';
@@ -94,6 +93,7 @@ import {
 import { Format } from './rxdb/clips/model';
 import { IDevice } from './electron/services/socket.io/types';
 import { always, whenShareAvailable } from './utils/environment';
+import { isSuccess, isSuccessHttp } from './utils/handler';
 
 @Component<App>({
   components: { NavDrawer, NavDrawerConfig, AppBar },
@@ -301,15 +301,21 @@ export default class App extends ExtendedVue {
         .pipe(
           tap(async (clip) => {
             const { backup, backupThreshold } = this.drive as Drive;
-            const result = await imagePathToDataURI(clip.dataURI);
-            if (backup && isSuccess(result))
-              this.uploadToDrive({
-                clip: {
-                  ...clip,
-                  dataURI: clip.dataURI ? result.data : clip.dataURI,
-                } as Clip,
-                threshold: backupThreshold,
-              });
+            if (backup) {
+              setTimeout(async () => {
+                const result = await imagePathToDataURI(clip.dataURI);
+                this.uploadToDrive({
+                  clip: {
+                    ...clip,
+                    dataURI:
+                      clip.dataURI && isSuccess(result)
+                        ? result.data
+                        : clip.dataURI,
+                  } as Clip,
+                  threshold: backupThreshold,
+                });
+              }, 0);
+            }
           })
         ),
       (clip) => this.addClip(clip)

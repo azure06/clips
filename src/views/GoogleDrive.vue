@@ -100,7 +100,24 @@
                       <span>{{ $translations.download }}</span>
                     </v-tooltip>
                   </v-list-item-action>
+                  <v-list-item-action>
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on }">
+                        <v-btn
+                          v-on="on"
+                          icon
+                          @click="removeFile(change.fileId)"
+                        >
+                          <v-icon color="grey lighten-1"
+                            >mdi-delete-outline</v-icon
+                          >
+                        </v-btn>
+                      </template>
+                      <span>{{ $translations.remove }}</span>
+                    </v-tooltip>
+                  </v-list-item-action>
                 </v-list-item>
+
                 <v-divider inset></v-divider>
               </v-list>
             </v-expansion-panel-content>
@@ -176,7 +193,7 @@
     <v-dialog v-model="fetching" hide-overlay persistent width="300">
       <v-card color="blue darken-2" dark>
         <v-card-text>
-          Retrieving data...
+          Loading...
           <v-progress-linear
             indeterminate
             color="white"
@@ -199,9 +216,10 @@ import * as storeService from '@/electron/services/electron-store';
 import {
   changePageToken,
   listGoogleDriveFiles,
+  removeFile,
   retrieveFileFromDrive,
 } from '@/utils/invocation';
-import { HttpFailure, isSuccessHttp } from '@/utils/invocation-handler';
+import { HttpFailure, isSuccessHttp } from '@/utils/handler';
 
 @Component({ components: {} })
 export default class GoogleDrive extends ExtendedVue {
@@ -257,6 +275,18 @@ export default class GoogleDrive extends ExtendedVue {
           : action === 'sync'
           ? (Promise.all(response.data.map(this.addClip)) as unknown)
           : this.createBackup(response.data)
+      )
+      .finally(() => (this.fetching = false));
+  }
+
+  public async removeFile(fileId: string): Promise<void> {
+    // FIXME move to action?
+    this.fetching = true;
+    removeFile(fileId)
+      .then((response) =>
+        !isSuccessHttp(response)
+          ? this.errorHandler(response)
+          : this.retrieveData()
       )
       .finally(() => (this.fetching = false));
   }

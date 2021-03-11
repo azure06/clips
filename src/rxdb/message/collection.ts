@@ -84,7 +84,7 @@ const messageCollectionsMethods: MessageCollectionMethods = {
   },
 };
 
-export const collection = {
+export const message = {
   name: 'message',
   schema,
   methods: messageDocMethods,

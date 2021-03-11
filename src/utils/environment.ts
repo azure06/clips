@@ -8,6 +8,8 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const isMas = process.mas;
 
+const isRenderer = process && process.type === 'renderer';
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const empty = () => {};
 
@@ -41,6 +43,10 @@ export function whenAutoUpdateAvailable<T>(func: () => T, func2: () => T): T {
 
 export function whenShareAvailable<T>(func: () => T, func2: () => T): T {
   return whenAutoUpdateAvailable(func, func2);
+}
+
+export function whenRenderer<T>(func: () => T, func2: () => T): T {
+  return isRenderer ? func() : func2();
 }
 
 /** Editor View Helpers */

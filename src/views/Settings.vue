@@ -66,11 +66,11 @@
         /></v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" text @click="dialogOTP = false">
+          <v-btn color="primary darken-1" text @click="dialogOTP = false">
             Close
           </v-btn>
           <v-btn
-            color="green darken-1"
+            color="primary darken-1"
             :disabled="activateOTP"
             text
             @click="activateOTP = true"
@@ -103,8 +103,8 @@ import { activatePremium, createActivationCode } from '@/firebase';
 import { Product } from 'electron';
 import { getProducts } from '@/utils/invocation';
 import { InAppStatus } from '@/store/types';
-import { isSuccess } from '@/utils/invocation-handler';
 import { always, whenMacOS } from '@/utils/environment';
+import { HandlerResponse, isSuccess } from '@/utils/handler';
 
 @Component
 export default class Settings extends ExtendedVue {
@@ -128,8 +128,10 @@ export default class Settings extends ExtendedVue {
   public setStartup!: (payload: boolean) => Promise<void>;
   @Action('setSkipTaskbar', { namespace: 'configuration' })
   public setSkipTaskbar!: (payload: boolean) => Promise<void>;
+  @Action('relaunchApp', { namespace: 'configuration' })
+  public relaunchApp!: () => Promise<HandlerResponse<void>>;
   @Action('restoreFactoryDefault', { namespace: 'clips' })
-  public restoreFactoryDefault!: () => Promise<boolean>;
+  public restoreFactoryDefault!: () => Promise<HandlerResponse<void>>;
   public dialog = false;
   public dialog_ = false;
   public dialogOTP = false;
@@ -203,14 +205,12 @@ export default class Settings extends ExtendedVue {
     this.dialog_ = true;
     const response = confirm(this.$translations.youWantToContinue);
     response
-      ? await this.restoreFactoryDefault()
-          .catch((_) => _)
-          .then(() => {
-            if (action === 'factory-default') {
-              this.restoreSettings();
-              location.reload();
-            }
-          })
+      ? await this.restoreFactoryDefault().then(async (res) => {
+          if (isSuccess(res) && action === 'factory-default') {
+            await this.restoreSettings();
+            await this.relaunchApp();
+          }
+        })
       : await Promise.resolve();
     this.dialog_ = false;
   }

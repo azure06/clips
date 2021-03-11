@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import * as clipboardService from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
@@ -10,7 +10,6 @@ import Sentry from './services/sentry-electron';
 import * as storeService from './services/electron-store';
 import {
   onCanMakePayments,
-  eventHandler,
   onGetReceiptUrl,
   onCopyToClipboard,
   onCreateBackup,
@@ -23,12 +22,10 @@ import {
   onSetShortcut,
   onSetStartup,
   onToDataURI,
-  runCatching,
   onGetProducts,
   onPurchaseProduct,
   onRestoreCompletedTransactions,
   onFinishTransactionByDate,
-  runCatchingHttpError,
   onSignIn,
   onSignOut,
   onChangePageToken,
@@ -38,6 +35,10 @@ import {
   onOpenEditor,
   onSetSkipTaskbar,
   onSetAlwaysOnTop,
+  onNodeDB,
+  onRelaunchApp,
+  eventHandler,
+  onRemoveFile,
 } from '../utils/invocation-handler';
 import { shortcutHandler } from './services/shortcuts';
 import { autoLauncherHandler } from './services/auto-launcher';
@@ -54,6 +55,13 @@ import { MessageDoc } from '@/rxdb/message/model';
 import * as inAppPurchaseService from './services/in-app-purachase';
 import { always, whenShareAvailable } from '@/utils/environment';
 import { editorWindow } from './services/windows/editor';
+import * as handler from '@/utils/handler';
+import * as methods from '@/helpers/methods';
+
+const runCatching = handler.runCatching(Sentry.captureException);
+const runCatchingHttpError = handler.runCatchingHttpError(
+  Sentry.captureException
+);
 
 Sentry.init(environment.sentry);
 
@@ -139,17 +147,20 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
       data: await driveService.retrieveFile(fileId),
     }))
   );
+  onRemoveFile(
+    runCatchingHttpError(async (fileId) =>
+      driveService
+        .removeFile(fileId)
+        .then((result) => ({ status: result.status, data: result.data }))
+    )
+  );
 
   onUploadToDrive(runCatchingHttpError((clips) => driveService.addFile(clips)));
 }
 
 function subscribeToClipboard(mainWindow: BrowserWindow) {
   clipboardService.clipboardAsObservable
-    .pipe(
-      tap((clip) => {
-        mainWindow.webContents.send('clipboard-change', clip);
-      })
-    )
+    .pipe(tap((clip) => mainWindow.webContents.send('clipboard-change', clip)))
     .subscribe();
 
   onCopyToClipboard(
@@ -313,6 +324,13 @@ export function onReady(): void {
   onOpenEditor(
     runCatching((clipId) => {
       editorWindow.create(clipId);
+    })
+  );
+  onNodeDB((methodNm, args) => methods[methodNm](...args));
+  onRelaunchApp(
+    runCatching(() => {
+      app.relaunch();
+      app.exit();
     })
   );
 

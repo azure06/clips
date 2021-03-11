@@ -9,10 +9,100 @@
     flat
     outlined
   >
-    <v-toolbar-title
-      style="user-select: none;"
-      class="font-weight-black blue-grey--text text--darken-3 body-2"
-    >
+    <v-toolbar-title style="user-select: none;" class="font-weight-black">
+      <v-dialog v-model="showDialog" max-width="420">
+        <template v-slot:activator="{ on, attrs }">
+          <div
+            style="position: absolute; padding: 2px 4px; top: -4px; width: 90px;"
+          >
+            <div
+              :style="
+                `background:${
+                  rxdbAdapter === 'idb'
+                    ? 'rgba(0,135,145,1)'
+                    : 'rgba(0,105,215,1)'
+                }; height: 5px;`
+              "
+            ></div>
+            <div
+              style="font-size: 10px; width: 75px; text-align: center; margin-top: 0; -webkit-app-region: no-drag;"
+            >
+              <v-icon
+                v-bind="attrs"
+                v-on="on"
+                @click="showDialog = !showDialog"
+                size="12px"
+              >
+                mdi-help-circle
+              </v-icon>
+              {{ rxdbAdapter === 'idb' ? 'IndexedDB' : 'Leveldown' }}
+            </div>
+          </div>
+        </template>
+        <v-card>
+          <v-card-title class="subtitle-1 overline">
+            <v-icon class="mx-2">mdi-help-circle</v-icon>
+            Choose between adapters
+          </v-card-title>
+
+          <v-card-text>
+            Where do you want to store your data?
+
+            <v-radio-group
+              :value="rxdbAdapter"
+              @change="
+                (value) => {
+                  setAdvanced({ ...advanced, rxdbAdapter: value });
+                  loadClips({
+                    limit: 15,
+                    sort: '-updatedAt',
+                    filters: {},
+                  });
+                }
+              "
+            >
+              <v-radio value="leveldb">
+                <template slot="label">
+                  <div>
+                    <div class="font-weight-black subtitle-2">leveldown</div>
+                    <p
+                      style="margin-bottom: 0; line-height: 1; font-size: 11px;"
+                    >
+                      Store the data on the filesystem
+                      <strong>(Default)</strong>
+                    </p>
+                  </div>
+                </template>
+              </v-radio>
+              <v-radio value="idb">
+                <template slot="label">
+                  <div>
+                    <div class="font-weight-black subtitle-2">IndexedDB</div>
+                    <p
+                      style="margin-bottom: 0; line-height: 1; font-size: 11px;"
+                    >
+                      Default storage in a browser
+                    </p>
+                    <p
+                      style="font-size: 11px; line-height: 1.2; margin-bottom: 0;"
+                    >
+                      <strong>LIMITATION:</strong> the max message size is
+                      around 150MB
+                    </p>
+                  </div>
+                </template>
+              </v-radio>
+            </v-radio-group>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer />
+            <v-btn right depressed text @click="showDialog = false">
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <!-- <div
         class="d-flex align-center"
         :style="
@@ -111,12 +201,33 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component } from 'vue-property-decorator';
 import { remote } from 'electron';
 import { always, whenLinux, whenWindows } from '@/utils/environment';
+import { ExtendedVue } from '@/utils/basevue';
+import { adapterObserver } from '@/store/clips/actions';
+import { Action, Mutation } from 'vuex-class';
+import Advanced from './settings/Advanced.vue';
+import { Clip } from '@/store/types';
+import { ClipSearchConditions } from '@/rxdb/clips/model';
 
-@Component
-export default class AppBar extends Vue {
+@Component({
+  subscriptions() {
+    return {
+      rxdbAdapter: adapterObserver,
+    };
+  },
+})
+export default class AppBar extends ExtendedVue {
+  @Action('loadClips', { namespace: 'clips' })
+  public loadClips!: (
+    searchConditions: Partial<ClipSearchConditions>
+  ) => Promise<Clip[]>;
+  @Mutation('setAdvanced', { namespace: 'configuration' })
+  public setAdvanced!: (advanced: Advanced) => Promise<void>;
+
+  public showDialog = false;
+
   public get remote(): typeof remote {
     return remote;
   }
@@ -144,7 +255,7 @@ export default class AppBar extends Vue {
   }
 
   close(): void {
-    remote.getCurrentWindow().close();
+    remote.getCurrentWindow().hide();
   }
 }
 </script>

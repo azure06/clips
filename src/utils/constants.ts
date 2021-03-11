@@ -29,6 +29,7 @@ export const INVOCATION = {
   LIST_FILES: 'list-files',
   RETRIEVE_FILE: 'retrieve-file',
   UPLOAD_TO_DRIVE: 'upload-to-drive',
+  REMOVE_FILE: 'remove-file',
 
   //
   SET_SHORTCUT: 'set-shortcut',
@@ -38,4 +39,10 @@ export const INVOCATION = {
 
   // Editor
   OPEN_EDITOR: 'open-editor',
+
+  //
+  RELAUNCH_APP: 'relaunch-app',
+
+  //
+  NODE_DB: 'nodedb',
 };

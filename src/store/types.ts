@@ -73,6 +73,7 @@ export interface General {
 export interface Advanced {
   // Search Mode
   searchMode: 'accurate' | 'fuzzy' | 'advanced-fuzzy';
+  rxdbAdapter: 'auto' | 'idb' | 'leveldb';
   // Saving Formats
   formats: {
     plainText: boolean;

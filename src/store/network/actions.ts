@@ -7,7 +7,6 @@ import {
   map,
   mapTo,
   switchMap,
-  take,
   tap,
 } from 'rxjs/operators';
 import {
@@ -15,13 +14,13 @@ import {
   sendMessage,
 } from '@/electron/services/socket.io/client';
 import * as Sentry from '@sentry/electron';
-import { getCollection } from '@/rxdb';
 import { MessageDoc, stringifyContent } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
 import { toDictionary } from '@/utils/common';
 import { getMyDevice, handleIoServer, sendFile } from '@/utils/invocation';
-import { isSuccess } from '@/utils/invocation-handler';
+import { isSuccess } from '@/utils/handler';
+import { methods } from '../clips/actions';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };
 
@@ -93,125 +92,55 @@ const actions: ActionTree<NetworkState, RootState> = {
         })
     ),
   findUser: async (_, userId: string) =>
-    getCollection('user')
-      .pipe(
-        concatMap((collection) =>
-          from(collection.findUser(userId)).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of(undefined);
-            })
-          )
-        )
-      )
-      .pipe(take(1))
-      .toPromise(),
+    methods('findUser', userId).then((res) =>
+      isSuccess(res) ? res.data : undefined
+    ),
   upsertUser: async (
     { commit },
     user: Partial<Omit<UserDoc, 'device'>> & { device: IDevice }
   ) =>
-    getCollection('user')
+    from(methods('upsertUser', user))
+      .pipe(map((res) => (isSuccess(res) ? res.data : undefined)))
       .pipe(
-        concatMap((collection) =>
-          from(
-            (async () => {
-              const userCurrent = await collection.findUser(user.device.mac);
-              const { username, ...device } = user.device;
-              const userNew = await collection.upsertUser({
-                color: randomColor(),
-                permission: 'once',
-                username,
-                ...(userCurrent || {}),
-                ...(user || {}),
-                device, // Last as single source of truth
-              });
-              commit('addOrUpdateUser', userNew);
-              return userNew;
-            })()
-          ).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of(undefined);
-            })
-          )
-        )
+        tap((user) => {
+          if (user) commit('addOrUpdateUser', user);
+        })
       )
-      .pipe(take(1))
       .toPromise(),
   findRoomFromUserOrCreate: async (
     { state, commit },
     user: Pick<UserDoc, 'id' | 'username'>
   ) =>
-    getCollection('room')
+    from(methods('findRoomFromUserOrCreate', user))
       .pipe(
-        concatMap((collection) =>
-          from(
-            (async () => {
-              const [room] = await collection.findRoomsByUserIds([user.id]);
-              return (
-                room ||
-                collection.addRoom({
-                  roomName: user.username,
-                  userIds: [user.id],
-                })
-              );
-            })()
-          ).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of(undefined);
-            })
-          )
-        )
-      )
-      .pipe(
-        tap((room) => {
-          // Instead of merge just add(?)
-          if (room) commit('mergeRooms', [room]);
-        })
-      )
-      .pipe(
-        map((room) =>
+        map((res) =>
           // Once committed using 'mergeRooms', the room should contain the messages
-          room ? state.rooms.find((room_) => room_.id === room.id) : undefined
+          isSuccess(res)
+            ? (() => {
+                commit('mergeRooms', [res.data]);
+                return state.rooms.find((room_) => room_.id === res.data.id);
+              })()
+            : undefined
         )
       )
-      .pipe(take(1))
       .toPromise(),
   loadRooms: async ({ state, commit }) =>
-    getCollection('room')
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingRooms', true)))
-      .pipe(
-        concatMap((methods) =>
-          from(methods.findRooms()).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([]);
-            })
-          )
-        )
-      )
+      .pipe(concatMap(() => methods('findRooms')))
+      .pipe(map((res) => (isSuccess(res) ? res.data : [])))
       .pipe(tap((rooms) => commit('mergeRooms', rooms)))
       .pipe(map(() => state.rooms)) // At this point should contain message property
       .pipe(tap(() => commit('setLoadingRooms', false)))
-      .pipe(take(1))
       .toPromise(),
   loadMessages: async (
     { state, commit },
     data: { roomId: string; options?: { limit: number; skip: number } }
   ) =>
-    getCollection('message')
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingMessages', true)))
-      .pipe(
-        concatMap((collection) =>
-          from(collection.findMessages(data.roomId, data.options)).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([]);
-            })
-          )
-        )
-      )
+      .pipe(concatMap(() => methods('loadMessages', data)))
+      .pipe(map((res) => (isSuccess(res) ? res.data : [])))
       .pipe(
         tap((messages) =>
           commit(
@@ -224,21 +153,11 @@ const actions: ActionTree<NetworkState, RootState> = {
       )
       .pipe(map(() => toDictionary(state.rooms)[data.roomId].messages))
       .pipe(tap(() => commit('setLoadingMessages', false)))
-      .pipe(take(1))
       .toPromise(),
   findMessage: async (_, { roomId, messageId }) =>
-    getCollection('message')
-      .pipe(
-        concatMap((collection) =>
-          from(
-            collection.findMessage(roomId, messageId).catch((error) => {
-              Sentry.captureException(error);
-              return undefined;
-            })
-          )
-        )
-      )
-      .pipe(take(1))
+    range(1, 1)
+      .pipe(concatMap(() => methods('findMessage', roomId, messageId)))
+      .pipe(map((res) => (isSuccess(res) ? res.data : undefined)))
       .toPromise(),
   addOrUpdateMessage: async (
     { commit },
@@ -249,69 +168,30 @@ const actions: ActionTree<NetworkState, RootState> = {
       skipUpsert?: boolean;
     }
   ) =>
-    getCollection('message')
+    from(
+      args.skipUpsert
+        ? Promise.resolve({ status: 'success', data: args.message })
+        : methods('upsertMessage', args.message)
+    )
       .pipe(
-        concatMap((methods) =>
-          args.skipUpsert
-            ? Promise.resolve(args.message)
-            : from(methods.upsertMessage(args.message)).pipe(
-                catchError((error) => {
-                  Sentry.captureException(error);
-                  return of(undefined);
-                })
-              )
-        )
-      )
-      .pipe(
-        tap((message) => {
-          if (message) commit('addOrUpdateMessage', message);
+        tap((res) => {
+          if (res.status === 'success') commit('addOrUpdateMessage', res.data);
         })
       )
-      .pipe(take(1))
       .toPromise(),
   setMessagesToRead: async (
     { commit },
     { roomId, senderId }: { roomId: string; senderId: string }
   ) =>
-    getCollection('message')
+    from(methods('setMessageToRead', roomId, senderId))
       .pipe(
-        concatMap((collection) =>
-          from(
-            (async () => {
-              const messages = await collection.findMessagesByStatus(
-                roomId,
-                senderId,
-                'sent'
-              );
-              const upsert = async (
-                [head, ...tail]: MessageDoc[],
-                acc: MessageDoc[]
-              ): Promise<MessageDoc[]> =>
-                head
-                  ? upsert(tail, [
-                      ...acc,
-                      await collection.upsertMessage({
-                        ...head,
-                        status: 'read',
-                      }),
-                    ])
-                  : acc;
-              return upsert(messages, []);
-            })()
-          ).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([] as MessageDoc[]);
-            })
-          )
-        )
+        tap((res) => {
+          if (isSuccess(res))
+            res.data.forEach((message) =>
+              commit('addOrUpdateMessage', message)
+            );
+        })
       )
-      .pipe(
-        tap((messages) =>
-          messages.forEach((message) => commit('addOrUpdateMessage', message))
-        )
-      )
-      .pipe(take(1))
       .toPromise(),
   sendMessage: async (
     { commit },
@@ -322,45 +202,49 @@ const actions: ActionTree<NetworkState, RootState> = {
       sender?: IDevice;
       receiver: IDevice;
     }
-  ) =>
-    getCollection('message')
+  ) => {
+    const message = {
+      ...args.message,
+      type: 'text' as const,
+      senderId: args.sender?.mac || 'unknown',
+      status: 'pending' as const,
+    };
+    return from(methods('upsertMessage', message))
       .pipe(
-        concatMap((collection) =>
-          from(
-            collection
-              .upsertMessage({
-                ...args.message,
-                type: 'text',
-                senderId: args.sender?.mac || 'unknown',
-                status: 'pending',
-              })
-              .then(async (message) => {
-                commit('addOrUpdateMessage', message);
-                const sentResult = args.sender
-                  ? sendMessage(args.sender, args.receiver, message)
-                  : Promise.reject(new Error('Sender absent'));
-                return sentResult
-                  .then(() => ({ ...message, status: 'sent' as const }))
-                  .catch((error) => {
-                    Sentry.captureException(error);
-                    return {
-                      ...message,
-                      status: 'rejected' as const,
-                    };
-                  });
-              })
-              .then((message) =>
-                collection.upsertMessage(message).catch((error) => {
-                  Sentry.captureException(error);
-                  return message;
-                })
-              )
-          )
-        )
+        map((res) => {
+          if (isSuccess(res)) {
+            return res.data;
+          } else {
+            throw new Error('Something wen wrong');
+          }
+        })
       )
       .pipe(tap((message) => commit('addOrUpdateMessage', message)))
-      .pipe(take(1))
-      .toPromise(),
+      .pipe(
+        concatMap((message) =>
+          args.sender
+            ? sendMessage(args.sender, args.receiver, message)
+            : Promise.reject(new Error('Sender absent'))
+        )
+      )
+      .pipe(map((message) => ({ ...message, status: 'sent' as const })))
+      .pipe(
+        catchError((error) => {
+          Sentry.captureException(error);
+          return of({
+            ...message,
+            status: 'rejected' as const,
+          });
+        })
+      )
+      .pipe(concatMap((message) => methods('upsertMessage', message)))
+      .pipe(
+        tap((res) =>
+          isSuccess(res) ? commit('addOrUpdateMessage', res.data) : undefined
+        )
+      )
+      .toPromise();
+  },
   sendFile: async (
     { commit },
     args: {
@@ -373,43 +257,43 @@ const actions: ActionTree<NetworkState, RootState> = {
       receiver: IDevice;
     }
   ) =>
-    getCollection('message')
+    from(
+      methods('upsertMessage', {
+        roomId: args.message.roomId,
+        senderId: args.sender?.mac || 'unknown',
+        type: 'file',
+        content: stringifyContent({
+          path: args.message.path,
+          progress: {
+            eta: 0,
+            length: 0,
+            percentage: 0,
+            remaining: 0,
+            runtime: 0,
+            speed: 0,
+            transferred: 0,
+          },
+        }),
+        ext: ((arg: RegExpExecArray | null) => (arg ? arg[0] : undefined))(
+          /(?:\.([^.]+))?$/.exec(args.message.path)
+        ),
+        status: 'pending',
+      })
+    )
       .pipe(
-        concatMap((collection) =>
-          from(
-            collection
-              .upsertMessage({
-                roomId: args.message.roomId,
-                senderId: args.sender?.mac || 'unknown',
-                type: 'file',
-                content: stringifyContent({
-                  path: args.message.path,
-                  progress: {
-                    eta: 0,
-                    length: 0,
-                    percentage: 0,
-                    remaining: 0,
-                    runtime: 0,
-                    speed: 0,
-                    transferred: 0,
-                  },
-                }),
-                ext: ((arg: RegExpExecArray | null) =>
-                  arg ? arg[0] : undefined)(
-                  /(?:\.([^.]+))?$/.exec(args.message.path)
-                ),
-                status: 'pending',
-              })
-              .then(async (message) => {
-                commit('addOrUpdateMessage', message);
-                return args.sender
-                  ? sendFile(args.sender, args.receiver, message)
-                  : Promise.reject(new Error('Sender absent'));
-              })
-          )
-        )
+        concatMap((res) => {
+          return args.sender && isSuccess(res)
+            ? (() => {
+                commit('addOrUpdateMessage', res.data);
+                return sendFile(args.sender, args.receiver, res.data);
+              })()
+            : Promise.reject(
+                !args.sender
+                  ? 'Sender absent'
+                  : 'Something went wrong during sendFile'
+              );
+        })
       )
-      .pipe(take(1))
       .toPromise(),
 };
 

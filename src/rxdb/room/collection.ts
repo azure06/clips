@@ -36,7 +36,7 @@ const roomCollectionsMethods: RoomCollectionMethods = {
   },
 };
 
-export const collection = {
+export const room = {
   name: 'room',
   schema,
   methods: roomDocMethods,

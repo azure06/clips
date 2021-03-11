@@ -1,7 +1,7 @@
 import { BrowserWindow, screen, globalShortcut } from 'electron';
-import { HandlerResponse } from '../../utils/invocation-handler';
 import { AppConfState } from '@/store/types';
 import { always, whenMacOS } from '@/utils/environment';
+import { HandlerResponse } from '@/utils/handler';
 
 export type ShortcutFuzzy = MacOSFuzzy | WindowsOSFuzzy;
 export type Shortcut = MacOS | WindowsOS;

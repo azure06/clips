@@ -1,19 +1,16 @@
 import { ActionTree } from 'vuex';
 import { ClipsState, Clip, RootState, AppConfState } from '@/store/types';
-import { createClipsRxDB, removeClipsRxDB, getCollection } from '@/rxdb';
-import { from, EMPTY, of, range, BehaviorSubject } from 'rxjs';
+import { from, EMPTY, of, range, BehaviorSubject, Subject, merge } from 'rxjs';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import {
   concatMap,
   tap,
   take,
-  catchError,
   expand,
   mapTo,
   withLatestFrom,
   map,
 } from 'rxjs/operators';
-import * as Sentry from '@sentry/electron';
 import { remote } from 'electron';
 import * as storeService from '@/electron/services/electron-store';
 import {
@@ -25,213 +22,179 @@ import {
   retrieveFileFromDrive,
   uploadToDrive,
   openEditor,
+  switchdb,
 } from '@/utils/invocation';
-import { isSuccess, isSuccessHttp } from '@/utils/invocation-handler';
 import { isAuthenticated } from '@/utils/common';
 import { Data } from '@/electron/services/clipboard';
+import { isSuccess, isSuccessHttp } from '@/utils/handler';
 
 export const copySilently = new BehaviorSubject(false);
-const collection = () => getCollection('clips');
+export const rxAdapter = new Subject<'idb' | 'leveldb'>();
+
+storeService.watchRxDBAdapter((value) =>
+  value !== 'auto' ? rxAdapter.next(value) : null
+);
+
+export const adapterObserver = merge(
+  from(
+    (async () => {
+      // {"filename":"//./src/helpers/methods.ts?","function":"Module.eval [as findClips]","type":"ReferenceError","value":"Cannot access 'findClips' before initialization"}
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      const res = await switchdb(of('idb'))('findClips', {
+        limit: 1,
+      });
+      return isSuccess(res) ? res.data.length === 0 : false;
+    })()
+  ).pipe(
+    map((isEmpty) => {
+      const { rxdbAdapter } = storeService.getAppConf()?.advanced ?? {
+        rxdbAdapter: 'auto',
+      };
+      return rxdbAdapter === 'auto'
+        ? isEmpty
+          ? ('leveldb' as const)
+          : ('idb' as const)
+        : rxdbAdapter;
+    })
+  ),
+  rxAdapter.asObservable()
+);
+
+export const methods = switchdb(adapterObserver.pipe(take(1)));
 
 const actions: ActionTree<ClipsState, RootState> = {
   findClips: async (
     { commit },
     searchConditions: Partial<ClipSearchConditions>
   ) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
-      .pipe(
-        concatMap((methods) =>
-          from(methods.findClips(searchConditions)).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([]);
-            })
-          )
-        )
-      )
+      .pipe(concatMap(() => methods('findClips', searchConditions)))
+      .pipe(map((result) => (isSuccess(result) ? result.data : [])))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   loadClips: async (
     { commit },
     searchConditions: Partial<ClipSearchConditions>
   ) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
-      .pipe(
-        concatMap((methods) =>
-          from(methods.findClips(searchConditions)).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([]);
-            })
-          )
-        )
-      )
+      .pipe(concatMap(() => methods('findClips', searchConditions)))
+      .pipe(map((result) => (isSuccess(result) ? result.data : [])))
       .pipe(tap((clips) => commit('loadClips', { clips })))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   loadNext: async (
     { commit, state },
     searchConditions: Partial<ClipSearchConditions>
   ) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
       .pipe(
-        concatMap((methods) =>
-          from(
-            methods.findClips({ skip: state.clips.length, ...searchConditions })
-          ).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([]);
-            })
-          )
+        concatMap(() =>
+          methods('findClips', {
+            skip: state.clips.length,
+            ...searchConditions,
+          })
         )
       )
+      .pipe(map((result) => (isSuccess(result) ? result.data : [])))
       .pipe(tap((clips) => commit('addClips', { clips })))
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .pipe(take(1))
       .toPromise(),
   addClip: async ({ commit }, clip: Clip) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
-      .pipe(
-        concatMap((methods) =>
-          from(
-            methods
-              .findClips({
-                filters: clip.dataURI
-                  ? {
-                      plainText: clip.plainText || undefined,
-                      dataURI: clip.dataURI || undefined,
-                    }
-                  : {
-                      plainText: clip.plainText || undefined,
-                    },
-              })
-              .then(async ([targetClip]) => {
-                clip = !targetClip
-                  ? await methods.insertClip(clip)
-                  : await methods.modifyClip(targetClip);
-                return { action: targetClip ? 'modifyClip' : 'addClip', clip };
-              })
-          ).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return EMPTY;
-            })
-          )
-        )
-      )
+      .pipe(concatMap(() => methods('addClip', clip)))
       .pipe(withLatestFrom(copySilently.asObservable()))
       .pipe(
-        map(([props, silently]) => ({
-          ...props,
-          silently,
-        }))
-      )
-      .pipe(
-        tap(({ action, clip, silently }) => {
+        tap(([response, silently]) => {
           copySilently.next(false);
-          commit(action, { clip, options: { silently } });
+          if (isSuccess(response))
+            commit(response.data.action, {
+              clip: response.data.clip,
+              options: { silently },
+            });
         })
       )
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   modifyClip: async (
     { commit },
     { clip, options }: { clip: Clip; options?: { silently?: boolean } }
   ) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
+      .pipe(concatMap(() => methods('modifyClip', clip)))
       .pipe(
-        concatMap((collection) =>
-          from(collection.modifyClip(clip)).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return EMPTY;
-            })
-          )
-        )
-      )
-      .pipe(
-        tap((clip) => (clip ? commit('modifyClip', { clip, options }) : null))
+        tap((response) => {
+          if (isSuccess(response))
+            commit('modifyClip', { clip: response.data, options });
+        })
       )
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
-  editImage: async ({ commit }, clip: Clip) => openEditor(clip.id),
+  editImage: async (_, clip: Clip) => openEditor(clip.id),
   removeClips: async ({ commit }, ids: string[]) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
+      .pipe(concatMap(() => methods('removeClips', ids)))
       .pipe(
-        concatMap((methods) =>
-          from(methods.removeClips(ids)).pipe(
-            concatMap(async (clips) => {
-              await Promise.all(
-                clips
+        tap((response) => {
+          if (isSuccess(response))
+            commit('removeClips', { clips: response.data });
+        })
+      )
+      .pipe(
+        concatMap((res) =>
+          isSuccess(res)
+            ? Promise.all(
+                res.data
                   .filter((clip) => clip.type === 'image')
-                  .map((clip) =>
-                    from(removeImage(clip.dataURI))
-                      .pipe(take(1))
-                      .toPromise()
-                  )
-              );
-              return clips;
-            })
-          )
+                  .map((clip) => removeImage(clip.dataURI))
+              )
+            : Promise.resolve()
         )
       )
-      .pipe(tap((clips) => commit('removeClips', { clips })))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   /** Remove clipboard item before X date excluding starred */
-  removeClipsLte: async ({ commit, dispatch }, updatedAt: number) =>
-    collection()
+  removeClipsLte: async ({ commit }, updatedAt: number) =>
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
+      .pipe(concatMap(() => methods('removeClipsLte', updatedAt)))
       .pipe(
-        concatMap((methods) =>
-          from(
-            methods.findClipsLte(updatedAt).then((clips) =>
-              dispatch(
-                'removeClips',
-                clips.map((clip) => clip.id)
+        tap((response) => {
+          if (isSuccess(response))
+            commit('removeClips', { clips: response.data });
+        })
+      )
+      .pipe(
+        concatMap((res) =>
+          isSuccess(res)
+            ? Promise.all(
+                res.data
+                  .filter((clip) => clip.type === 'image')
+                  .map((clip) => removeImage(clip.dataURI))
               )
-            )
-          ).pipe(
-            catchError((error) => {
-              Sentry.captureException(error);
-              return of([]);
-            })
-          )
+            : Promise.resolve()
         )
       )
-      .pipe(tap((clips) => commit('removeClips', { clips })))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   restoreFactoryDefault: async ({ commit }) =>
     range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
-      .pipe(concatMap(() => removeClipsRxDB()))
-      .pipe(
-        tap((result) => {
-          if (result.ok) commit('loadClips', { clips: [] });
-        })
-      )
-      .pipe(concatMap(() => createClipsRxDB()))
       .pipe(
         concatMap(() =>
-          from(removeImageDirectory())
-            .pipe(take(1))
-            .toPromise()
+          Promise.all([
+            methods('restoreFactoryDefault'),
+            removeImageDirectory(),
+          ])
         )
       )
+      .pipe(map(([head]) => head))
       .pipe(tap(() => commit('setLoadingStatus', false)))
       .toPromise(),
   copyToClipboard: async (_, data: Data) => copyToClipboard(data),
@@ -325,22 +288,16 @@ const actions: ActionTree<ClipsState, RootState> = {
     return clips;
   },
   fromDump: async ({ commit }) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setProcessingStatus', true)))
       .pipe(tap(() => commit('setLoadingStatus', true)))
-      .pipe(concatMap((methods) => methods.dumpCollection()))
-      .pipe(
-        catchError((error) => {
-          Sentry.captureException(error);
-          return of([]);
-        })
-      )
+      .pipe(concatMap(() => methods('dumpCollection')))
+      .pipe(map((result) => (isSuccess(result) ? result.data : [])))
       .pipe(tap(() => commit('setProcessingStatus', false)))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   createBackup: async ({ commit }, clips: Clip[]) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setProcessingStatus', true)))
       .pipe(tap(() => commit('setLoadingStatus', true)))
       .pipe(
@@ -359,10 +316,9 @@ const actions: ActionTree<ClipsState, RootState> = {
       )
       .pipe(tap(() => commit('setProcessingStatus', false)))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   restoreBackup: async ({ commit, dispatch }) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setProcessingStatus', true)))
       .pipe(tap(() => commit('setLoadingStatus', true)))
       .pipe(
@@ -386,14 +342,13 @@ const actions: ActionTree<ClipsState, RootState> = {
       )
       .pipe(tap(() => commit('setProcessingStatus', false)))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
   countClips: ({ commit }) =>
-    collection()
+    range(1, 1)
       .pipe(tap(() => commit('setLoadingStatus', true)))
-      .pipe(concatMap(async (methods) => methods.countAllDocuments()))
+      .pipe(concatMap(async () => methods('countAllDocuments')))
+      .pipe(map((result) => (isSuccess(result) ? result.data : 0)))
       .pipe(tap(() => commit('setLoadingStatus', false)))
-      .pipe(take(1))
       .toPromise(),
 };
 

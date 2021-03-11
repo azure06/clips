@@ -43,8 +43,7 @@ export class GoogleDriveService {
     return this.pageTokenSubject.asObservable();
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public addFile(clips: Clip[]) {
+  public addFile(clips: Clip[]): GaxiosPromise<drive_v3.Schema$File> {
     return this.drive.files.create({
       requestBody: {
         name: 'clips.json',
@@ -56,6 +55,10 @@ export class GoogleDriveService {
       },
       fields: 'id',
     });
+  }
+
+  public removeFile(fileId: string): GaxiosPromise<void> {
+    return this.drive.files.delete({ fileId });
   }
 
   public async listFiles(): Promise<{
