@@ -1,15 +1,12 @@
 import { ClipDoc, Format } from '../../rxdb/clips/model';
 import { app, clipboard, nativeImage, NativeImage, protocol } from 'electron';
 import { interval, ObservableInput, of } from 'rxjs';
-import { map, scan, filter, tap, concatMap } from 'rxjs/operators';
+import { map, scan, filter, concatMap } from 'rxjs/operators';
 import path from 'path';
 import fs from 'fs';
 import { uuid } from 'uuidv4';
-import {
-  HandlerResponse,
-  isSuccess,
-  runCatching,
-} from '@/utils/invocation-handler';
+import Sentry from '@/electron/services/sentry-electron';
+import { isSuccess, runCatching } from '@/utils/handler';
 interface Clipboard {
   plainText: string;
   htmlText: string;
@@ -60,8 +57,9 @@ export const copyToClipboard = (data: Data): void => {
 export const removeImageDirectory = (): void =>
   fs.rmdirSync(IMAGES_DIR, { recursive: true });
 
-export const removeFromDirectory = (content: string): void =>
-  fs.unlinkSync(toAbsolutePath(toImageName(content)));
+export const removeFromDirectory = (content: string): void => {
+  if (isImagePath(content)) fs.unlinkSync(toAbsolutePath(toImageName(content)));
+};
 
 export const clipboardAsObservable = interval(1000).pipe(
   map(() => ({
@@ -107,7 +105,7 @@ export const clipboardAsObservable = interval(1000).pipe(
           : false;
 
       return current && !equals(current)
-        ? runCatching(() => {
+        ? runCatching(Sentry.captureException)(() => {
             const saveImage = () => {
               if (current.image.isEmpty()) return '';
               const dir = path.join(app.getPath('userData'), 'images');

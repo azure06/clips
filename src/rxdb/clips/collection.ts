@@ -78,7 +78,7 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
   },
 };
 
-export const collection = {
+export const clips = {
   name: 'clips',
   schema,
   methods: clipsDocMethods,

@@ -64,7 +64,6 @@ import {
   delay,
   expand,
   filter,
-  map,
   mapTo,
   switchMap,
   tap,
@@ -82,7 +81,6 @@ import {
 } from './store/types';
 import { from, interval, of } from 'rxjs';
 import { imagePathToDataURI, listGoogleDriveFiles } from './utils/invocation';
-import { isSuccess, isSuccessHttp } from './utils/invocation-handler';
 import { isAuthenticated } from './utils/common';
 import * as subscriptions from './utils/subscription';
 import { Framework } from 'vuetify';
@@ -94,6 +92,7 @@ import {
 import { Format } from './rxdb/clips/model';
 import { IDevice } from './electron/services/socket.io/types';
 import { always, whenShareAvailable } from './utils/environment';
+import { isSuccess, isSuccessHttp } from './utils/handler';
 
 @Component<App>({
   components: { NavDrawer, NavDrawerConfig, AppBar },
@@ -288,7 +287,7 @@ export default class App extends ExtendedVue {
      */
     this.$subscribeTo(
       subscriptions.clipboardChange
-        .pipe(map((clip) => this.filterClip(clip)))
+
         .pipe(
           filter(
             (clip) =>

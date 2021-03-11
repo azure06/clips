@@ -3,15 +3,27 @@ import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { uuid } from 'uuidv4';
 import Store from 'electron-store';
 
-const store = new Store();
+const store = new Store<
+  AppConfState & { credentials: Credentials | undefined }
+>();
 
 const indexes = {
-  userId: 'app-user-id',
-  configuration: 'app-conf',
-  credentials: 'credentials',
-  pageToken: 'page-token',
-  clips: 'clips',
+  userId: 'app-user-id' as const,
+  configuration: 'app-conf' as const,
+  credentials: 'credentials' as const,
+  pageToken: 'page-token' as const,
+  clips: 'clips' as const,
 };
+
+export function watchRxDBAdapter(
+  func: (arg: 'auto' | 'idb' | 'leveldb') => void
+): ReturnType<typeof store.onDidChange> {
+  return store.onDidChange(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    'app-conf.advanced.rxdbAdapter' as any,
+    (newValue, oldValue) => func(newValue)
+  );
+}
 
 export function getUserId(): string {
   const userId: string = store.get(indexes.userId, uuid()) as string;
@@ -26,7 +38,7 @@ export function getAppConf(defaultValue: AppConfState): AppConfState;
 export function getAppConf(
   defaultValue?: AppConfState
 ): AppConfState | undefined {
-  return store.get(indexes.configuration, defaultValue) as AppConfState;
+  return store.get(indexes.configuration, defaultValue);
 }
 
 /** Clips for Google Drive */
@@ -55,7 +67,7 @@ export function getCredentials(defaultValue: Credentials): Credentials;
 export function getCredentials(
   defaultValue?: Credentials
 ): Credentials | undefined {
-  return store.get(indexes.credentials, defaultValue) as Credentials;
+  return store.get(indexes.credentials, defaultValue);
 }
 
 export function setClips(value: Clip[]): void {

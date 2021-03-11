@@ -1,6 +1,7 @@
 import { ActionTree } from 'vuex';
 import { RootState, AppConfState, Clip } from '@/store/types';
 import {
+  relaunchApp,
   setAlwaysOnTop,
   setShortcut,
   setSkipTaskbar,
@@ -11,7 +12,7 @@ import {
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { from } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { isSuccess, isSuccessHttp } from '@/utils/invocation-handler';
+import { isSuccess, isSuccessHttp } from '@/utils/handler';
 
 const actions: ActionTree<AppConfState, RootState> = {
   signIn: async ({ commit }) => {
@@ -69,6 +70,9 @@ const actions: ActionTree<AppConfState, RootState> = {
     if (isSuccess(await setShortcut(shortcut))) {
       commit('setAdvanced', { ...state.advanced, shortcut });
     }
+  },
+  async relaunchApp() {
+    return relaunchApp();
   },
 };
 

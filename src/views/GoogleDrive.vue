@@ -201,7 +201,7 @@ import {
   listGoogleDriveFiles,
   retrieveFileFromDrive,
 } from '@/utils/invocation';
-import { HttpFailure, isSuccessHttp } from '@/utils/invocation-handler';
+import { HttpFailure, isSuccessHttp } from '@/utils/handler';
 
 @Component({ components: {} })
 export default class GoogleDrive extends ExtendedVue {

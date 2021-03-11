@@ -38,4 +38,10 @@ export const INVOCATION = {
 
   // Editor
   OPEN_EDITOR: 'open-editor',
+
+  //
+  RELAUNCH_APP: 'relaunch-app',
+
+  //
+  NODE_DB: 'nodedb',
 };

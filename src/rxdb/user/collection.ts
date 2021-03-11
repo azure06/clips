@@ -41,7 +41,7 @@ const userCollectionsMethods: UserCollectionMethods = {
   },
 };
 
-export const collection = {
+export const user = {
   name: 'user',
   schema,
   methods: userDocMethods,

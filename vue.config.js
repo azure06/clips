@@ -14,7 +14,7 @@ module.exports = {
         productName: 'Clips',
         publish: ['github'],
         afterSign: 'scripts/notarize.js',
-        buildVersion: '0.1.22',
+        buildVersion: '0.2.0',
         // win: {
         //   publisherName: ['Gabriele Sato'],
         //   target: ['nsis'],

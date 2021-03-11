@@ -1,15 +1,52 @@
 import { ShortcutFuzzy } from '@/electron/services/shortcuts';
 import { IDevice } from '@/electron/services/socket.io/types';
-import {
-  HandlerHttpResponse,
-  HandlerResponse,
-} from '@/utils/invocation-handler';
 import { MessageDoc } from '@/rxdb/message/model';
 import { Clip } from '@/store/types';
 import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
 import { Data } from '@/electron/services/clipboard';
 import { INVOCATION } from './constants';
+import { HandlerHttpResponse, HandlerResponse } from './handler';
+import {
+  ReturnAddClip,
+  ReturnCountAllDocuments,
+  ReturnDumpCollection,
+  ReturnFindClips,
+  ReturnFindMessage,
+  ReturnFindRoomFromUserOrCreate,
+  ReturnFindRooms,
+  ReturnFindUser,
+  ReturnLoadMessages,
+  Methods,
+  MethodsReturnType,
+  ReturnModifyClip,
+  ParamsAddClip,
+  ParamsCountAllDocuments,
+  ParamsDumpCollection,
+  ParamsFindClips,
+  ParamsFindMessage,
+  ParamsFindRoomFromUserOrCreate,
+  ParamsFindRooms,
+  ParamsFindUser,
+  ParamsLoadMessages,
+  ParamsModifyClip,
+  ParamsRemoveClips,
+  ParamsRemoveClipsLte,
+  ParamsRestoreFactoryDefault,
+  ParamsSetMessageToRead,
+  ParamsUpsertMessage,
+  ParamsUpsertUser,
+  ReturnRemoveClips,
+  ReturnRemoveClipsLte,
+  ReturnRestoreFactoryDefault,
+  ReturnSetMessageToRead,
+  ReturnUpsertMessage,
+  ReturnUpsertUser,
+} from '@/helpers/methods';
+import * as methods from '@/helpers/methods';
+import { RxDBAdapterNm } from '@/rxdb';
+import { Observable } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
 
 export type DataURI = string;
 
@@ -130,6 +167,97 @@ export const finishTransactionByDate = (
 ): Promise<HandlerResponse<void>> =>
   ipcRenderer.invoke(INVOCATION.FINISH_TRANSACTION_BY_DATE, date);
 
-// Image Editor
+// Image Edit:
 export const openEditor = (clipId: string): Promise<HandlerResponse<void>> =>
   ipcRenderer.invoke(INVOCATION.OPEN_EDITOR, clipId);
+
+// Relaunch App
+export const relaunchApp = (): Promise<HandlerResponse<void>> =>
+  ipcRenderer.invoke(INVOCATION.RELAUNCH_APP);
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export function switchdb(
+  adapterObserver: Observable<RxDBAdapterNm>
+): <T extends Methods>(
+  methodNm: T,
+  ...args: T extends 'findClips'
+    ? ParamsFindClips
+    : T extends 'addClip'
+    ? ParamsAddClip
+    : T extends 'modifyClip'
+    ? ParamsModifyClip
+    : T extends 'removeClips'
+    ? ParamsRemoveClips
+    : T extends 'removeClipsLte'
+    ? ParamsRemoveClipsLte
+    : T extends 'restoreFactoryDefault'
+    ? ParamsRestoreFactoryDefault
+    : T extends 'dumpCollection'
+    ? ParamsDumpCollection
+    : T extends 'countAllDocuments'
+    ? ParamsCountAllDocuments
+    : T extends 'findUser'
+    ? ParamsFindUser
+    : T extends 'upsertUser'
+    ? ParamsUpsertUser
+    : T extends 'findRooms'
+    ? ParamsFindRooms
+    : T extends 'findRoomFromUserOrCreate'
+    ? ParamsFindRoomFromUserOrCreate
+    : T extends 'loadMessages'
+    ? ParamsLoadMessages
+    : T extends 'findMessage'
+    ? ParamsFindMessage
+    : T extends 'upsertMessage'
+    ? ParamsUpsertMessage
+    : T extends 'setMessageToRead'
+    ? ParamsSetMessageToRead
+    : never
+) => T extends 'findClips'
+  ? ReturnFindClips
+  : T extends 'addClip'
+  ? ReturnAddClip
+  : T extends 'modifyClip'
+  ? ReturnModifyClip
+  : T extends 'removeClips'
+  ? ReturnRemoveClips
+  : T extends 'removeClipsLte'
+  ? ReturnRemoveClipsLte
+  : T extends 'restoreFactoryDefault'
+  ? ReturnRestoreFactoryDefault
+  : T extends 'dumpCollection'
+  ? ReturnDumpCollection
+  : T extends 'countAllDocuments'
+  ? ReturnCountAllDocuments
+  : T extends 'findUser'
+  ? ReturnFindUser
+  : T extends 'upsertUser'
+  ? ReturnUpsertUser
+  : T extends 'findRooms'
+  ? ReturnFindRooms
+  : T extends 'findRoomFromUserOrCreate'
+  ? ReturnFindRoomFromUserOrCreate
+  : T extends 'loadMessages'
+  ? ReturnLoadMessages
+  : T extends 'findMessage'
+  ? ReturnFindMessage
+  : T extends 'upsertMessage'
+  ? ReturnUpsertMessage
+  : T extends 'setMessageToRead'
+  ? ReturnSetMessageToRead
+  : never;
+export function switchdb(
+  adapterObserver: Observable<RxDBAdapterNm>
+): <T extends Methods>(methodNm: T, ...args: never[]) => MethodsReturnType {
+  return (methodNm, ...args) =>
+    adapterObserver
+      .pipe(
+        concatMap((adapter) =>
+          adapter === 'idb'
+            ? methods[methodNm](...args)
+            : ipcRenderer.invoke(INVOCATION.NODE_DB, methodNm, args)
+        )
+      )
+      .toPromise();
+}

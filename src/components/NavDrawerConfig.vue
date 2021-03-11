@@ -8,7 +8,7 @@
     floating
     color="surfaceVariant"
   >
-    <v-list dense nav :class="isMacOS ? 'mt-8' : ''">
+    <v-list dense nav :class="isMacOS ? 'mt-8' : 'mt-4'">
       <v-tooltip top>
         <template v-slot:activator="{ on }">
           <v-list-item

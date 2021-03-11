@@ -43,6 +43,7 @@ const state: AppConfState = {
     syncedFiles: {},
   },
   advanced: {
+    rxdbAdapter: 'auto',
     searchMode: 'fuzzy',
     optimize: 0,
     formats: {

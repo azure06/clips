@@ -1,5 +1,5 @@
 <template>
-  <v-card color="surfaceVariant" tile flat :height="`calc(100vh - 49px)`">
+  <v-card color="surfaceVariant" tile flat :height="`calc(100vh - 30px)`">
     <v-list v-if="!premium" subheader dense color="surfaceVariant">
       <v-progress-linear
         v-if="fetching"
@@ -7,7 +7,7 @@
         color="cyan darken-2"
       ></v-progress-linear>
       <v-subheader class="font-weight-bold">Premium features</v-subheader>
-      <v-card flat class="px-6" color="transparent">
+      <v-card flat class="px-0" color="transparent">
         <v-row v-if="isMas" justify="center">
           <v-card
             color="blue darken-3"
@@ -138,13 +138,14 @@
             outlined
             @change="(value) => $emit('change-email', value)"
             dense
-            style="margin: 15px 0"
+            style="margin: 15px 15px 0 0"
             color="blue darken-2"
           >
           </v-text-field>
           <v-card-actions>
             <v-spacer />
             <v-btn
+              style="margin: 0 15px 0 0"
               color="blue darken-2"
               dark
               depressed
@@ -379,8 +380,8 @@ import {
   purchaseProduct,
 } from '@/utils/invocation';
 import { replace } from '@/utils/common';
-import { HandlerResponse } from '@/utils/invocation-handler';
 import { always, whenMas } from '@/utils/environment';
+import { HandlerResponse } from '@/utils/handler';
 
 type Cycle = {
   oneHour: string;

@@ -33,7 +33,7 @@ function create(mainWindow: BrowserWindow): void {
     { type: 'separator' },
     {
       label: 'Quit       ',
-      accelerator: 'Command+Q',
+      accelerator: 'CmdOrCtrl+Q',
       click() {
         app.quit();
       },
