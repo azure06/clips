@@ -9,7 +9,7 @@
     flat
     outlined
   >
-    <v-toolbar-title style="user-select: none;" class="font-weight-black">
+    <v-toolbar-title style="user-select: none;" class="font-weight-bold">
       <v-dialog v-model="showDialog" max-width="420">
         <template v-slot:activator="{ on, attrs }">
           <div
@@ -35,7 +35,7 @@
               >
                 mdi-help-circle
               </v-icon>
-              {{ rxdbAdapter === 'idb' ? 'IndexedDB' : 'Leveldown' }}
+              {{ rxdbAdapter === 'idb' ? 'IndexedDB' : 'leveldown' }}
             </div>
           </div>
         </template>
@@ -64,7 +64,7 @@
               <v-radio value="leveldb">
                 <template slot="label">
                   <div>
-                    <div class="font-weight-black subtitle-2">leveldown</div>
+                    <div class="font-weight-bold subtitle-2">leveldown</div>
                     <p
                       style="margin-bottom: 0; line-height: 1; font-size: 11px;"
                     >
@@ -77,7 +77,7 @@
               <v-radio value="idb">
                 <template slot="label">
                   <div>
-                    <div class="font-weight-black subtitle-2">IndexedDB</div>
+                    <div class="font-weight-bold subtitle-2">IndexedDB</div>
                     <p
                       style="margin-bottom: 0; line-height: 1; font-size: 11px;"
                     >

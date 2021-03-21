@@ -92,7 +92,12 @@ import {
 } from './rxdb/message/model';
 import { Format } from './rxdb/clips/model';
 import { IDevice } from './electron/services/socket.io/types';
-import { always, whenShareAvailable } from './utils/environment';
+import {
+  always,
+  empty,
+  whenMacOS,
+  whenShareAvailable,
+} from './utils/environment';
 import { isSuccess, isSuccessHttp } from './utils/handler';
 
 @Component<App>({
@@ -278,6 +283,17 @@ export default class App extends ExtendedVue {
   }
 
   public created(): void {
+    // Modify Scrollbal
+    whenMacOS(empty, () => {
+      const style = document.createElement('style');
+      style.id = 'scrollbar';
+      style.innerText = `::-webkit-scrollbar { background-color: #fff; width: 16px; } ::-webkit-scrollbar-track { background-color: #fff; } ::-webkit-scrollbar-thumb { background-color: #babac0; border-radius: 16px; border: 4px solid #fff; } ::-webkit-scrollbar-button { display:none; }`.replace(
+        /[\n\r]+/g,
+        ''
+      );
+      document.getElementsByTagName('head')[0].appendChild(style);
+    });
+
     // Load Configuration
     this.loadConfig({ vuetify: this.$vuetify });
 
