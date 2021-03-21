@@ -74,6 +74,7 @@ import {
   Advanced,
   Appearance,
   Clip,
+  Development,
   Drive,
   General,
   InAppStatus,
@@ -92,8 +93,16 @@ import {
 } from './rxdb/message/model';
 import { Format } from './rxdb/clips/model';
 import { IDevice } from './electron/services/socket.io/types';
-import { always, whenShareAvailable } from './utils/environment';
+import {
+  always,
+  empty,
+  whenDevelopment,
+  whenMacOS,
+  whenShareAvailable,
+} from './utils/environment';
 import { isSuccess, isSuccessHttp } from './utils/handler';
+import router from './router';
+import { initAnalytics } from './analytics-vue';
 
 @Component<App>({
   components: { NavDrawer, NavDrawerConfig, AppBar },
@@ -165,6 +174,8 @@ export default class App extends ExtendedVue {
   public advanced!: Advanced;
   @Getter('drive', { namespace: 'configuration' })
   public drive!: Drive;
+  @Getter('development', { namespace: 'configuration' })
+  public development!: Development;
 
   @Action('addClip', { namespace: 'clips' })
   public addClip!: (clip: Clip) => Promise<Clip>;
@@ -278,6 +289,21 @@ export default class App extends ExtendedVue {
   }
 
   public created(): void {
+    // Init analytics
+    whenDevelopment(empty, () => {
+      if (this.development.analytics) initAnalytics(router);
+    });
+    // Modify Scrollbal
+    whenMacOS(empty, () => {
+      const style = document.createElement('style');
+      style.id = 'scrollbar';
+      style.innerText = `::-webkit-scrollbar { background-color: #fff; width: 16px; } ::-webkit-scrollbar-track { background-color: #fff; } ::-webkit-scrollbar-thumb { background-color: #babac0; border-radius: 16px; border: 4px solid #fff; } ::-webkit-scrollbar-button { display:none; }`.replace(
+        /[\n\r]+/g,
+        ''
+      );
+      document.getElementsByTagName('head')[0].appendChild(style);
+    });
+
     // Load Configuration
     this.loadConfig({ vuetify: this.$vuetify });
 

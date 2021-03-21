@@ -205,7 +205,11 @@ export const toClipProp = (type?: Format | string): ClipFormat => {
               preview: (clip.plainText || '').substring(0, 255),
               displayingFormat:
                 clipsFormatMap[clip.id] ||
-                (clip.type === 'image' ? 'dataURI' : 'plainText'),
+                (clip.type === 'image'
+                  ? clip.richText //  In this case very likely is from MS Office
+                    ? 'all'
+                    : 'dataURI'
+                  : 'plainText'),
               fromNow: moment(clip.updatedAt).fromNow(),
             })
           )

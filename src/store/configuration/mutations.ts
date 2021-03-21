@@ -8,6 +8,7 @@ import {
   User,
   InAppStatus,
   Drive,
+  Development,
 } from '@/store/types';
 import { Framework } from 'vuetify';
 import * as storeService from '@/electron/services/electron-store';
@@ -79,6 +80,10 @@ const mutations: MutationTree<AppConfState> = {
   setPremium: (state, premium: boolean) => {
     storeService.setAppConf({ ...state, premium });
     state.premium = storeService.getAppConf(state).premium;
+  },
+  setDevelopment: (state, development: Development) => {
+    storeService.setAppConf({ ...state, development });
+    state.development = storeService.getAppConf(state).development;
   },
   setInAppStatus: (state, inAppStatus: InAppStatus) => {
     storeService.setAppConf({ ...state, inAppStatus });

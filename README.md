@@ -2,6 +2,10 @@
   <img alt="Clips" src="public/icon.png" width="446">
 </p>
 
+[![Github All Releases](https://img.shields.io/github/downloads/azure06/clips/total.svg)](https://github.com/azure06/clips/releases)
+[![infiniti-clips](https://snapcraft.io/infiniti-clips/badge.svg)](https://snapcraft.io/infiniti-clips)
+[![infiniti-clips](https://snapcraft.io/infiniti-clips/trending.svg?name=0)](https://snapcraft.io/infiniti-clips)
+
 **Clips** is a free, open source hybrid clipboard application available for Windows and macOS.
 
 **Clips** powered by Google Drive synchronize your clipboard with multiple devices, and allows you to quickly search throw your clipboard history.

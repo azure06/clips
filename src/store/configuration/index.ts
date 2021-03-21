@@ -58,6 +58,7 @@ const state: AppConfState = {
       always(['ctrl', 'alt', 'V'])
     ),
   },
+  development: { analytics: true },
   premium: false,
   inAppStatus: 'none',
 };

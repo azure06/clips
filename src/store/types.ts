@@ -106,6 +106,10 @@ export interface Drive {
   syncedFiles: { [id: string]: boolean };
 }
 
+export interface Development {
+  analytics: boolean;
+}
+
 export interface AppConfState {
   user: User | null;
   labels: Label[];
@@ -115,6 +119,7 @@ export interface AppConfState {
   appearance: Appearance;
   premium: boolean;
   inAppStatus: InAppStatus;
+  development: Development;
 }
 
 /** Clips Types */
