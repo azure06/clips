@@ -1,5 +1,6 @@
 import Home from '../views/Home.vue';
 import Account from '../views/Account.vue';
+import Note from '../views/Note.vue';
 import GoogleDrive from '../views/GoogleDrive.vue';
 import Share from '../views/Share.vue';
 import Editor from '../views/Editor.vue';
@@ -22,6 +23,11 @@ const routes = [
     path: '/home',
     name: 'home',
     component: Home,
+  },
+  {
+    path: '/note',
+    name: 'note',
+    component: Note,
   },
   {
     path: '/account',

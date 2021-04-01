@@ -289,6 +289,9 @@ export default class App extends ExtendedVue {
   }
 
   public created(): void {
+    // Load Configuration
+    this.loadConfig({ vuetify: this.$vuetify });
+
     // Init analytics
     whenDevelopment(empty, () => {
       if (this.development.analytics) initAnalytics(router);
@@ -303,9 +306,6 @@ export default class App extends ExtendedVue {
       );
       document.getElementsByTagName('head')[0].appendChild(style);
     });
-
-    // Load Configuration
-    this.loadConfig({ vuetify: this.$vuetify });
 
     /**
      * Get clipboard data from background.ts
