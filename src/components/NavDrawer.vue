@@ -40,6 +40,27 @@
         <span>{{ $translations.home }}</span>
       </v-tooltip>
 
+      <!-- <v-tooltip top>
+        <template v-slot:activator="{ on }">
+          <v-list-item
+            v-on="on"
+            class="px-3"
+            link
+            color="primary"
+            :to="{ name: 'note' }"
+            style="-webkit-app-region: no-drag"
+          >
+            <v-list-item-icon>
+              <v-icon>mdi-folder-edit</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>Note</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <span>{{ $translations.home }}</span>
+      </v-tooltip> -->
+
       <v-tooltip top>
         <template v-slot:activator="{ on }">
           <v-list-item

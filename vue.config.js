@@ -14,11 +14,12 @@ module.exports = {
         productName: 'Clips',
         publish: ['github'],
         afterSign: 'scripts/notarize.js',
-        buildVersion: '0.2.1',
+        buildVersion: '0.2.2',
         // win: {
         //   publisherName: ['Gabriele Sato'],
         //   target: ['nsis'],
         // },
+        asarUnpack: ['**/node_modules/leveldown/**/*'],
         mac: {
           gatekeeperAssess: false,
           hardenedRuntime: true,
