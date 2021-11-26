@@ -142,14 +142,8 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 app.whenReady().then(() =>
-  protocol.registerFileProtocol(
-    'image',
-    (request, callback) => {
-      const url = request.url.substr(8);
-      callback({ path: path.join(IMAGES_DIR, url) });
-    },
-    (error) => {
-      if (error) console.error('Failed to register protocol');
-    }
-  )
+  protocol.registerFileProtocol('image', (request, callback) => {
+    const url = request.url.substr(8);
+    callback({ path: path.join(IMAGES_DIR, url) });
+  })
 );

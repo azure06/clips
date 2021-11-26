@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import VueRx from 'vue-rx';
+import VueRx from '@azure06/vue-rx';
 import App from './App.vue';
 import AppEditor from './AppEditor.vue';
 import router from './router';

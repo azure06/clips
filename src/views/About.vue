@@ -5,7 +5,7 @@
       <span class="title text-center font-weight-bold">Clips</span>
     </div>
     <v-card-text class="subtitle-2 text-center">
-      <div class="text-center">Version: 0.1.0</div>
+      <div class="text-center">Version: {{ rootState.version }}</div>
       <div class="text-center">Commit: {{ rootState.commit }}</div>
       <div class="text-center">Total items: {{ itemsCount }}</div>
       <div class="text-center">

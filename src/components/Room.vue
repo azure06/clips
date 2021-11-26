@@ -263,7 +263,7 @@ import {
 } from 'rxjs/operators';
 import { MessageDoc, MessageStatus, parseContent } from '@/rxdb/message/model';
 import moment from 'moment';
-import { WatchObservable } from 'vue-rx';
+import { WatchObservable } from '@azure06/vue-rx';
 import { INVOCATION } from '@/utils/constants';
 
 type RoomEx = Omit<RoomType, 'messages'> & {

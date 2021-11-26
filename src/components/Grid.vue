@@ -25,9 +25,7 @@
               dark
               :color="label.color"
             >
-              <v-icon left small>
-                mdi-label
-              </v-icon>
+              <v-icon left small> mdi-label </v-icon>
               <div class="caption font-weight-bold text-uppercase">
                 {{ label.name }}
               </div>
@@ -43,92 +41,80 @@
       </v-card-actions>
     </v-card>
 
-    <v-row justify="center">
-      <v-dialog v-model="labelDialog" max-width="300">
-        <v-card>
-          <v-card-title class="subtitle-1">
-            Edit labels
-          </v-card-title>
-          <!-- Add -->
-          <v-card-text class="px-2 py-1">
-            <v-row
-              class="mx-auto d-flex align-center"
-              style="max-height: 42px;"
-            >
-              <v-btn rounded small icon>
-                <v-icon v-if="editNewLabel" small @click="editNewLabel = false">
-                  mdi-close
-                </v-icon>
-                <v-icon v-else small @click="editNewLabel = true">
-                  mdi-plus
-                </v-icon>
-              </v-btn>
-              <v-text-field
-                v-model="newLabel"
-                dense
-                class="caption font-weight-bold"
-                placeholder="CREATE NEW LABEL"
-                solo
-                flat
-                @focus="editNewLabel = true"
-              ></v-text-field>
-              <v-btn v-if="editNewLabel" rounded small icon>
-                <v-icon small @click="finishEditingNewLabel">
-                  mdi-check
-                </v-icon>
-              </v-btn>
-            </v-row>
-            <v-virtual-scroll
-              :items="labels.filter((label) => label.id !== 'starred')"
-              style="overflow-x: hidden"
-              height="140"
-              item-height="36"
-            >
-              <template v-slot:default="{ item }">
-                <!-- Edit -->
-                <v-row
-                  class="mx-auto  d-flex align-center"
-                  style="max-height: 36px"
-                >
-                  <v-btn rounded small icon>
-                    <v-icon small :color="item.color">
-                      mdi-label
-                    </v-icon>
-                  </v-btn>
-                  <v-text-field
-                    :value="item.name"
-                    @input="
-                      (value) => $emit(`edit-label`, { ...item, name: value })
-                    "
-                    dense
-                    class="caption font-weight-bold"
-                    placeholder="EDIT LABEL"
-                    solo
-                    flat
-                  ></v-text-field>
-                  <v-btn
-                    rounded
-                    small
-                    icon
-                    @click="$emit(`remove-label`, item.id)"
-                  >
-                    <v-icon small>
-                      mdi-delete
-                    </v-icon>
-                  </v-btn>
-                </v-row>
-              </template>
-            </v-virtual-scroll>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn text @click="labelDialog = false">
-              Done
+    <v-dialog v-model="labelDialog" width="300">
+      <v-card>
+        <v-card-title class="subtitle-1"> Edit labels </v-card-title>
+        <!-- Add -->
+        <v-card-text class="px-2 py-1">
+          <v-row
+            class="mx-auto my-2 d-flex align-center"
+            style="max-height: 42px"
+          >
+            <v-btn rounded small icon>
+              <v-icon v-if="editNewLabel" small @click="editNewLabel = false">
+                mdi-close
+              </v-icon>
+              <v-icon v-else small @click="editNewLabel = true">
+                mdi-plus
+              </v-icon>
             </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-row>
+            <v-text-field
+              v-model="newLabel"
+              dense
+              class="caption font-weight-bold"
+              placeholder="CREATE NEW LABEL"
+              solo
+              flat
+              @focus="editNewLabel = true"
+            ></v-text-field>
+            <v-btn v-if="editNewLabel" rounded small icon>
+              <v-icon small @click="finishEditingNewLabel"> mdi-check </v-icon>
+            </v-btn>
+          </v-row>
+          <v-virtual-scroll
+            :items="labels.filter((label) => label.id !== 'starred')"
+            style="overflow-x: hidden"
+            height="140"
+            item-height="36"
+          >
+            <template v-slot:default="{ item }">
+              <!-- Edit -->
+              <v-row
+                class="mx-auto d-flex align-center"
+                style="max-height: 36px"
+              >
+                <v-btn rounded small icon>
+                  <v-icon small :color="item.color"> mdi-label </v-icon>
+                </v-btn>
+                <v-text-field
+                  :value="item.name"
+                  @input="
+                    (value) => $emit(`edit-label`, { ...item, name: value })
+                  "
+                  dense
+                  class="caption font-weight-bold"
+                  placeholder="EDIT LABEL"
+                  solo
+                  flat
+                ></v-text-field>
+                <v-btn
+                  rounded
+                  small
+                  icon
+                  @click="$emit(`remove-label`, item.id)"
+                >
+                  <v-icon small> mdi-delete </v-icon>
+                </v-btn>
+              </v-row>
+            </template>
+          </v-virtual-scroll>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="labelDialog = false"> Done </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Seprator -->
     <v-card
@@ -156,7 +142,7 @@
               <img
                 v-if="
                   clip.displayingFormat === 'dataURI' ||
-                    (!clip.displayingFormat && clip.type !== 'text')
+                  (!clip.displayingFormat && clip.type !== 'text')
                 "
                 class="img-preview"
                 :src="clip.dataURI"
@@ -168,7 +154,7 @@
               >
                 <div
                   v-dompurify-html="clip.htmlText"
-                  style="border-radius: 5px; max-height: 64px;"
+                  style="border-radius: 5px; max-height: 64px"
                 ></div>
               </v-list-item-title>
               <v-list-item-title
