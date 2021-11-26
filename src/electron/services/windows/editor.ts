@@ -14,6 +14,7 @@ const flags = {
     nodeIntegration: true,
     //  (process.env.ELECTRON_NODE_INTEGRATION as unknown) as boolean,
     additionalArguments: [],
+    enableRemoteModule: true, // https://www.electronjs.org/docs/latest/breaking-changes
   },
   frame: false,
   ...whenMacOS(always({ titleBarStyle: 'hidden' as const }), always({})),

@@ -1,4 +1,4 @@
-import { Observables, WatchObservable } from 'vue-rx';
+import { Observables, WatchObservable } from '@auzre06/vue-rx';
 import { WatchOptions } from 'vue';
 import { Observable } from 'rxjs';
 

@@ -1,7 +1,7 @@
 import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
-import { from, EMPTY, Subject, of, zip, Observable } from 'rxjs';
-import { scan, expand } from 'rxjs/operators';
+import { from, EMPTY, Subject, of, zip, Observable, lastValueFrom } from 'rxjs';
+import { scan, expand, tap } from 'rxjs/operators';
 import * as stream from 'stream';
 import { GaxiosPromise } from 'gaxios';
 import { Clip } from '@/store/types';
@@ -25,9 +25,7 @@ export class GoogleDriveService {
     });
   }
 
-  public async getStartPageToken(): GaxiosPromise<
-    drive_v3.Schema$StartPageToken
-  > {
+  public async getStartPageToken(): GaxiosPromise<drive_v3.Schema$StartPageToken> {
     return await this.drive.changes.getStartPageToken();
   }
   public async getUserInfo(): GaxiosPromise<drive_v3.Schema$About> {
@@ -81,7 +79,7 @@ export class GoogleDriveService {
       if (data.startPageToken) this.setPageToken(data.startPageToken);
     }
 
-    return list(this.pageToken || '')
+    const listChangesObs = list(this.pageToken || '')
       .pipe(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         expand(([token, { data }]) =>
@@ -94,8 +92,9 @@ export class GoogleDriveService {
           (acc, [token, { data }]) => ({ ...acc, [token]: data.changes! }),
           {} as { [token: string]: drive_v3.Schema$Change[] }
         )
-      )
-      .toPromise();
+      );
+
+    return lastValueFrom(listChangesObs);
   }
 
   public retrieveFile(fileId: string): Promise<Clip[]> {

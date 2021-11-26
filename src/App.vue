@@ -1,5 +1,5 @@
 <template>
-  <v-app style="overflow-y: hidden;">
+  <v-app style="overflow-y: hidden">
     <AppBar />
     <NavDrawer v-if="isDefaultDrawer" style="-webkit-app-region: drag" />
     <NavDrawerConfig v-else style="-webkit-app-region: drag" />
@@ -17,15 +17,9 @@
         <v-card-title class="subtitle-2">{{ dialogText }}</v-card-title>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="resolve('close')">
-            Close
-          </v-btn>
-          <v-btn text @click="resolve('once')">
-            Once
-          </v-btn>
-          <v-btn text @click="resolve('always')">
-            Always
-          </v-btn>
+          <v-btn text @click="resolve('close')"> Close </v-btn>
+          <v-btn text @click="resolve('once')"> Once </v-btn>
+          <v-btn text @click="resolve('always')"> Always </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -38,9 +32,7 @@
         }}</v-card-title>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="inAppStatusDialog = false">
-            Close
-          </v-btn>
+          <v-btn text @click="inAppStatusDialog = false"> Close </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -300,10 +292,11 @@ export default class App extends ExtendedVue {
     whenMacOS(empty, () => {
       const style = document.createElement('style');
       style.id = 'scrollbar';
-      style.innerText = `::-webkit-scrollbar { background-color: #fff; width: 16px; } ::-webkit-scrollbar-track { background-color: #fff; } ::-webkit-scrollbar-thumb { background-color: #babac0; border-radius: 16px; border: 4px solid #fff; } ::-webkit-scrollbar-button { display:none; }`.replace(
-        /[\n\r]+/g,
-        ''
-      );
+      style.innerText =
+        `::-webkit-scrollbar { background-color: #fff; width: 16px; } ::-webkit-scrollbar-track { background-color: #fff; } ::-webkit-scrollbar-thumb { background-color: #babac0; border-radius: 16px; border: 4px solid #fff; } ::-webkit-scrollbar-button { display:none; }`.replace(
+          /[\n\r]+/g,
+          ''
+        );
       document.getElementsByTagName('head')[0].appendChild(style);
     });
 
@@ -400,18 +393,17 @@ export default class App extends ExtendedVue {
 
     /** Network */
 
-    const findRoomFromUserOrCreate = ((memoized: {
-      [key: string]: Room | undefined;
-    }) => (messageId: string) => async (args: {
-      id: string;
-      username: string;
-    }) =>
-      memoized[messageId] ??
-      (async () => {
-        const room: Room = await this.findRoomFromUserOrCreate(args);
-        memoized[messageId] = room;
-        return room;
-      })())({});
+    const findRoomFromUserOrCreate = (
+      (memoized: { [key: string]: Room | undefined }) =>
+      (messageId: string) =>
+      async (args: { id: string; username: string }) =>
+        memoized[messageId] ??
+        (async () => {
+          const room: Room = await this.findRoomFromUserOrCreate(args);
+          memoized[messageId] = room;
+          return room;
+        })()
+    )({});
 
     // onMessage received (onAuthorize is in App.vue)
     this.$subscribeTo(

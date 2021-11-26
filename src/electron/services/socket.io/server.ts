@@ -1,5 +1,5 @@
 import { Keep, Start, IDevice, MessageReq, isMessageText } from './types';
-import io from 'socket.io';
+import { Server } from 'socket.io';
 import fullName from 'fullname';
 import { Observable, Subject } from 'rxjs';
 import log from 'electron-log';
@@ -39,19 +39,19 @@ function initSocket(
   authorize: (args: IDevice) => Promise<boolean>,
   httpServer: http.Server
 ) {
-  const ioServer = io.listen(httpServer, {
+  const ioServer = new Server(httpServer, {
     serveClient: false,
     transports: ['websocket'],
   });
   const messageSubject = new Subject<MessageSub>();
-  ioServer.sockets.on('connection', function(socket) {
+  ioServer.sockets.on('connection', function (socket) {
     console.info(`Server connected with.. ${socket.handshake.address}🔥`);
-    socket.on('authorize', async function(sender: IDevice, authorizeReq) {
+    socket.on('authorize', async function (sender: IDevice, authorizeReq) {
       // For security reason check the identity is correct
       if (sender.ip !== socket.handshake.address) authorizeReq(false);
       console.info(`Asking for authorization... ${socket.handshake.address} 🗣`);
       authorizeReq(await authorize(sender));
-      socket.on('message', function(request: MessageReq, disconnectMe) {
+      socket.on('message', function (request: MessageReq, disconnectMe) {
         if (!isMessageText(request)) {
           switch (request.status) {
             case 'start':
@@ -96,10 +96,10 @@ function initSocket(
         disconnectMe();
       });
     });
-    socket.on('recognize', async function(callback) {
+    socket.on('recognize', async function (callback) {
       callback(await fullName());
     });
-    socket.on('disconnect', function() {
+    socket.on('disconnect', function () {
       // TODO Watch 'messageSubject' and emit error when necessary
       console.info('Disconnected...🎬');
     });

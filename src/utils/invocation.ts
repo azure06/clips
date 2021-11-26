@@ -45,7 +45,7 @@ import {
 } from '@/helpers/methods';
 import * as methods from '@/helpers/methods';
 import { RxDBAdapterNm } from '@/rxdb';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
 
 export type DataURI = string;
@@ -94,9 +94,11 @@ export const changePageToken = (
 ): Promise<HandlerHttpResponse<drive_v3.Schema$StartPageToken>> =>
   ipcRenderer.invoke(INVOCATION.CHANGE_PAGE_TOKEN, token);
 
-export const listGoogleDriveFiles = (): Promise<HandlerHttpResponse<{
-  [token: string]: drive_v3.Schema$Change[];
-}>> => ipcRenderer.invoke(INVOCATION.LIST_FILES);
+export const listGoogleDriveFiles = (): Promise<
+  HandlerHttpResponse<{
+    [token: string]: drive_v3.Schema$Change[];
+  }>
+> => ipcRenderer.invoke(INVOCATION.LIST_FILES);
 
 export const retrieveFileFromDrive = (
   fileId?: string | null
@@ -163,9 +165,9 @@ export const purchaseProduct = (
 ): Promise<HandlerResponse<boolean>> =>
   ipcRenderer.invoke(INVOCATION.PURCHASE_PRODUCT, product);
 
-export const restoreCompletedTransactions = (): Promise<HandlerResponse<
-  void
->> => ipcRenderer.invoke(INVOCATION.RESTORE_COMPLETED_TRANSACTION);
+export const restoreCompletedTransactions = (): Promise<
+  HandlerResponse<void>
+> => ipcRenderer.invoke(INVOCATION.RESTORE_COMPLETED_TRANSACTION);
 
 export const finishTransactionByDate = (
   date: string
@@ -255,14 +257,14 @@ export function switchdb(
 export function switchdb(
   adapterObserver: Observable<RxDBAdapterNm>
 ): <T extends Methods>(methodNm: T, ...args: never[]) => MethodsReturnType {
-  return (methodNm, ...args) =>
-    adapterObserver
-      .pipe(
-        concatMap((adapter) =>
-          adapter === 'idb'
-            ? methods[methodNm](...args)
-            : ipcRenderer.invoke(INVOCATION.NODE_DB, methodNm, args)
-        )
+  return <T extends Methods>(methodNm: T, ...args: never[]) => {
+    const obs = adapterObserver.pipe(
+      concatMap((adapter) =>
+        adapter === 'idb'
+          ? methods[methodNm](...args)
+          : ipcRenderer.invoke(INVOCATION.NODE_DB, methodNm, args)
       )
-      .toPromise();
+    );
+    return lastValueFrom(obs);
+  };
 }
