@@ -1,4 +1,4 @@
-import Sentry from './sentry-electron';
+import * as Sentry from '@/sentry';
 import AutoLaunch from 'auto-launch';
 import { HandlerResponse } from '@/utils/handler';
 
@@ -22,7 +22,7 @@ export function autoLauncherHandler(
       return { status: 'success' as const, data: startup };
     })
     .catch((err: Error) => {
-      Sentry.captureEvent(err);
+      Sentry.captureException(err);
       return { status: 'failure' as const, message: err.message };
     });
 }

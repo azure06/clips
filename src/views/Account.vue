@@ -12,7 +12,7 @@
       >
         <v-row>
           <v-col cols="12">
-            <v-row align="center" justify="center" class="pa-3">
+            <v-row align="center" justify="center" class="ma-3">
               <v-avatar width="90" height="90">
                 <v-icon x-large>mdi-account-circle</v-icon>
               </v-avatar>
@@ -32,7 +32,7 @@
               </v-card-subtitle>
             </v-row>
 
-            <v-row align="center" justify="center" class="ma-2">
+            <v-row align="center" justify="center" class="ma-5">
               <v-btn text large tile @click="signIn">
                 {{ $translations.signIn }}
               </v-btn>
@@ -48,7 +48,7 @@
       >
         <v-row>
           <v-col cols="12">
-            <v-row align="center" justify="center" class="pa-3">
+            <v-row align="center" justify="center" class="ma-3">
               <v-avatar color="#CEF2EF" width="90" height="90">
                 <img :src="user.photoLink" />
               </v-avatar>
@@ -63,12 +63,12 @@
             </v-row>
 
             <v-row align="center" justify="center">
-              <v-card-subtitle class="pa-0 ma-0">
+              <v-card-subtitle class="py-0">
                 <div>{{ user.emailAddress }}</div>
               </v-card-subtitle>
             </v-row>
 
-            <v-divider class="mt-3"></v-divider>
+            <v-divider class="mt-5"></v-divider>
 
             <v-row align="center" justify="center" class="ma-2">
               <v-btn text large tile @click="signOut">

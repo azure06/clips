@@ -1,6 +1,6 @@
 import { ActionTree } from 'vuex';
 import { RootState, NetworkState } from '@/store/types';
-import { EMPTY, from, of, range } from 'rxjs';
+import { EMPTY, from, lastValueFrom, of, range } from 'rxjs';
 import {
   catchError,
   concatMap,
@@ -13,7 +13,7 @@ import {
   discoverDevices,
   sendMessage,
 } from '@/electron/services/socket.io/client';
-import * as Sentry from '@sentry/electron';
+ import * as Sentry from '@/sentry';
 import { MessageDoc, stringifyContent } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { IDevice } from '@/electron/services/socket.io/types';
@@ -42,26 +42,26 @@ export function randomColor(): string {
 }
 
 const actions: ActionTree<NetworkState, RootState> = {
-  handleServer: async ({ commit, dispatch }, action: 'start' | 'close') =>
-    from(handleIoServer(action))
-      .pipe(
-        tap(async (response) => {
-          commit('setServerStatus', action === 'start' ? 'started' : 'closed');
-          // Set this user
-          if (isSuccess(response)) {
-            const thisUser = await dispatch('upsertUser', {
-              device: response.data,
-            });
-            commit('setThisUser', thisUser);
-          }
-        }),
-        mapTo(true),
-        catchError((error) => {
-          Sentry.captureException(error);
-          return of(false);
-        })
-      )
-      .toPromise(),
+  handleServer: async ({ commit, dispatch }, action: 'start' | 'close') => {
+    const obs = from(handleIoServer(action)).pipe(
+      tap(async (response) => {
+        commit('setServerStatus', action === 'start' ? 'started' : 'closed');
+        // Set this user
+        if (isSuccess(response)) {
+          const thisUser = await dispatch('upsertUser', {
+            device: response.data,
+          });
+          commit('setThisUser', thisUser);
+        }
+      }),
+      mapTo(true),
+      catchError((error) => {
+        Sentry.captureException(error);
+        return of(false);
+      })
+    );
+    return lastValueFrom(obs);
+  },
   discoverUsers: async ({ commit, dispatch }) =>
     new Promise((resolve) =>
       range(1, 1)
@@ -99,20 +99,21 @@ const actions: ActionTree<NetworkState, RootState> = {
     { commit },
     user: Partial<Omit<UserDoc, 'device'>> & { device: IDevice }
   ) =>
-    from(methods('upsertUser', user))
-      .pipe(map((res) => (isSuccess(res) ? res.data : undefined)))
-      .pipe(
-        tap((user) => {
-          if (user) commit('addOrUpdateUser', user);
-        })
-      )
-      .toPromise(),
+    lastValueFrom(
+      from(methods('upsertUser', user))
+        .pipe(map((res) => (isSuccess(res) ? res.data : undefined)))
+        .pipe(
+          tap((user) => {
+            if (user) commit('addOrUpdateUser', user);
+          })
+        )
+    ),
   findRoomFromUserOrCreate: async (
     { state, commit },
     user: Pick<UserDoc, 'id' | 'username'>
   ) =>
-    from(methods('findRoomFromUserOrCreate', user))
-      .pipe(
+    lastValueFrom(
+      from(methods('findRoomFromUserOrCreate', user)).pipe(
         map((res) =>
           // Once committed using 'mergeRooms', the room should contain the messages
           isSuccess(res)
@@ -123,42 +124,45 @@ const actions: ActionTree<NetworkState, RootState> = {
             : undefined
         )
       )
-      .toPromise(),
+    ),
   loadRooms: async ({ state, commit }) =>
-    range(1, 1)
-      .pipe(tap(() => commit('setLoadingRooms', true)))
-      .pipe(concatMap(() => methods('findRooms')))
-      .pipe(map((res) => (isSuccess(res) ? res.data : [])))
-      .pipe(tap((rooms) => commit('mergeRooms', rooms)))
-      .pipe(map(() => state.rooms)) // At this point should contain message property
-      .pipe(tap(() => commit('setLoadingRooms', false)))
-      .toPromise(),
+    lastValueFrom(
+      range(1, 1)
+        .pipe(tap(() => commit('setLoadingRooms', true)))
+        .pipe(concatMap(() => methods('findRooms')))
+        .pipe(map((res) => (isSuccess(res) ? res.data : [])))
+        .pipe(tap((rooms) => commit('mergeRooms', rooms)))
+        .pipe(map(() => state.rooms)) // At this point should contain message property
+        .pipe(tap(() => commit('setLoadingRooms', false)))
+    ),
   loadMessages: async (
     { state, commit },
     data: { roomId: string; options?: { limit: number; skip: number } }
   ) =>
-    range(1, 1)
-      .pipe(tap(() => commit('setLoadingMessages', true)))
-      .pipe(concatMap(() => methods('loadMessages', data)))
-      .pipe(map((res) => (isSuccess(res) ? res.data : [])))
-      .pipe(
-        tap((messages) =>
-          commit(
-            !data.options || data.options.skip === 0
-              ? 'setMessages'
-              : 'addMessages',
-            { roomId: data.roomId, messages }
+    lastValueFrom(
+      range(1, 1)
+        .pipe(tap(() => commit('setLoadingMessages', true)))
+        .pipe(concatMap(() => methods('loadMessages', data)))
+        .pipe(map((res) => (isSuccess(res) ? res.data : [])))
+        .pipe(
+          tap((messages) =>
+            commit(
+              !data.options || data.options.skip === 0
+                ? 'setMessages'
+                : 'addMessages',
+              { roomId: data.roomId, messages }
+            )
           )
         )
-      )
-      .pipe(map(() => toDictionary(state.rooms)[data.roomId].messages))
-      .pipe(tap(() => commit('setLoadingMessages', false)))
-      .toPromise(),
+        .pipe(map(() => toDictionary(state.rooms)[data.roomId].messages))
+        .pipe(tap(() => commit('setLoadingMessages', false)))
+    ),
   findMessage: async (_, { roomId, messageId }) =>
-    range(1, 1)
-      .pipe(concatMap(() => methods('findMessage', roomId, messageId)))
-      .pipe(map((res) => (isSuccess(res) ? res.data : undefined)))
-      .toPromise(),
+    lastValueFrom(
+      range(1, 1)
+        .pipe(concatMap(() => methods('findMessage', roomId, messageId)))
+        .pipe(map((res) => (isSuccess(res) ? res.data : undefined)))
+    ),
   addOrUpdateMessage: async (
     { commit },
     args: {
@@ -168,23 +172,23 @@ const actions: ActionTree<NetworkState, RootState> = {
       skipUpsert?: boolean;
     }
   ) =>
-    from(
-      args.skipUpsert
-        ? Promise.resolve({ status: 'success', data: args.message })
-        : methods('upsertMessage', args.message)
-    )
-      .pipe(
+    lastValueFrom(
+      from(
+        args.skipUpsert
+          ? Promise.resolve({ status: 'success', data: args.message })
+          : methods('upsertMessage', args.message)
+      ).pipe(
         tap((res) => {
           if (res.status === 'success') commit('addOrUpdateMessage', res.data);
         })
       )
-      .toPromise(),
+    ),
   setMessagesToRead: async (
     { commit },
     { roomId, senderId }: { roomId: string; senderId: string }
   ) =>
-    from(methods('setMessageToRead', roomId, senderId))
-      .pipe(
+    lastValueFrom(
+      from(methods('setMessageToRead', roomId, senderId)).pipe(
         tap((res) => {
           if (isSuccess(res))
             res.data.forEach((message) =>
@@ -192,7 +196,7 @@ const actions: ActionTree<NetworkState, RootState> = {
             );
         })
       )
-      .toPromise(),
+    ),
   sendMessage: async (
     { commit },
     args: {
@@ -209,7 +213,7 @@ const actions: ActionTree<NetworkState, RootState> = {
       senderId: args.sender?.mac || 'unknown',
       status: 'pending' as const,
     };
-    return from(methods('upsertMessage', message))
+    const obs = from(methods('upsertMessage', message))
       .pipe(
         map((res) => {
           if (isSuccess(res)) {
@@ -242,8 +246,8 @@ const actions: ActionTree<NetworkState, RootState> = {
         tap((res) =>
           isSuccess(res) ? commit('addOrUpdateMessage', res.data) : undefined
         )
-      )
-      .toPromise();
+      );
+    return lastValueFrom(obs);
   },
   sendFile: async (
     { commit },
@@ -256,8 +260,8 @@ const actions: ActionTree<NetworkState, RootState> = {
       sender?: IDevice;
       receiver: IDevice;
     }
-  ) =>
-    from(
+  ) => {
+    const obs = from(
       methods('upsertMessage', {
         roomId: args.message.roomId,
         senderId: args.sender?.mac || 'unknown',
@@ -279,22 +283,22 @@ const actions: ActionTree<NetworkState, RootState> = {
         ),
         status: 'pending',
       })
-    )
-      .pipe(
-        concatMap((res) => {
-          return args.sender && isSuccess(res)
-            ? (() => {
-                commit('addOrUpdateMessage', res.data);
-                return sendFile(args.sender, args.receiver, res.data);
-              })()
-            : Promise.reject(
-                !args.sender
-                  ? 'Sender absent'
-                  : 'Something went wrong during sendFile'
-              );
-        })
-      )
-      .toPromise(),
+    ).pipe(
+      concatMap((res) => {
+        return args.sender && isSuccess(res)
+          ? (() => {
+              commit('addOrUpdateMessage', res.data);
+              return sendFile(args.sender, args.receiver, res.data);
+            })()
+          : Promise.reject(
+              !args.sender
+                ? 'Sender absent'
+                : 'Something went wrong during sendFile'
+            );
+      })
+    );
+    return lastValueFrom(obs);
+  },
 };
 
 export default actions;

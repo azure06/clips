@@ -13,7 +13,7 @@ import { UserDoc } from '@/rxdb/user/model';
 import { randomColor } from '@/store/network/actions';
 import { IDevice } from '@/electron/services/socket.io/types';
 import { MessageDoc } from '@/rxdb/message/model';
-import { from } from 'rxjs';
+import { from, lastValueFrom } from 'rxjs';
 
 const adapter = from(
   whenRenderer(
@@ -23,16 +23,17 @@ const adapter = from(
 );
 const captureException = whenRenderer(
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  () => require('@/sentry-vue').default.captureException,
+  () => require('@/sentry').captureException,
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  () => require('@/electron/services/sentry-electron').default.captureException
+  () => require('@/sentry').captureException
 );
 let clipsRxDB = createClipsRxDB__(adapter);
 const runCatching = handler.runCatching(captureException);
-const clipsCollection = () => getCollection(clipsRxDB, 'clips').toPromise();
-const userCollection = () => getCollection(clipsRxDB, 'user').toPromise();
-const roomCollection = () => getCollection(clipsRxDB, 'room').toPromise();
-const messageCollection = () => getCollection(clipsRxDB, 'message').toPromise();
+const clipsCollection = () => lastValueFrom(getCollection(clipsRxDB, 'clips'));
+const userCollection = () => lastValueFrom(getCollection(clipsRxDB, 'user'));
+const roomCollection = () => lastValueFrom(getCollection(clipsRxDB, 'room'));
+const messageCollection = () =>
+  lastValueFrom(getCollection(clipsRxDB, 'message'));
 
 export type Methods =
   | 'findClips'
@@ -185,19 +186,18 @@ export const removeClipsLte = runCatching((updatedAt: number) =>
     )
 );
 
-export const restoreFactoryDefault = runCatching(async () =>
-  removeClipsRxDB(adapter)
-    .pipe(
-      concatMap((result) =>
-        result.ok
-          ? (async () => {
-              clipsRxDB = createClipsRxDB__(adapter);
-            })()
-          : Promise.reject('Unable to remove DB')
-      )
+export const restoreFactoryDefault = runCatching(async () => {
+  const obs = removeClipsRxDB(adapter).pipe(
+    concatMap((result) =>
+      result.ok
+        ? (async () => {
+            clipsRxDB = createClipsRxDB__(adapter);
+          })()
+        : Promise.reject('Unable to remove DB')
     )
-    .toPromise()
-);
+  );
+  return lastValueFrom(obs);
+});
 
 export const dumpCollection = runCatching(() =>
   clipsCollection().then((methods) => methods.dumpCollection())

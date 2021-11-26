@@ -5,7 +5,7 @@ import { map, scan, filter, concatMap } from 'rxjs/operators';
 import path from 'path';
 import fs from 'fs';
 import { uuid } from 'uuidv4';
-import Sentry from '@/electron/services/sentry-electron';
+ import * as Sentry from '@/sentry';
 import { isSuccess, runCatching } from '@/utils/handler';
 interface Clipboard {
   plainText: string;
@@ -142,14 +142,8 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 app.whenReady().then(() =>
-  protocol.registerFileProtocol(
-    'image',
-    (request, callback) => {
-      const url = request.url.substr(8);
-      callback({ path: path.join(IMAGES_DIR, url) });
-    },
-    (error) => {
-      if (error) console.error('Failed to register protocol');
-    }
-  )
+  protocol.registerFileProtocol('image', (request, callback) => {
+    const url = request.url.substr(8);
+    callback({ path: path.join(IMAGES_DIR, url) });
+  })
 );

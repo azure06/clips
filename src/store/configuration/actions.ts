@@ -10,25 +10,23 @@ import {
   signOut,
 } from '@/utils/invocation';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
-import { from } from 'rxjs';
+import { from, lastValueFrom } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { isSuccess, isSuccessHttp } from '@/utils/handler';
 
 const actions: ActionTree<AppConfState, RootState> = {
   signIn: async ({ commit }) => {
-    from(signIn())
-      .pipe(
+    lastValueFrom(
+      from(signIn()).pipe(
         tap((res) => {
           if (isSuccessHttp(res) && res.data.user)
             commit('setUser', res.data.user);
         })
       )
-      .toPromise();
+    );
   },
   signOut: async ({ commit }) => {
-    from(signOut())
-      .pipe(tap(() => commit('setUser', null)))
-      .toPromise();
+    lastValueFrom(from(signOut()).pipe(tap(() => commit('setUser', null))));
   },
   async removeLabel({ commit, dispatch }, labelId: string) {
     const clips: Clip[] = await dispatch(

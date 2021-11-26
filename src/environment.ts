@@ -1,5 +1,5 @@
-import * as Integrations from '@sentry/integrations';
 import Vue from 'vue';
+import * as Integrations from '@sentry/integrations';
 import * as Sentry from '@sentry/electron';
 
 export const environment = {
@@ -7,7 +7,7 @@ export const environment = {
     dsn: process.env.VUE_APP_SENTRY_DSN || '',
     integrations: [new Integrations.Vue({ Vue, attachProps: true })],
     environment: process.env.NODE_ENV || '',
-  } as Sentry.ElectronOptions,
+  } as Omit<Sentry.ElectronOptions, 'ipcMode' | 'getSessions'>,
   firebaseConfig: {
     apiKey: process.env.VUE_APP_FIREBASE_API_KEY || '',
     authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN || '',

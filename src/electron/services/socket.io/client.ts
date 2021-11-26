@@ -1,5 +1,5 @@
 import { IDevice, State, Progress, StateOmitP as PartialState } from './types';
-import ioClient from 'socket.io-client';
+import ioClient, { Socket } from 'socket.io-client';
 import findLocalDevices from 'local-devices';
 import { Observable, ReplaySubject } from 'rxjs';
 import { MessageDoc, parseContent } from '@/rxdb/message/model';
@@ -17,16 +17,16 @@ const socketIoClientSettings = {
 const style =
   'color: white; padding: 2px; border-radius: 5px; font-weight: 700';
 
-function connect(ip: string, port: number): Promise<SocketIOClient.Socket> {
-  return new Promise<SocketIOClient.Socket>((resolve, reject) => {
+function connect(ip: string, port: number): Promise<Socket> {
+  return new Promise<Socket>((resolve, reject) => {
     const address = `ws://${ip}:${port}`;
-    const socket = ioClient.connect(address, socketIoClientSettings);
+    const socket = ioClient(address, socketIoClientSettings);
     socket.on('connect', async () => {
       // prettier-ignore
       console.info(`%cConnected with ${address} 😈`,`background: rgb(0,140,180); ${style}`);
       resolve(socket);
     });
-    socket.on('connect_error', function(error: unknown) {
+    socket.on('connect_error', function (error: unknown) {
       console.error('Something went wrong...', error);
       reject(error);
       socket.disconnect();
@@ -35,7 +35,7 @@ function connect(ip: string, port: number): Promise<SocketIOClient.Socket> {
 }
 
 // prettier-ignore
-function authorize(socket: SocketIOClient.Socket, sender: IDevice, receiver: IDevice): Promise<void> {
+function authorize(socket: Socket, sender: IDevice, receiver: IDevice): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     socket.emit('authorize', sender, (result: boolean) => {
       console.info(`Asking authorization from ${receiver.username} 💻`);
@@ -156,26 +156,26 @@ export function sendFile(
               })
             )
             .subscribe();
-          readStream.on('open', function() {
+          readStream.on('open', function () {
             emitReplay.next({
               filename,
               status: 'start',
             });
           });
-          readStream.on('data', function(chunk) {
+          readStream.on('data', function (chunk) {
             emitReplay.next({
               filename,
               buffer: chunk as Buffer,
               status: 'keep',
             });
           });
-          readStream.on('end', function() {
+          readStream.on('end', function () {
             emitReplay.next({
               filename,
               status: 'end',
             });
           });
-          readStream.on('error', function(error) {
+          readStream.on('error', function (error) {
             emitReplay.next({
               filename,
               status: 'error',
@@ -217,13 +217,10 @@ export function discoverDevices(ip: string): Observable<IDevice> {
         .map(
           (device) =>
             new Promise<void>((resolve) => {
-              const socket = ioClient.connect(
-                `ws://${device.ip}:${device.port}`,
-                {
-                  ...socketIoClientSettings,
-                  timeout: 5000,
-                }
-              );
+              const socket = ioClient(`ws://${device.ip}:${device.port}`, {
+                ...socketIoClientSettings,
+                timeout: 5000,
+              });
               socket.on('connect_error', (error: unknown) => {
                 console.info('connect_error', error);
                 resolve();

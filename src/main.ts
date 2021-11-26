@@ -1,12 +1,12 @@
 import Vue from 'vue';
-import VueRx from 'vue-rx';
+import VueRx from '@azure06/vue-rx';
 import App from './App.vue';
 import AppEditor from './AppEditor.vue';
 import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
-import Sentry from '@/sentry-vue';
+import * as Sentry from './sentry';
 import { isEditorView } from './utils/environment';
 import { environment } from './environment';
 
@@ -19,7 +19,8 @@ Vue.use(VueDOMPurifyHTML, {
   },
 });
 
-if (!isEditorView(window.process.argv)) Sentry.init(environment.sentry);
+if (!isEditorView(window.process.argv))
+  setTimeout(() => Sentry.init(environment.sentry), 0);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const vm = new Vue({

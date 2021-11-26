@@ -6,7 +6,7 @@ import { GoogleDriveService } from './services/google-drive';
 import { environment } from './environment';
 import { mainWindow } from './services/windows/main';
 import { tray } from './services/tray';
-import Sentry from './services/sentry-electron';
+import * as Sentry from '@/sentry';
 import * as storeService from './services/electron-store';
 import {
   onCanMakePayments,
@@ -63,7 +63,10 @@ const runCatchingHttpError = handler.runCatchingHttpError(
   Sentry.captureException
 );
 
-Sentry.init(environment.sentry);
+/**
+ * We get an error without setTimeout
+ */
+setTimeout(() => Sentry.init(environment.sentry), 0);
 
 /**
  *  Subscribe to Google Services
@@ -220,43 +223,46 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
       ipcMain.once(`authorize:${device.mac}`, (_, result) => resolve(result));
     });
   };
-  const handleServer = ((
-    httpServer: http.Server | null = null,
-    status: 'started' | 'closed' = 'closed',
-    subscription: Subscription = Subscription.EMPTY
-  ) => async (action: 'start' | 'close') => {
-    const iDevice = await getIDevice(); //TODO Consider to use only one lib
-    // If it's started close the server
-    if (status === 'started' && httpServer) {
-      await new Promise((resolve) => {
-        httpServer?.once('close', () => {
-          status = 'closed';
-          resolve(null);
-        });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        httpServer?.once('error', (err: any) => {
-          console.error('err', err);
-          resolve(null); // TODO For now resolve anyway
-        });
-        subscription.unsubscribe();
-        httpServer?.close();
-      });
-    }
-    if (iDevice && action === 'start') {
-      return socketIoService
-        .listen(authorize, iDevice.port, iDevice.ip)
-        .then(([httpServer_, messageStream]) => {
-          httpServer = httpServer_;
-          status = 'started';
-          subscription = messageStream.subscribe((data) => {
-            mainWindow.webContents.send('message', data);
+  const handleServer = (
+    (
+      httpServer: http.Server | null = null,
+      status: 'started' | 'closed' = 'closed',
+      subscription: Subscription = Subscription.EMPTY
+    ) =>
+    async (action: 'start' | 'close') => {
+      const iDevice = await getIDevice(); //TODO Consider to use only one lib
+      // If it's started close the server
+      if (status === 'started' && httpServer) {
+        await new Promise((resolve) => {
+          httpServer?.once('close', () => {
+            status = 'closed';
+            resolve(null);
           });
-          return iDevice;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          httpServer?.once('error', (err: any) => {
+            console.error('err', err);
+            resolve(null); // TODO For now resolve anyway
+          });
+          subscription.unsubscribe();
+          httpServer?.close();
         });
+      }
+      if (iDevice && action === 'start') {
+        return socketIoService
+          .listen(authorize, iDevice.port, iDevice.ip)
+          .then(([httpServer_, messageStream]) => {
+            httpServer = httpServer_;
+            status = 'started';
+            subscription = messageStream.subscribe((data) => {
+              mainWindow.webContents.send('message', data);
+            });
+            return iDevice;
+          });
+      }
+      // If address is not available maybe is offline
+      return Promise.reject('Maybe offline? 🤐');
     }
-    // If address is not available maybe is offline
-    return Promise.reject('Maybe offline? 🤐');
-  })();
+  )();
   const handleSendFile = async (
     sender: IDevice,
     receiver: IDevice,

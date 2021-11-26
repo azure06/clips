@@ -127,9 +127,7 @@
 
       <v-snackbar v-model="snackbar" color="pink">
         {{ errorMsg }}
-        <v-btn text @click="snackbar = false">
-          Close
-        </v-btn>
+        <v-btn text @click="snackbar = false"> Close </v-btn>
       </v-snackbar>
     </v-container>
     <v-toolbar bottom color="surfaceVariant" dense flat>
