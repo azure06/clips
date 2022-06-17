@@ -12,6 +12,7 @@ const flags = {
     // Use pluginOptions.nodeIntegration, leave this alone
     // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
     nodeIntegration: true,
+    contextIsolation: false,
     //  (process.env.ELECTRON_NODE_INTEGRATION as unknown) as boolean,
     additionalArguments: [],
     enableRemoteModule: true, // https://www.electronjs.org/docs/latest/breaking-changes

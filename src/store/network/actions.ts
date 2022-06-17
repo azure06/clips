@@ -78,7 +78,7 @@ const actions: ActionTree<NetworkState, RootState> = {
                   ),
                   catchError((error) => {
                     Sentry.captureException(error);
-                    return of<undefined>();
+                    return of();
                   })
                 )
               : EMPTY
