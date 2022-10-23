@@ -37,7 +37,7 @@ export class GoogleOAuth2Service extends EventEmitter {
     clientId,
     clientSecret,
     scopes,
-    redirectUri = 'urn:ietf:wg:oauth:2.0:oob',
+    redirectUri = 'http://127.0.0.1',
   }: {
     clientId: string;
     clientSecret: string;
@@ -150,13 +150,22 @@ export class GoogleOAuth2Service extends EventEmitter {
         });
       }
 
-      browserWindow.webContents.on('did-navigate', (_event, newUrl) => {
-        const parsed = url.parse(newUrl, true);
+      // Tries to load 127.0.0.1 and will get rejected
+      browserWindow.webContents.on('did-fail-load', (_event, errorCode) => {
+        const parsed = url.parse(browserWindow.webContents.getURL(), true);
         if (parsed.query.error) {
           reject(new Error(parsed.query.error_description as string));
           closeWin();
         } else if (parsed.query.code) {
           resolve(parsed.query.code as string);
+          closeWin();
+        }
+      });
+
+      browserWindow.webContents.on('did-navigate', (_event, newUrl) => {
+        const parsed = url.parse(newUrl, true);
+        if (parsed.query.error) {
+          reject(new Error(parsed.query.error_description as string));
           closeWin();
         }
       });
