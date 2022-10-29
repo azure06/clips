@@ -1,7 +1,7 @@
-import { BrowserWindow, screen, globalShortcut } from 'electron';
-import { AppConfState } from '@/store/types';
+import { BrowserWindow, globalShortcut, screen } from 'electron';
+import { AppConfState } from '../../renderer/store/types';
 import { always, whenMacOS } from '@/utils/environment';
-import { HandlerResponse } from '@/utils/handler';
+import { Result__ } from '@/utils/result';
 
 export type ShortcutFuzzy = MacOSFuzzy | WindowsOSFuzzy;
 export type Shortcut = MacOS | WindowsOS;
@@ -40,7 +40,7 @@ function register(action: () => void, config: Shortcut) : boolean {
 export function shortcutHandler(
   getAppConf: () => AppConfState | undefined,
   mainWindow: BrowserWindow
-): (args: ShortcutFuzzy) => Promise<HandlerResponse<ShortcutFuzzy>> {
+): (args: ShortcutFuzzy) => Promise<Result__<ShortcutFuzzy>> {
   const appConf = getAppConf();
   const nextConfig = appConf
     ? fromFuzzyShortcut(appConf.advanced.shortcut)

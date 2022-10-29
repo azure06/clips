@@ -1,9 +1,9 @@
 import * as utils from './utils';
 import {
   ClipDoc,
+  ClipSearchConditions,
   ClipsCollectionMethods,
   ClipsDocMethods,
-  ClipSearchConditions,
   schema,
 } from './model';
 import { uuid } from 'uuidv4';

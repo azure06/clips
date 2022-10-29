@@ -1,9 +1,9 @@
 import { autoUpdaterObservable } from '../auto-updater';
 import * as storeService from '../electron-store';
-import { app, BrowserWindow } from 'electron';
+import { BrowserWindow, app } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
-import { AppConfState } from '@/store/types';
+import { AppConfState } from '../../../renderer/store/types';
 import {
   always,
   empty,
@@ -11,6 +11,7 @@ import {
   whenMacOS,
 } from '@/utils/environment';
 import { Subscription } from 'rxjs';
+import { ActionGetCurrentWindow } from '@/renderer/invokers/remote';
 
 declare const __static: string;
 
@@ -88,12 +89,48 @@ function create(): BrowserWindow {
   return win;
 }
 
-function setAlwaysOnTop(win: BrowserWindow): (alwaysOnTop: boolean) => void {
-  return (alwaysOnTop: boolean) => win.setAlwaysOnTop(alwaysOnTop);
-}
-
-function setSkipTaskbar(win: BrowserWindow): (skip: boolean) => void {
-  return (skip: boolean) => win.setSkipTaskbar(skip);
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'isVisible'>(action: ActionGetCurrentWindow, payload: boolean) => boolean;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'isMaximized'>(action: ActionGetCurrentWindow, payload: boolean) => boolean;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'maximize'>(action: ActionGetCurrentWindow) => void;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'minimize'>(action: ActionGetCurrentWindow) => void;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'hide'>(action: ActionGetCurrentWindow) => void;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'close'>(action: ActionGetCurrentWindow) => void;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'setAlwaysOnTop'>(action: ActionGetCurrentWindow, payload: boolean) => void;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T extends 'setSkipTaskbar'>(action: ActionGetCurrentWindow, payload: boolean) => void;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow, T2 extends boolean>(action: ActionGetCurrentWindow, payload?: T2) => any {
+  return (action, payload) => {
+    switch (action) {
+      case 'isVisible':
+        return win.isVisible();
+      case 'isMaximized':
+        return win.isMaximized();
+      case 'maximize':
+        return win.maximize();
+      case 'minimize':
+        return win.minimize();
+      case 'unmaximize':
+        return win.unmaximize();
+      case 'hide':
+        return win.hide();
+      case 'close':
+        return win.close();
+      case 'getBounds':
+        return win.getBounds();
+      case 'setAlwaysOnTop':
+        return payload ? win.setAlwaysOnTop(payload) : void 0;
+      case 'setSkipTaskbar':
+        return payload ? win.setSkipTaskbar(payload) : void 0;
+    }
+  };
 }
 
 export const mainWindow = {
@@ -101,6 +138,5 @@ export const mainWindow = {
     return win;
   },
   create,
-  setSkipTaskbar,
-  setAlwaysOnTop,
+  onGetCurrentWindow,
 };

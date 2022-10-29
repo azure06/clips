@@ -22,5 +22,5 @@ const trackEvent = (
     .send();
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(global as any).analytics = { trackEvent, visitor };
+export const pageView = (path: string, hostname: string, title: string) =>
+  visitor.pageview(path, hostname, title).send();

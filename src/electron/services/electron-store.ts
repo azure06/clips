@@ -1,4 +1,4 @@
-import { AppConfState, Clip } from '../../store/types';
+import { AppConfState, Clip } from '../../renderer/store/types';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { uuid } from 'uuidv4';
 import Store from 'electron-store';

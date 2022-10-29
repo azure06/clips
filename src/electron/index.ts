@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, app, ipcMain } from 'electron';
 // import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import * as clipboardService from './services/clipboard';
 import { GoogleOAuth2Service } from './services/google-auth';
@@ -6,44 +6,13 @@ import { GoogleDriveService } from './services/google-drive';
 import { environment } from './environment';
 import { mainWindow } from './services/windows/main';
 import { tray } from './services/tray';
-import * as Sentry from '@/sentry';
+import * as Sentry from '@/utils/sentry';
 import * as storeService from './services/electron-store';
-import {
-  onCanMakePayments,
-  onGetReceiptUrl,
-  onCopyToClipboard,
-  onCreateBackup,
-  onHandleServer,
-  onMyDevice,
-  onRemoveImage,
-  onRemoveImageDirectory,
-  onRestoreBackup,
-  onSendFile,
-  onSetShortcut,
-  onSetStartup,
-  onToDataURI,
-  onGetProducts,
-  onPurchaseProduct,
-  onRestoreCompletedTransactions,
-  onFinishTransactionByDate,
-  onSignIn,
-  onSignOut,
-  onChangePageToken,
-  onListFiles,
-  onRetrieveFile,
-  onUploadToDrive,
-  onOpenEditor,
-  onSetSkipTaskbar,
-  onSetAlwaysOnTop,
-  onNodeDB,
-  onRelaunchApp,
-  eventHandler,
-  onRemoveFile,
-} from '../utils/invocation-handler';
+
 import { shortcutHandler } from './services/shortcuts';
 import { autoLauncherHandler } from './services/auto-launcher';
 import * as socketIoService from './services/socket.io/server';
-import './services/analytics';
+import * as analytics from './services/analytics';
 import { iDevice as getIDevice } from './services/socket.io/utils/network';
 import { IDevice } from './services/socket.io/types';
 import { tap } from 'rxjs/operators';
@@ -55,8 +24,18 @@ import { MessageDoc } from '@/rxdb/message/model';
 import * as inAppPurchaseService from './services/in-app-purachase';
 import { always, whenShareAvailable } from '@/utils/environment';
 import { editorWindow } from './services/windows/editor';
-import * as handler from '@/utils/handler';
-import * as methods from '@/helpers/methods';
+import * as handler from '@/utils/result';
+import * as methods from '@/utils/methods';
+import * as remoteHandler from '../electron/handlers/remote';
+import * as analyticsHandler from '../electron/handlers/analytics';
+import * as configurationHandler from '@/electron/handlers/configuration';
+import * as leveldownHandler from '@/electron/handlers/leveldown';
+import * as googleDriveHandler from '@/electron/handlers/google-drive';
+import * as paymentsHandler from '@/electron/handlers/payments';
+import * as clipboardHandler from '@/electron/handlers/clipboard';
+import * as signInHandler from '@/electron/handlers/sign-in';
+import * as socketIoHandler from '@/electron/handlers/socket-io';
+import { SENDERS } from '@/utils/constants';
 
 const runCatching = handler.runCatching(Sentry.captureException);
 const runCatchingHttpError = handler.runCatchingHttpError(
@@ -102,7 +81,7 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
     .pipe(tap(storeService.setPageToken))
     .subscribe();
 
-  onSignIn(
+  signInHandler.onSignIn(
     runCatchingHttpError(() =>
       authService
         .openAuthWindowAndSetCredentials()
@@ -110,14 +89,14 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
     )
   );
 
-  onSignOut(
+  signInHandler.onSignOut(
     runCatchingHttpError(() => {
       storeService.removeCredentials();
       return authService.revokeCredentials();
     })
   );
 
-  onChangePageToken(
+  googleDriveHandler.onChangePageToken(
     runCatchingHttpError((pageToken) =>
       pageToken
         ? (() => {
@@ -135,7 +114,7 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
     )
   );
 
-  onListFiles(
+  googleDriveHandler.onListFiles(
     runCatchingHttpError(() =>
       driveService.listFiles().then((files) => ({
         status: 200,
@@ -144,13 +123,14 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
     )
   );
 
-  onRetrieveFile(
+  googleDriveHandler.onRetrieveFile(
     runCatchingHttpError(async (fileId) => ({
       status: 200,
       data: await driveService.retrieveFile(fileId),
     }))
   );
-  onRemoveFile(
+
+  googleDriveHandler.onRemoveFile(
     runCatchingHttpError(async (fileId) =>
       driveService
         .removeFile(fileId)
@@ -158,7 +138,9 @@ function subscribeToGoogle(mainWindow: BrowserWindow): void {
     )
   );
 
-  onUploadToDrive(runCatchingHttpError((clips) => driveService.addFile(clips)));
+  googleDriveHandler.onUploadToDrive(
+    runCatchingHttpError((clips) => driveService.addFile(clips))
+  );
 }
 
 function subscribeToClipboard(mainWindow: BrowserWindow) {
@@ -166,42 +148,42 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
     .pipe(tap((clip) => mainWindow.webContents.send('clipboard-change', clip)))
     .subscribe();
 
-  onCopyToClipboard(
+  clipboardHandler.onCopyToClipboard(
     runCatching(
       clipboardService.copyToClipboard,
       'Something went wrong while removing the image'
     )
   );
 
-  onToDataURI(
+  clipboardHandler.onToDataURI(
     runCatching(
       clipboardService.convertToDataURI,
       'Something went wrong during dataURI conversion'
     )
   );
 
-  onRemoveImage(
+  clipboardHandler.onRemoveImage(
     runCatching(
       clipboardService.removeFromDirectory,
       'Something went wrong while removing the image'
     )
   );
 
-  onRemoveImageDirectory(
+  clipboardHandler.onRemoveImageDirectory(
     runCatching(
       clipboardService.removeImageDirectory,
       'Something went wrong while removing the image'
     )
   );
 
-  onCreateBackup(
+  clipboardHandler.onCreateBackup(
     runCatching(
       (path, clips) => fs.writeFileSync(path, JSON.stringify(clips)),
       'Something went wrong while creating the backup'
     )
   );
 
-  onRestoreBackup(
+  clipboardHandler.onRestoreBackup(
     runCatching(
       (path) => JSON.parse(fs.readFileSync(path, 'utf-8')),
       'Something went wrong while restoring the backup'
@@ -210,7 +192,7 @@ function subscribeToClipboard(mainWindow: BrowserWindow) {
 }
 
 async function subscribeToSocketIo(mainWindow: BrowserWindow) {
-  onMyDevice(() =>
+  socketIoHandler.onMyDevice(() =>
     getIDevice().then((value) =>
       value
         ? { status: 'success' as const, data: value }
@@ -298,19 +280,29 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
     });
   };
 
-  onHandleServer(runCatching(handleServer, "Couldn't handle the server"));
-  onSendFile(runCatching(handleSendFile, "Couldn't send the file"));
+  socketIoHandler.onHandleServer(
+    runCatching(handleServer, "Couldn't handle the server")
+  );
+  socketIoHandler.onSendFile(
+    runCatching(handleSendFile, "Couldn't send the file")
+  );
 }
 
 function subscribeToInAppPurchase(mainWindow: BrowserWindow) {
-  onCanMakePayments(runCatching(inAppPurchaseService.canMakePayments));
-  onGetReceiptUrl(runCatching(inAppPurchaseService.getReceiptURL));
-  onGetProducts(runCatching(inAppPurchaseService.getProducts));
-  onPurchaseProduct(runCatching(inAppPurchaseService.purchaseProduct));
-  onRestoreCompletedTransactions(
+  paymentsHandler.onCanMakePayments(
+    runCatching(inAppPurchaseService.canMakePayments)
+  );
+  paymentsHandler.onGetReceiptUrl(
+    runCatching(inAppPurchaseService.getReceiptURL)
+  );
+  paymentsHandler.onGetProducts(runCatching(inAppPurchaseService.getProducts));
+  paymentsHandler.onPurchaseProduct(
+    runCatching(inAppPurchaseService.purchaseProduct)
+  );
+  paymentsHandler.onRestoreCompletedTransactions(
     runCatching(inAppPurchaseService.restoreCompletedTransactions)
   );
-  onFinishTransactionByDate(
+  paymentsHandler.onFinishTransactionByDate(
     runCatching(inAppPurchaseService.finishTransactionByDate)
   );
   inAppPurchaseService.onTransactionUpdate((event, transactions) =>
@@ -322,18 +314,29 @@ export function onReady(): void {
   const win = mainWindow.create();
   tray.create(win);
 
-  eventHandler(storeService.getAppConf, win);
-  onSetShortcut(shortcutHandler(storeService.getAppConf, win));
-  onSetStartup(autoLauncherHandler);
-  onSetAlwaysOnTop(runCatching(mainWindow.setAlwaysOnTop(win)));
-  onSetSkipTaskbar(runCatching(mainWindow.setSkipTaskbar(win)));
-  onOpenEditor(
+  // Used in src/renderer/store/configuration/index.ts
+  ipcMain.on(
+    SENDERS.GET_BOUNDS_SYNC,
+    (event) => (event.returnValue = win.getBounds())
+  );
+
+  configurationHandler.eventHandler(storeService.getAppConf, win);
+  remoteHandler.onGetCurrentWindow(
+    runCatching(mainWindow.onGetCurrentWindow(win))
+  );
+  remoteHandler.onDialog();
+  analyticsHandler.onPageView(runCatching(analytics.pageView));
+  configurationHandler.onSetShortcut(
+    shortcutHandler(storeService.getAppConf, win)
+  );
+  configurationHandler.onSetStartup(autoLauncherHandler);
+  configurationHandler.onOpenEditor(
     runCatching((clipId) => {
       editorWindow.create(clipId);
     })
   );
-  onNodeDB((methodNm, args) => methods[methodNm](...args));
-  onRelaunchApp(
+  leveldownHandler.onNodeDB((methodNm, args) => methods[methodNm](...args));
+  configurationHandler.onRelaunchApp(
     runCatching(() => {
       app.relaunch();
       app.exit();

@@ -1,14 +1,14 @@
 import Vue from 'vue';
 import VueRx from '@azure06/vue-rx';
-import App from './App.vue';
-import AppEditor from './AppEditor.vue';
-import router from './router';
-import store from './store';
+import App from './renderer/App.vue';
+import AppEditor from './renderer/AppEditor.vue';
+import router from '@/renderer/router';
+import store from '@/renderer/store';
 import vuetify from './plugins/vuetify';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
-import * as Sentry from './sentry';
+import * as Sentry from '@/utils/sentry';
 import { isEditorView } from './utils/environment';
-import { environment } from './environment';
+import { environment } from '@/renderer/environment';
 
 Vue.config.productionTip = false;
 Vue.use(VueRx);

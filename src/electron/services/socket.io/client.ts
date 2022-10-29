@@ -1,4 +1,4 @@
-import { IDevice, State, Progress, StateOmitP as PartialState } from './types';
+import { IDevice, StateOmitP as PartialState, Progress, State } from './types';
 import ioClient, { Socket } from 'socket.io-client';
 import findLocalDevices from 'local-devices';
 import { Observable, ReplaySubject } from 'rxjs';

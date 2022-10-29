@@ -1,7 +1,7 @@
 'use strict';
 
-import { onReady, onActivate } from './electron';
-import { app, protocol, globalShortcut } from 'electron';
+import { onActivate, onReady } from './electron';
+import { app, globalShortcut, protocol } from 'electron';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import {
   always,

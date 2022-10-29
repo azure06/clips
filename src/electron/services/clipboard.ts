@@ -1,12 +1,12 @@
 import { ClipDoc, Format } from '../../rxdb/clips/model';
-import { app, clipboard, nativeImage, NativeImage, protocol } from 'electron';
-import { interval, ObservableInput, of } from 'rxjs';
-import { map, scan, filter, concatMap } from 'rxjs/operators';
+import { NativeImage, app, clipboard, nativeImage, protocol } from 'electron';
+import { ObservableInput, interval, of } from 'rxjs';
+import { concatMap, filter, map, scan } from 'rxjs/operators';
 import path from 'path';
 import fs from 'fs';
 import { uuid } from 'uuidv4';
- import * as Sentry from '@/sentry';
-import { isSuccess, runCatching } from '@/utils/handler';
+import * as Sentry from '@/utils/sentry';
+import { isSuccess, runCatching } from '@/utils/result';
 interface Clipboard {
   plainText: string;
   htmlText: string;

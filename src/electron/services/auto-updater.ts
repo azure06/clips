@@ -1,4 +1,4 @@
- import * as Sentry from '@/sentry';
+import * as Sentry from '@/utils/sentry';
 import { dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { interval, of } from 'rxjs';

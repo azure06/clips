@@ -8,7 +8,6 @@ module.exports = {
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
-    'prettier/@typescript-eslint',
     'plugin:vue/essential',
     '@vue/prettier',
     '@vue/typescript',
@@ -24,6 +23,16 @@ module.exports = {
       },
     ],
     'object-shorthand': ['error', 'always'],
+    'sort-imports': [
+      'error',
+      {
+        ignoreCase: false,
+        ignoreDeclarationSort: false,
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+        allowSeparatedGroups: false,
+      },
+    ],
   },
   parserOptions: {
     parser: '@typescript-eslint/parser',

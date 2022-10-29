@@ -7,17 +7,17 @@ import { RoomCollection, RoomDatabaseCollection } from './room/model';
 import { MessageCollection, MessageDatabaseCollection } from './message/model';
 import { UserCollection, UserDatabaseCollection } from './user/model';
 import {
+  RxDatabase,
+  addRxPlugin,
   createRxDatabase,
   removeRxDatabase,
-  addRxPlugin,
-  RxDatabase,
 } from 'rxdb';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
-import { from, Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { concatMap, map } from 'rxjs/operators';
 import { app } from 'electron';
 
@@ -35,7 +35,7 @@ export type RxDBAdapter = ReturnType<typeof initPlugins> extends Promise<
 export type RxDBAdapterNm = 'idb' | 'leveldb';
 
 const nodeDBPath = async () => {
-  const { fs, path } = await import('@/helpers/node');
+  const { fs, path } = await import('@/electron/utils/node');
   const dir = path.join(app.getPath('userData'), 'leveldown');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir);
   return `${dir}/leveldown`;
@@ -51,29 +51,33 @@ const nodeDBPath = async () => {
 export async function initPlugins(adapter: RxDBAdapterNm) {
   addRxPlugin(
     adapter === 'idb'
-      ? await (async () => (await import('@/helpers/renderer')).adapter)()
-      : await (async () => (await import('@/helpers/node')).adapter)()
+      ? await (async () =>
+          (
+            await import('@/renderer/utils/renderer')
+          ).adapter)()
+      : await (async () => (await import('@/electron/utils/node')).adapter)()
   );
   addRxPlugin(RxDBValidatePlugin);
   addRxPlugin(RxDBQueryBuilderPlugin);
   addRxPlugin(RxDBMigrationPlugin);
   addRxPlugin(RxDBUpdatePlugin);
   addRxPlugin(RxDBJsonDumpPlugin);
-  return adapter === 'idb' ? 'idb' : (await import('@/helpers/node')).leveldown;
+  return adapter === 'idb'
+    ? 'idb'
+    : (await import('@/electron/utils/node')).leveldown;
 }
 
 async function createRxDB(adapter: RxDBAdapter) {
   /**
    * create database and collections
    */
-  const clipsRxDB: RxDatabase<RxCollections> = await createRxDatabase<
-    RxCollections
-  >({
-    name: adapter === 'idb' ? 'clips' : await nodeDBPath(), // <- name
-    adapter, // <- storage-adapter
-    ignoreDuplicate: true,
-    multiInstance: false, // <- multiInstance (optional, default: true)
-  });
+  const clipsRxDB: RxDatabase<RxCollections> =
+    await createRxDatabase<RxCollections>({
+      name: adapter === 'idb' ? 'clips' : await nodeDBPath(), // <- name
+      adapter, // <- storage-adapter
+      ignoreDuplicate: true,
+      multiInstance: false, // <- multiInstance (optional, default: true)
+    });
 
   await clipsRxDB.addCollections({
     clips,

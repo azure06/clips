@@ -1,4 +1,4 @@
-import { Keep, Start, IDevice, MessageReq, isMessageText } from './types';
+import { IDevice, Keep, MessageReq, Start, isMessageText } from './types';
 import { Server } from 'socket.io';
 import fullName from 'fullname';
 import { Observable, Subject } from 'rxjs';
@@ -7,8 +7,8 @@ import path from 'path';
 import fs from 'fs';
 import http from 'http';
 import {
-  defaultContent,
   MessageDoc,
+  defaultContent,
   stringifyContent,
 } from '@/rxdb/message/model';
 
