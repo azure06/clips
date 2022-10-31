@@ -205,7 +205,7 @@
 </template>
 
 <script lang="ts">
-import { Subject, filter, from, map, merge, tap } from 'rxjs';
+import { Subject, filter, from, map, merge } from 'rxjs';
 import { Component } from 'vue-property-decorator';
 import { Action, Mutation } from 'vuex-class';
 

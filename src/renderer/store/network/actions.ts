@@ -1,12 +1,5 @@
 import { EMPTY, from, lastValueFrom, of, range } from 'rxjs';
-import {
-  catchError,
-  concatMap,
-  map,
-  mapTo,
-  switchMap,
-  tap,
-} from 'rxjs/operators';
+import { catchError, concatMap, map, switchMap, tap } from 'rxjs/operators';
 import { ActionTree } from 'vuex';
 
 import {
@@ -14,11 +7,12 @@ import {
   sendMessage,
 } from '@/electron/services/socket.io/client';
 import { IDevice } from '@/electron/services/socket.io/types';
-import { getMyDevice, handleIoServer, sendFile } from '@/renderer/invokers';
+import * as socketIoInvokers from '@/renderer/invokers/socket-io';
 import { NetworkState, RootState } from '@/renderer/store/types';
 import { MessageDoc, stringifyContent } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
 import { toDictionary } from '@/utils/common';
+import { always } from '@/utils/environment';
 import { isSuccess } from '@/utils/result';
 import * as Sentry from '@/utils/sentry';
 
@@ -45,7 +39,7 @@ export function randomColor(): string {
 
 const actions: ActionTree<NetworkState, RootState> = {
   handleServer: async ({ commit, dispatch }, action: 'start' | 'close') => {
-    const obs = from(handleIoServer(action)).pipe(
+    const obs = from(socketIoInvokers.handleIoServer(action)).pipe(
       tap(async (response) => {
         commit('setServerStatus', action === 'start' ? 'started' : 'closed');
         // Set this user
@@ -56,7 +50,7 @@ const actions: ActionTree<NetworkState, RootState> = {
           commit('setThisUser', thisUser);
         }
       }),
-      mapTo(true),
+      map(always(true)),
       catchError((error) => {
         Sentry.captureException(error);
         return of(false);
@@ -69,7 +63,7 @@ const actions: ActionTree<NetworkState, RootState> = {
       range(1, 1)
         .pipe(
           tap(() => commit('setLoadingDevices', true)),
-          concatMap(() => from(getMyDevice())),
+          concatMap(() => from(socketIoInvokers.getMyDevice())),
           switchMap((response) =>
             isSuccess(response)
               ? discoverDevices(response.data.ip).pipe(
@@ -290,7 +284,11 @@ const actions: ActionTree<NetworkState, RootState> = {
         return args.sender && isSuccess(res)
           ? (() => {
               commit('addOrUpdateMessage', res.data);
-              return sendFile(args.sender, args.receiver, res.data);
+              return socketIoInvokers.sendFile(
+                args.sender,
+                args.receiver,
+                res.data
+              );
             })()
           : Promise.reject(
               !args.sender

@@ -49,7 +49,6 @@ import {
   expand,
   filter,
   map,
-  mapTo,
   switchMap,
   tap,
 } from 'rxjs/operators';
@@ -59,10 +58,8 @@ import { Action, Getter, Mutation } from 'vuex-class';
 import AppBar from '@/renderer/components/AppBar.vue';
 import NavDrawer from '@/renderer/components/NavDrawer.vue';
 import NavDrawerConfig from '@/renderer/components/NavDrawerConfig.vue';
-import {
-  imagePathToDataURI,
-  listGoogleDriveFiles,
-} from '@/renderer/invokers/index';
+import * as clipboardInvokers from '@/renderer/invokers/clipboard';
+import * as googleDriveInvokers from '@/renderer/invokers/google-drive';
 import router from '@/renderer/router';
 import { UserUpsert } from '@/renderer/store/network/actions';
 import {
@@ -129,7 +126,7 @@ import { initAnalytics } from './utils/analytics-vue';
             expand((millis) =>
               from(
                 isAuthenticated()
-                  ? listGoogleDriveFiles()
+                  ? googleDriveInvokers.listGoogleDriveFiles()
                   : Promise.resolve({ status: 403, message: 'Not authorize' })
               )
                 .pipe(
@@ -150,7 +147,7 @@ import { initAnalytics } from './utils/analytics-vue';
                   )
                 )
                 .pipe(delay(millis))
-                .pipe(mapTo(millis))
+                .pipe(map(always(millis)))
             )
           )
         )
@@ -326,7 +323,9 @@ export default class App extends ExtendedVue {
             const { backup, backupThreshold } = this.drive as Drive;
             if (backup) {
               setTimeout(async () => {
-                const result = await imagePathToDataURI(clip.dataURI);
+                const result = await clipboardInvokers.imagePathToDataURI(
+                  clip.dataURI
+                );
                 this.uploadToDrive({
                   clip: {
                     ...clip,

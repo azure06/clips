@@ -99,7 +99,7 @@ import { Product } from 'electron';
 import { Component } from 'vue-property-decorator';
 import { Action, Mutation } from 'vuex-class';
 
-import { getProducts } from '@/renderer/invokers/index';
+import * as paymentsInvokers from '@/renderer/invokers/payments';
 import { InAppStatus } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
 import {
@@ -148,7 +148,7 @@ export default class Settings extends ExtendedVue {
 
   public async created(): Promise<void> {
     whenMacOS(async () => {
-      const response = await getProducts();
+      const response = await paymentsInvokers.getProducts();
       this.products = isSuccess(response) ? response.data : [];
     }, always(Promise.resolve()));
   }

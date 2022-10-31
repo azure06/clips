@@ -93,23 +93,12 @@ function create(): BrowserWindow {
 }
 
 // prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'isVisible'>(action: ActionGetCurrentWindow, payload: boolean) => boolean;
+function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow>(action: T1) => T1 extends 'isVisible' | 'isMaximized' ? boolean : void;
 // prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'isMaximized'>(action: ActionGetCurrentWindow, payload: boolean) => boolean;
+function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow>(action: T1, payload: boolean) => void;
 // prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'maximize'>(action: ActionGetCurrentWindow) => void;
-// prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'minimize'>(action: ActionGetCurrentWindow) => void;
-// prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'hide'>(action: ActionGetCurrentWindow) => void;
-// prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'close'>(action: ActionGetCurrentWindow) => void;
-// prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'setAlwaysOnTop'>(action: ActionGetCurrentWindow, payload: boolean) => void;
-// prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T extends 'setSkipTaskbar'>(action: ActionGetCurrentWindow, payload: boolean) => void;
-// prettier-ignore
-function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow, T2 extends boolean>(action: ActionGetCurrentWindow, payload?: T2) => any {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow, T2 extends boolean>(action: T1, payload?: T2) => any {
   return (action, payload) => {
     switch (action) {
       case 'isVisible':

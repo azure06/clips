@@ -19,7 +19,7 @@ function isObject<T>(item: T) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-function mergeDeep<T>(source: T, target: T): T {
+function mergeDeep<T extends object>(source: T, target: T): T {
   return Object.entries(target).reduce(
     (acc, [key, value]) => {
       if (isObject(value)) {

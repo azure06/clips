@@ -2,14 +2,9 @@ import { from, lastValueFrom } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ActionTree } from 'vuex';
 
-import {
-  relaunchApp,
-  setShortcut,
-  setStartup,
-  signIn,
-  signOut,
-} from '@/renderer/invokers';
+import * as configurationInvokers from '@/renderer/invokers/configuration';
 import * as remote from '@/renderer/invokers/remote';
+import * as signInInvokers from '@/renderer/invokers/sign-in';
 import { AppConfState, Clip, RootState } from '@/renderer/store/types';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { isSuccess, isSuccessHttp } from '@/utils/result';
@@ -17,7 +12,7 @@ import { isSuccess, isSuccessHttp } from '@/utils/result';
 const actions: ActionTree<AppConfState, RootState> = {
   signIn: async ({ commit }) => {
     lastValueFrom(
-      from(signIn()).pipe(
+      from(signInInvokers.signIn()).pipe(
         tap((res) => {
           if (isSuccessHttp(res) && res.data.user)
             commit('setUser', res.data.user);
@@ -26,7 +21,9 @@ const actions: ActionTree<AppConfState, RootState> = {
     );
   },
   signOut: async ({ commit }) => {
-    lastValueFrom(from(signOut()).pipe(tap(() => commit('setUser', null))));
+    lastValueFrom(
+      from(signInInvokers.signOut()).pipe(tap(() => commit('setUser', null)))
+    );
   },
   async removeLabel({ commit, dispatch }, labelId: string) {
     const clips: Clip[] = await dispatch(
@@ -50,7 +47,7 @@ const actions: ActionTree<AppConfState, RootState> = {
     commit('removeLabel', labelId);
   },
   async setStartup({ commit, state }, startup) {
-    if (isSuccess(await setStartup(startup))) {
+    if (isSuccess(await configurationInvokers.setStartup(startup))) {
       commit('setGeneral', { ...state.general, startup });
     }
   },
@@ -69,12 +66,12 @@ const actions: ActionTree<AppConfState, RootState> = {
     }
   },
   async setShortcut({ commit, state }, shortcut) {
-    if (isSuccess(await setShortcut(shortcut))) {
+    if (isSuccess(await configurationInvokers.setShortcut(shortcut))) {
       commit('setAdvanced', { ...state.advanced, shortcut });
     }
   },
   async relaunchApp() {
-    return relaunchApp();
+    return configurationInvokers.relaunchApp();
   },
 };
 

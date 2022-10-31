@@ -4,7 +4,6 @@ import {
   SaveDialogOptions,
   ipcRenderer,
 } from 'electron';
-import ua from 'universal-analytics';
 
 import { Result__ } from '@/utils/result';
 

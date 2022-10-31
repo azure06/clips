@@ -1,4 +1,4 @@
-import { finishTransactionByDate, getReceiptURL } from '../invokers';
+import * as paymentInvokers from '@/renderer/invokers/payments';
 
 export const handleTransaction = async (
   func: (transaction: Electron.Transaction) => void,
@@ -19,7 +19,7 @@ export const handleTransaction = async (
           console.info(`${payment.productIdentifier} purchased.`);
 
           // Get the receipt url.
-          const receiptURL = await getReceiptURL();
+          const receiptURL = await paymentInvokers.getReceiptURL();
 
           console.info(`Receipt URL: ${receiptURL}`);
 
@@ -30,7 +30,9 @@ export const handleTransaction = async (
           // ...
 
           // Finish the transaction.
-          await finishTransactionByDate(transaction.transactionDate);
+          await paymentInvokers.finishTransactionByDate(
+            transaction.transactionDate
+          );
 
           break;
         }
@@ -39,7 +41,9 @@ export const handleTransaction = async (
           console.info(`Failed to purchase ${payment.productIdentifier}.`);
 
           // Finish the transaction.
-          await finishTransactionByDate(transaction.transactionDate);
+          await paymentInvokers.finishTransactionByDate(
+            transaction.transactionDate
+          );
           break;
         case 'restored':
           console.info(

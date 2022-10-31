@@ -369,11 +369,7 @@
 import { Product, shell } from 'electron';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-import {
-  canMakePayments,
-  purchaseProduct,
-  restoreCompletedTransactions,
-} from '@/renderer/invokers/index';
+import * as paymentsInvokers from '@/renderer/invokers/payments';
 import { Translation } from '@/renderer/utils/translations/types';
 import { replace } from '@/utils/common';
 import { always, whenMas } from '@/utils/environment';
@@ -493,13 +489,13 @@ export default class Advanced extends Vue {
   }
 
   public restoreCompletedTransaction(): Promise<Result__<void>> {
-    return restoreCompletedTransactions();
+    return paymentsInvokers.restoreCompletedTransactions();
   }
 
   public async purchase(): Promise<void> {
-    if (this.product && (await canMakePayments())) {
+    if (this.product && (await paymentsInvokers.canMakePayments())) {
       this.$emit('set-in-app-status', 'pre-purchasing');
-      purchaseProduct(this.product);
+      paymentsInvokers.purchaseProduct(this.product);
     } else console.error('Something went wrong');
   }
 }

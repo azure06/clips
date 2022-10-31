@@ -12,7 +12,6 @@ import {
   concatMap,
   expand,
   map,
-  mapTo,
   take,
   tap,
   withLatestFrom,
@@ -21,17 +20,10 @@ import { ActionTree } from 'vuex';
 
 import { Data } from '@/electron/services/clipboard';
 import * as storeService from '@/electron/services/electron-store';
-import {
-  copyToClipboard,
-  createBackup,
-  openEditor,
-  removeImage,
-  removeImageDirectory,
-  restoreBackup,
-  retrieveFileFromDrive,
-  switchdb as switchDB,
-  uploadToDrive,
-} from '@/renderer/invokers';
+import * as clipboardInvokers from '@/renderer/invokers/clipboard';
+import * as configurationInvokers from '@/renderer/invokers/configuration';
+import * as googleDriveInvokers from '@/renderer/invokers/google-drive';
+import * as leveldownInvokers from '@/renderer/invokers/leveldown';
 import * as remote from '@/renderer/invokers/remote';
 import {
   AppConfState,
@@ -41,6 +33,7 @@ import {
 } from '@/renderer/store/types';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { isAuthenticated } from '@/utils/common';
+import { always } from '@/utils/environment';
 import { isSuccess, isSuccessHttp } from '@/utils/result';
 
 export const copySilently = new BehaviorSubject(false);
@@ -55,7 +48,7 @@ export const adapterObserver = merge(
     (async () => {
       // {"filename":"//./src/helpers/methods.ts?","function":"Module.eval [as findClips]","type":"ReferenceError","value":"Cannot access 'findClips' before initialization"}
       await new Promise((resolve) => setTimeout(resolve, 0));
-      const res = await switchDB(of('idb'))('findClips', {
+      const res = await leveldownInvokers.switchdb(of('idb'))('findClips', {
         limit: 1,
       });
       return isSuccess(res) ? res.data.length === 0 : false;
@@ -75,7 +68,9 @@ export const adapterObserver = merge(
   rxAdapter.asObservable()
 );
 
-export const methods = switchDB(adapterObserver.pipe(take(1)));
+export const methods = leveldownInvokers.switchdb(
+  adapterObserver.pipe(take(1))
+);
 
 const actions: ActionTree<ClipsState, RootState> = {
   findClips: async (
@@ -155,7 +150,7 @@ const actions: ActionTree<ClipsState, RootState> = {
         )
         .pipe(tap(() => commit('setLoadingStatus', false)))
     ),
-  editImage: async (_, clip: Clip) => openEditor(clip.id),
+  editImage: async (_, clip: Clip) => configurationInvokers.openEditor(clip.id),
   removeClips: async ({ commit }, ids: string[]) =>
     lastValueFrom(
       range(1, 1)
@@ -173,7 +168,7 @@ const actions: ActionTree<ClipsState, RootState> = {
               ? Promise.all(
                   res.data
                     .filter((clip) => clip.type === 'image')
-                    .map((clip) => removeImage(clip.dataURI))
+                    .map((clip) => clipboardInvokers.removeImage(clip.dataURI))
                 )
               : Promise.resolve()
           )
@@ -198,7 +193,7 @@ const actions: ActionTree<ClipsState, RootState> = {
               ? Promise.all(
                   res.data
                     .filter((clip) => clip.type === 'image')
-                    .map((clip) => removeImage(clip.dataURI))
+                    .map((clip) => clipboardInvokers.removeImage(clip.dataURI))
                 )
               : Promise.resolve()
           )
@@ -213,14 +208,15 @@ const actions: ActionTree<ClipsState, RootState> = {
           concatMap(() =>
             Promise.all([
               methods('restoreFactoryDefault'),
-              removeImageDirectory(),
+              clipboardInvokers.removeImageDirectory(),
             ])
           )
         )
         .pipe(map(([head]) => head))
         .pipe(tap(() => commit('setLoadingStatus', false)))
     ),
-  copyToClipboard: async (_, data: Data) => copyToClipboard(data),
+  copyToClipboard: async (_, data: Data) =>
+    clipboardInvokers.copyToClipboard(data),
   // force:
   retrieveFromDrive: async (
     { commit, dispatch, rootState },
@@ -237,7 +233,7 @@ const actions: ActionTree<ClipsState, RootState> = {
       expand((fieldIds) => {
         const [fileId, ...tail] = fieldIds;
         return fieldIds.length > 0
-          ? from(retrieveFileFromDrive(fileId))
+          ? from(googleDriveInvokers.retrieveFileFromDrive(fileId))
               .pipe(
                 concatMap(async (response) => {
                   if (isSuccessHttp(response)) {
@@ -263,7 +259,7 @@ const actions: ActionTree<ClipsState, RootState> = {
                   }
                 })
               )
-              .pipe(mapTo(tail))
+              .pipe(map(always(tail)))
           : EMPTY;
       }),
       tap(() => commit('setSyncStatus', 'resolved'))
@@ -287,7 +283,7 @@ const actions: ActionTree<ClipsState, RootState> = {
           clips.length >= args.threshold))
     ) {
       commit('setSyncStatus', 'pending');
-      const response = await uploadToDrive(clips);
+      const response = await googleDriveInvokers.uploadToDrive(clips);
       if (isSuccessHttp(response) && response.data.id) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { drive } = (rootState as any).configuration as AppConfState;
@@ -332,7 +328,10 @@ const actions: ActionTree<ClipsState, RootState> = {
             });
             return filePath
               ? (async () => {
-                  const response = await createBackup(filePath, clips);
+                  const response = await googleDriveInvokers.createBackup(
+                    filePath,
+                    clips
+                  );
                   return isSuccess(response) ? clips : [];
                 })()
               : [];
@@ -354,7 +353,9 @@ const actions: ActionTree<ClipsState, RootState> = {
             });
             return filePaths.length > 0
               ? (async () => {
-                  const result = await restoreBackup(filePaths[0]);
+                  const result = await googleDriveInvokers.restoreBackup(
+                    filePaths[0]
+                  );
                   return isSuccess(result) ? result.data : [];
                 })()
               : Promise.resolve([] as Clip[]);

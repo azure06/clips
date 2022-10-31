@@ -210,12 +210,7 @@ import { Component } from 'vue-property-decorator';
 import { Action, Getter } from 'vuex-class';
 
 import * as storeService from '@/electron/services/electron-store';
-import {
-  changePageToken,
-  listGoogleDriveFiles,
-  removeFile,
-  retrieveFileFromDrive,
-} from '@/renderer/invokers/index';
+import * as googleDriveInvokers from '@/renderer/invokers/google-drive';
 import { Clip, User } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
 import { HttpFailure, isSuccessHttp } from '@/utils/result';
@@ -245,7 +240,7 @@ export default class GoogleDrive extends ExtendedVue {
   }
 
   public async resetPageToken(): Promise<void> {
-    const response = await changePageToken();
+    const response = await googleDriveInvokers.changePageToken();
     if (isSuccessHttp(response) && response.data.startPageToken) {
       storeService.setPageToken(response.data.startPageToken);
       this.retrieveData();
@@ -267,7 +262,8 @@ export default class GoogleDrive extends ExtendedVue {
   ): Promise<void> {
     // FIXME move to action?
     this.fetching = true;
-    retrieveFileFromDrive(change.fileId)
+    googleDriveInvokers
+      .retrieveFileFromDrive(change.fileId)
       .then((response) =>
         !isSuccessHttp(response)
           ? this.errorHandler(response)
@@ -281,7 +277,8 @@ export default class GoogleDrive extends ExtendedVue {
   public async removeFile(fileId: string): Promise<void> {
     // FIXME move to action?
     this.fetching = true;
-    removeFile(fileId)
+    googleDriveInvokers
+      .removeFile(fileId)
       .then((response) =>
         !isSuccessHttp(response)
           ? this.errorHandler(response)
@@ -293,12 +290,12 @@ export default class GoogleDrive extends ExtendedVue {
   public async retrieveData(token?: string): Promise<void> {
     this.loading = true;
     if (token) {
-      const response = await changePageToken(token);
+      const response = await googleDriveInvokers.changePageToken(token);
       if (isSuccessHttp(response) && response.data.startPageToken)
         storeService.setPageToken(response.data.startPageToken);
     }
     this.storedToken = storeService.getPageToken('');
-    const response = await listGoogleDriveFiles();
+    const response = await googleDriveInvokers.listGoogleDriveFiles();
     this.loading = false;
     if (isSuccessHttp(response)) {
       this.driveChanges = Object.entries(response.data)
