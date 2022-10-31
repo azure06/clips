@@ -251,9 +251,8 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Room as RoomType } from '@/renderer/store/types';
-
+import { WatchObservable } from '@azure06/vue-rx';
+import moment from 'moment';
 import { Observable, Subject, fromEvent } from 'rxjs';
 import {
   debounceTime,
@@ -264,9 +263,10 @@ import {
   startWith,
   tap,
 } from 'rxjs/operators';
+import { Component, Prop, Vue } from 'vue-property-decorator';
+
+import { Room as RoomType } from '@/renderer/store/types';
 import { MessageDoc, MessageStatus, parseContent } from '@/rxdb/message/model';
-import moment from 'moment';
-import { WatchObservable } from '@azure06/vue-rx';
 import { INVOCATION } from '@/utils/constants';
 
 type RoomEx = Omit<RoomType, 'messages'> & {

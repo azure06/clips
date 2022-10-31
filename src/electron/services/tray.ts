@@ -1,6 +1,8 @@
-import { empty, whenWindows } from '@/utils/environment';
-import { BrowserWindow, Menu, Tray, app, nativeImage } from 'electron';
 import path from 'path';
+
+import { BrowserWindow, Menu, Tray, app, nativeImage } from 'electron';
+
+import { empty, whenWindows } from '@/utils/environment';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 /* global __static */

@@ -1,9 +1,11 @@
+import { BrowserWindow, dialog, ipcMain } from 'electron';
+
+import { INVOCATION } from '@/utils/constants';
+
 import {
   ActionDialog,
   ActionGetCurrentWindow,
 } from '../../renderer/invokers/remote';
-import { INVOCATION } from '@/utils/constants';
-import { BrowserWindow, dialog, ipcMain } from 'electron';
 
 export const onGetCurrentWindow = (
   func: (action: ActionGetCurrentWindow, payload: any) => any

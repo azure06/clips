@@ -1,6 +1,7 @@
+import { ipcMain } from 'electron';
+
 import { INVOCATION } from '@/utils/constants';
 import { Methods, MethodsReturnType } from '@/utils/methods';
-import { ipcMain } from 'electron';
 
 // Node DB
 export const onNodeDB = (

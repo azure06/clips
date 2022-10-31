@@ -1,9 +1,10 @@
-import { Translation } from './types';
-import { en } from './english';
-import { ja } from './japanese';
-import { it } from './italian';
-import { chinese } from './chinese';
 import { Language } from '@/utils/common';
+
+import { chinese } from './chinese';
+import { en } from './english';
+import { it } from './italian';
+import { ja } from './japanese';
+import { Translation } from './types';
 
 export const translations: {
   [T in keyof Omit<Language, 'auto'>]: Translation;

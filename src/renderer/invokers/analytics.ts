@@ -1,6 +1,7 @@
+import { ipcRenderer } from 'electron';
+
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
-import { ipcRenderer } from 'electron';
 
 export const pageView = (
   path: string,

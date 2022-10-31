@@ -1,3 +1,5 @@
+import { uuid } from 'uuidv4';
+
 import {
   MessageCollection,
   MessageCollectionMethods,
@@ -6,7 +8,6 @@ import {
   MessageStatus,
   schema,
 } from './model';
-import { uuid } from 'uuidv4';
 
 const messageDocMethods: MessageDocMethods = {
   scream(this: MessageDoc, what: string) {

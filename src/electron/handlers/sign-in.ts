@@ -1,9 +1,10 @@
 // SignIn
 
-import { INVOCATION } from '@/utils/constants';
-import { HttpResult__ } from '@/utils/result';
 import { ipcMain } from 'electron';
 import { drive_v3 } from 'googleapis';
+
+import { INVOCATION } from '@/utils/constants';
+import { HttpResult__ } from '@/utils/result';
 
 export const onSignIn = (
   func: () => Promise<HttpResult__<drive_v3.Schema$About>>

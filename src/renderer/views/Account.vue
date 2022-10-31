@@ -86,8 +86,9 @@
 
 <script lang="ts">
 import { Component } from 'vue-property-decorator';
-import { User } from '@/renderer/store/types';
 import { Action, Getter } from 'vuex-class';
+
+import { User } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
 
 @Component({ components: {} })

@@ -1,9 +1,11 @@
 // SocketIO
 
+import { ipcMain } from 'electron';
+
 import { MessageDoc } from '@/rxdb/message/model';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
-import { ipcMain } from 'electron';
+
 import { IDevice } from '../services/socket.io/types';
 
 export const onMyDevice = (func: () => Promise<Result__<IDevice>>): void =>

@@ -1,41 +1,43 @@
-import { BrowserWindow, app, ipcMain } from 'electron';
-// import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
-import * as clipboardService from './services/clipboard';
-import { GoogleOAuth2Service } from './services/google-auth';
-import { GoogleDriveService } from './services/google-drive';
-import { environment } from './environment';
-import { mainWindow } from './services/windows/main';
-import { tray } from './services/tray';
-import * as Sentry from '@/utils/sentry';
-import * as storeService from './services/electron-store';
-
-import { shortcutHandler } from './services/shortcuts';
-import { autoLauncherHandler } from './services/auto-launcher';
-import * as socketIoService from './services/socket.io/server';
-import * as analytics from './services/analytics';
-import { iDevice as getIDevice } from './services/socket.io/utils/network';
-import { IDevice } from './services/socket.io/types';
-import { tap } from 'rxjs/operators';
-import http from 'http';
 import fs from 'fs';
+import http from 'http';
+
+import { BrowserWindow, app, ipcMain } from 'electron';
+
+// import { createProtocol, installVueDevtools } from 'vue-cli-plugin-electron-builder/lib';
 import { Subscription } from 'rxjs';
-import { sendFile } from './services/socket.io/client';
-import { MessageDoc } from '@/rxdb/message/model';
-import * as inAppPurchaseService from './services/in-app-purachase';
-import { always, whenShareAvailable } from '@/utils/environment';
-import { editorWindow } from './services/windows/editor';
-import * as handler from '@/utils/result';
-import * as methods from '@/utils/methods';
-import * as remoteHandler from '../electron/handlers/remote';
-import * as analyticsHandler from '../electron/handlers/analytics';
-import * as configurationHandler from '@/electron/handlers/configuration';
-import * as leveldownHandler from '@/electron/handlers/leveldown';
-import * as googleDriveHandler from '@/electron/handlers/google-drive';
-import * as paymentsHandler from '@/electron/handlers/payments';
+import { tap } from 'rxjs/operators';
+
 import * as clipboardHandler from '@/electron/handlers/clipboard';
+import * as configurationHandler from '@/electron/handlers/configuration';
+import * as googleDriveHandler from '@/electron/handlers/google-drive';
+import * as leveldownHandler from '@/electron/handlers/leveldown';
+import * as paymentsHandler from '@/electron/handlers/payments';
 import * as signInHandler from '@/electron/handlers/sign-in';
 import * as socketIoHandler from '@/electron/handlers/socket-io';
+import { MessageDoc } from '@/rxdb/message/model';
 import { SENDERS } from '@/utils/constants';
+import { always, whenShareAvailable } from '@/utils/environment';
+import * as methods from '@/utils/methods';
+import * as handler from '@/utils/result';
+import * as Sentry from '@/utils/sentry';
+import * as analyticsHandler from '../electron/handlers/analytics';
+import * as remoteHandler from '../electron/handlers/remote';
+import { environment } from './environment';
+import * as analytics from './services/analytics';
+import { autoLauncherHandler } from './services/auto-launcher';
+import * as clipboardService from './services/clipboard';
+import * as storeService from './services/electron-store';
+import { GoogleOAuth2Service } from './services/google-auth';
+import { GoogleDriveService } from './services/google-drive';
+import * as inAppPurchaseService from './services/in-app-purachase';
+import { shortcutHandler } from './services/shortcuts';
+import { sendFile } from './services/socket.io/client';
+import * as socketIoService from './services/socket.io/server';
+import { IDevice } from './services/socket.io/types';
+import { iDevice as getIDevice } from './services/socket.io/utils/network';
+import { tray } from './services/tray';
+import { editorWindow } from './services/windows/editor';
+import { mainWindow } from './services/windows/main';
 
 const runCatching = handler.runCatching(Sentry.captureException);
 const runCatchingHttpError = handler.runCatchingHttpError(
@@ -335,6 +337,7 @@ export function onReady(): void {
       editorWindow.create(clipId);
     })
   );
+  // eslint-disable-next-line import/namespace
   leveldownHandler.onNodeDB((methodNm, args) => methods[methodNm](...args));
   configurationHandler.onRelaunchApp(
     runCatching(() => {

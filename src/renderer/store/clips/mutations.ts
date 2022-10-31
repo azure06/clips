@@ -1,4 +1,5 @@
 import { MutationTree } from 'vuex';
+
 import { Clip, ClipsState } from '@/renderer/store/types';
 
 const mutations: MutationTree<ClipsState> = {

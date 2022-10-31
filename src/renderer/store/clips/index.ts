@@ -1,8 +1,10 @@
-import getters from './getters';
-import actions from './actions';
-import mutations from './mutations';
-import { ClipsState, RootState } from '@/renderer/store/types';
 import { Module } from 'vuex';
+
+import { ClipsState, RootState } from '@/renderer/store/types';
+
+import actions from './actions';
+import getters from './getters';
+import mutations from './mutations';
 
 const state: ClipsState = {
   loading: false,

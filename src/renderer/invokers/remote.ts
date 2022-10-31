@@ -1,4 +1,3 @@
-import { Result__ } from '@/utils/result';
 import {
   OpenDialogOptions,
   Rectangle,
@@ -6,6 +5,9 @@ import {
   ipcRenderer,
 } from 'electron';
 import ua from 'universal-analytics';
+
+import { Result__ } from '@/utils/result';
+
 import { INVOCATION } from './../../utils/constants';
 
 export type ActionGetCurrentWindow =

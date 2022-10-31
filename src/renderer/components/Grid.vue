@@ -310,10 +310,11 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { Clip, Label } from '@/renderer/store/types';
-import { Component, Prop, Vue } from 'vue-property-decorator';
 import { uuid } from 'uuidv4';
+import { Component, Prop, Vue } from 'vue-property-decorator';
+
 import { randomColor } from '@/renderer/store/network/actions';
+import { Clip, Label } from '@/renderer/store/types';
 import { Translation } from '@/renderer/utils/translations/types';
 import {
   ClipExtended,

@@ -1,8 +1,9 @@
 //   Payments
 
+import { ipcMain } from 'electron';
+
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
-import { ipcMain } from 'electron';
 
 export const onCanMakePayments = (
   func: () => Promise<Result__<boolean>>

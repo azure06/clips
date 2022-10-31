@@ -1,5 +1,6 @@
-import { INVOCATION } from '@/utils/constants';
 import { ipcMain } from 'electron';
+
+import { INVOCATION } from '@/utils/constants';
 
 export const onPageView = (
   func: (path: string, hostname: string, title: string) => void

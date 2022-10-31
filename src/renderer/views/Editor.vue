@@ -54,8 +54,9 @@
 
 <script lang="ts">
 import AppBarSmall from '@/renderer/components/AppBarSmall.vue';
+
 import { Component } from 'vue-property-decorator';
-import { ExtendedVue } from '@/renderer/utils/basevue';
+
 import 'tui-image-editor/dist/svg/icon-a.svg';
 import 'tui-image-editor/dist/svg/icon-b.svg';
 import 'tui-image-editor/dist/svg/icon-c.svg';
@@ -67,12 +68,14 @@ import 'tui-image-editor/dist/tui-image-editor.css';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { ImageEditor } from '@toast-ui/vue-image-editor';
-import { getClipId } from '@/utils/environment';
 import { Action, Getter } from 'vuex-class';
-import { ClipSearchConditions } from '@/rxdb/clips/model';
-import { Clip } from '@/renderer/store/types';
+
 import { Data } from '@/electron/services/clipboard';
+import { Clip } from '@/renderer/store/types';
+import { ExtendedVue } from '@/renderer/utils/basevue';
+import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { loadImage } from '@/utils/common';
+import { getClipId } from '@/utils/environment';
 
 @Component<Editor>({
   components: {

@@ -1,5 +1,6 @@
-import { MessageDoc } from '@/rxdb/message/model';
 import findLocalDevices from 'local-devices';
+
+import { MessageDoc } from '@/rxdb/message/model';
 
 export type IDevice = findLocalDevices.IDevice & {
   username: string;

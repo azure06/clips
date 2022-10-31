@@ -1,10 +1,3 @@
-import { ActionTree } from 'vuex';
-import {
-  AppConfState,
-  Clip,
-  ClipsState,
-  RootState,
-} from '@/renderer/store/types';
 import {
   BehaviorSubject,
   EMPTY,
@@ -15,7 +8,6 @@ import {
   of,
   range,
 } from 'rxjs';
-import { ClipSearchConditions } from '@/rxdb/clips/model';
 import {
   concatMap,
   expand,
@@ -25,7 +17,9 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import * as remote from '@/renderer/invokers/remote';
+import { ActionTree } from 'vuex';
+
+import { Data } from '@/electron/services/clipboard';
 import * as storeService from '@/electron/services/electron-store';
 import {
   copyToClipboard,
@@ -38,8 +32,15 @@ import {
   switchdb as switchDB,
   uploadToDrive,
 } from '@/renderer/invokers';
+import * as remote from '@/renderer/invokers/remote';
+import {
+  AppConfState,
+  Clip,
+  ClipsState,
+  RootState,
+} from '@/renderer/store/types';
+import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { isAuthenticated } from '@/utils/common';
-import { Data } from '@/electron/services/clipboard';
 import { isSuccess, isSuccessHttp } from '@/utils/result';
 
 export const copySilently = new BehaviorSubject(false);

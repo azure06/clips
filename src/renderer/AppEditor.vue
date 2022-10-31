@@ -13,9 +13,10 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import NavDrawer from '@/renderer/components/NavDrawer.vue';
-import { Mutation } from 'vuex-class';
 import { Framework } from 'vuetify';
+import { Mutation } from 'vuex-class';
+
+import NavDrawer from '@/renderer/components/NavDrawer.vue';
 
 @Component<AppEditor>({
   components: { NavDrawer },

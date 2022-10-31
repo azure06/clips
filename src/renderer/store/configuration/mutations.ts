@@ -1,4 +1,8 @@
+import Vue from 'vue';
+import { Framework } from 'vuetify';
 import { MutationTree } from 'vuex';
+
+import * as storeService from '@/electron/services/electron-store';
 import {
   Advanced,
   AppConfState,
@@ -10,9 +14,6 @@ import {
   Label,
   User,
 } from '@/renderer/store/types';
-import { Framework } from 'vuetify';
-import * as storeService from '@/electron/services/electron-store';
-import Vue from 'vue';
 
 function isObject<T>(item: T) {
   return item && typeof item === 'object' && !Array.isArray(item);

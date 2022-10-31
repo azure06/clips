@@ -1,3 +1,7 @@
+import { from, lastValueFrom } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
+
+import { IDevice } from '@/electron/services/socket.io/types';
 import {
   createClipsRxDB as createClipsRxDB__,
   getCollection,
@@ -5,15 +9,13 @@ import {
   removeClipsRxDB,
 } from '@/rxdb';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
-import { Clip } from '../renderer/store/types';
-import * as handler from '@/utils/result';
-import { concatMap } from 'rxjs/operators';
-import { whenRenderer } from '@/utils/environment';
-import { UserDoc } from '@/rxdb/user/model';
-import { randomColor } from '../renderer/store/network/actions';
-import { IDevice } from '@/electron/services/socket.io/types';
 import { MessageDoc } from '@/rxdb/message/model';
-import { from, lastValueFrom } from 'rxjs';
+import { UserDoc } from '@/rxdb/user/model';
+import { whenRenderer } from '@/utils/environment';
+import * as handler from '@/utils/result';
+
+import { randomColor } from '../renderer/store/network/actions';
+import { Clip } from '../renderer/store/types';
 
 const adapter = from(
   whenRenderer(

@@ -129,7 +129,7 @@
     </v-toolbar-title>
     <v-spacer />
     <div
-      v-if="true || isWindowsOrLinux"
+      v-if="isWindowsOrLinux"
       :class="`window-controls ${$vuetify.theme.dark ? 'dark' : 'light'}`"
     >
       <div class="button min-button" @click="minimize">
@@ -205,16 +205,17 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator';
-import * as remote from '@/renderer/invokers/remote';
-import { always, whenLinux, whenWindows } from '@/utils/environment';
-import { ExtendedVue } from '@/renderer/utils/basevue';
-import { adapterObserver } from '@/renderer/store/clips/actions';
-import { Action, Mutation } from 'vuex-class';
-import Advanced from '@/renderer/components/settings/Advanced.vue';
-import { Clip } from '@/renderer/store/types';
-import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { Subject, filter, from, map, merge, tap } from 'rxjs';
+import { Component } from 'vue-property-decorator';
+import { Action, Mutation } from 'vuex-class';
+
+import Advanced from '@/renderer/components/settings/Advanced.vue';
+import * as remote from '@/renderer/invokers/remote';
+import { adapterObserver } from '@/renderer/store/clips/actions';
+import { Clip } from '@/renderer/store/types';
+import { ExtendedVue } from '@/renderer/utils/basevue';
+import { ClipSearchConditions } from '@/rxdb/clips/model';
+import { always, whenLinux, whenWindows } from '@/utils/environment';
 import { Result__, isSuccess } from '@/utils/result';
 
 @Component<AppBar>({

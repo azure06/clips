@@ -1,17 +1,20 @@
-import { autoUpdaterObservable } from '../auto-updater';
-import * as storeService from '../electron-store';
-import { BrowserWindow, app } from 'electron';
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
-import { AppConfState } from '../../../renderer/store/types';
+
+import { BrowserWindow, app } from 'electron';
+import { Subscription } from 'rxjs';
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
+
+import { ActionGetCurrentWindow } from '@/renderer/invokers/remote';
 import {
   always,
   empty,
   whenAutoUpdateAvailable,
   whenMacOS,
 } from '@/utils/environment';
-import { Subscription } from 'rxjs';
-import { ActionGetCurrentWindow } from '@/renderer/invokers/remote';
+
+import { AppConfState } from '../../../renderer/store/types';
+import { autoUpdaterObservable } from '../auto-updater';
+import * as storeService from '../electron-store';
 
 declare const __static: string;
 

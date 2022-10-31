@@ -1,12 +1,14 @@
-import { ShortcutFuzzy } from '@/electron/services/shortcuts';
-import { IDevice } from '@/electron/services/socket.io/types';
-import { MessageDoc } from '@/rxdb/message/model';
-import { Clip } from '@/renderer/store/types';
 import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
+import { Observable, lastValueFrom } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
+
 import { Data } from '@/electron/services/clipboard';
-import { INVOCATION } from '../../utils/constants';
-import { HttpResult__, Result__ } from '../../utils/result';
+import { ShortcutFuzzy } from '@/electron/services/shortcuts';
+import { IDevice } from '@/electron/services/socket.io/types';
+import { Clip } from '@/renderer/store/types';
+import { RxDBAdapterNm } from '@/rxdb';
+import { MessageDoc } from '@/rxdb/message/model';
 import {
   Methods,
   MethodsReturnType,
@@ -44,9 +46,9 @@ import {
   ReturnUpsertUser,
 } from '@/utils/methods';
 import * as methods from '@/utils/methods';
-import { RxDBAdapterNm } from '@/rxdb';
-import { Observable, lastValueFrom } from 'rxjs';
-import { concatMap } from 'rxjs/operators';
+
+import { INVOCATION } from '../../utils/constants';
+import { HttpResult__, Result__ } from '../../utils/result';
 
 export type DataURI = string;
 

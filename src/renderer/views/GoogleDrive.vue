@@ -204,12 +204,11 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator';
-import { Clip, User } from '@/renderer/store/types';
-import { Action, Getter } from 'vuex-class';
 import { drive_v3 } from 'googleapis';
 import moment from 'moment';
-import { ExtendedVue } from '@/renderer/utils/basevue';
+import { Component } from 'vue-property-decorator';
+import { Action, Getter } from 'vuex-class';
+
 import * as storeService from '@/electron/services/electron-store';
 import {
   changePageToken,
@@ -217,6 +216,8 @@ import {
   removeFile,
   retrieveFileFromDrive,
 } from '@/renderer/invokers/index';
+import { Clip, User } from '@/renderer/store/types';
+import { ExtendedVue } from '@/renderer/utils/basevue';
 import { HttpFailure, isSuccessHttp } from '@/utils/result';
 
 @Component({ components: {} })

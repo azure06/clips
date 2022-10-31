@@ -1,5 +1,7 @@
+import { from, lastValueFrom } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { ActionTree } from 'vuex';
-import { AppConfState, Clip, RootState } from '@/renderer/store/types';
+
 import {
   relaunchApp,
   setShortcut,
@@ -7,11 +9,10 @@ import {
   signIn,
   signOut,
 } from '@/renderer/invokers';
-import { ClipSearchConditions } from '@/rxdb/clips/model';
-import { from, lastValueFrom } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { isSuccess, isSuccessHttp } from '@/utils/result';
 import * as remote from '@/renderer/invokers/remote';
+import { AppConfState, Clip, RootState } from '@/renderer/store/types';
+import { ClipSearchConditions } from '@/rxdb/clips/model';
+import { isSuccess, isSuccessHttp } from '@/utils/result';
 
 const actions: ActionTree<AppConfState, RootState> = {
   signIn: async ({ commit }) => {

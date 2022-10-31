@@ -40,16 +40,8 @@
 </template>
 
 <script lang="ts">
-import AppBar from '@/renderer/components/AppBar.vue';
-import { ExtendedVue } from '@/renderer/utils/basevue';
-import { UserDoc } from '../rxdb/user/model';
-import { UserUpsert } from '@/renderer/store/network/actions';
-import { Component } from 'vue-property-decorator';
-import NavDrawer from '@/renderer/components/NavDrawer.vue';
-import NavDrawerConfig from '@/renderer/components/NavDrawerConfig.vue';
-import * as subscriptions from '@/renderer/subscriptions/index';
 import { ipcRenderer } from 'electron';
-import { Action, Getter, Mutation } from 'vuex-class';
+import { from, interval, of } from 'rxjs';
 import {
   concatMap,
   debounceTime,
@@ -61,7 +53,18 @@ import {
   switchMap,
   tap,
 } from 'rxjs/operators';
-import { handleTransaction } from '@/renderer/utils/in-app-transaction';
+import { Component } from 'vue-property-decorator';
+import { Framework } from 'vuetify';
+import { Action, Getter, Mutation } from 'vuex-class';
+import AppBar from '@/renderer/components/AppBar.vue';
+import NavDrawer from '@/renderer/components/NavDrawer.vue';
+import NavDrawerConfig from '@/renderer/components/NavDrawerConfig.vue';
+import {
+  imagePathToDataURI,
+  listGoogleDriveFiles,
+} from '@/renderer/invokers/index';
+import router from '@/renderer/router';
+import { UserUpsert } from '@/renderer/store/network/actions';
 import {
   Advanced,
   Appearance,
@@ -73,21 +76,19 @@ import {
   Room,
   User,
 } from '@/renderer/store/types';
-import { from, interval, of } from 'rxjs';
-import {
-  imagePathToDataURI,
-  listGoogleDriveFiles,
-} from '@/renderer/invokers/index';
-import { isAuthenticated } from '../utils/common';
-
-import { Framework } from 'vuetify';
+import * as subscriptions from '@/renderer/subscriptions/index';
+import { ExtendedVue } from '@/renderer/utils/basevue';
+import { handleTransaction } from '@/renderer/utils/in-app-transaction';
+import { isSuccess, isSuccessHttp } from '@/utils/result';
+import { IDevice } from '../electron/services/socket.io/types';
+import { Format } from '../rxdb/clips/model';
 import {
   MessageDoc,
   parseContent,
   stringifyContent,
 } from '../rxdb/message/model';
-import { Format } from '../rxdb/clips/model';
-import { IDevice } from '../electron/services/socket.io/types';
+import { UserDoc } from '../rxdb/user/model';
+import { isAuthenticated } from '../utils/common';
 import {
   always,
   empty,
@@ -95,8 +96,7 @@ import {
   whenMacOS,
   whenShareAvailable,
 } from '../utils/environment';
-import { isSuccess, isSuccessHttp } from '@/utils/result';
-import router from '@/renderer/router';
+
 import { initAnalytics } from './utils/analytics-vue';
 
 @Component<App>({

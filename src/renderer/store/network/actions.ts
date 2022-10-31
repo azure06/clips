@@ -1,5 +1,3 @@
-import { ActionTree } from 'vuex';
-import { NetworkState, RootState } from '@/renderer/store/types';
 import { EMPTY, from, lastValueFrom, of, range } from 'rxjs';
 import {
   catchError,
@@ -9,17 +7,21 @@ import {
   switchMap,
   tap,
 } from 'rxjs/operators';
+import { ActionTree } from 'vuex';
+
 import {
   discoverDevices,
   sendMessage,
 } from '@/electron/services/socket.io/client';
-import * as Sentry from '@/utils/sentry';
+import { IDevice } from '@/electron/services/socket.io/types';
+import { getMyDevice, handleIoServer, sendFile } from '@/renderer/invokers';
+import { NetworkState, RootState } from '@/renderer/store/types';
 import { MessageDoc, stringifyContent } from '@/rxdb/message/model';
 import { UserDoc } from '@/rxdb/user/model';
-import { IDevice } from '@/electron/services/socket.io/types';
 import { toDictionary } from '@/utils/common';
-import { getMyDevice, handleIoServer, sendFile } from '@/renderer/invokers';
 import { isSuccess } from '@/utils/result';
+import * as Sentry from '@/utils/sentry';
+
 import { methods } from '../clips/actions';
 
 export type UserUpsert = Partial<Omit<UserDoc, 'device'>> & { device: IDevice };

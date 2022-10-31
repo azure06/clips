@@ -127,22 +127,8 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator';
-import { Subject, combineLatest, fromEvent } from 'rxjs';
-import AppBar from '@/renderer/components/AppBar.vue';
-import SearchBar from '@/renderer/components/SearchBar.vue';
-import Grid from '@/renderer/components/Grid.vue';
-import { Clip, Label, User } from '@/renderer/store/types';
-import { Action, Getter, Mutation } from 'vuex-class';
-import {
-  ClipSearchConditions,
-  Format,
-  SearchFilters,
-} from '@/rxdb/clips/model';
-import * as utils from '@/rxdb/clips/utils';
-import { ExtendedVue } from '@/renderer/utils/basevue';
 import moment from 'moment';
-import * as remote from '@/renderer/invokers/remote';
+import { Subject, combineLatest, fromEvent } from 'rxjs';
 import {
   concatMap,
   debounceTime,
@@ -152,8 +138,23 @@ import {
   scan,
   startWith,
 } from 'rxjs/operators';
+import { Component } from 'vue-property-decorator';
+import { Action, Getter, Mutation } from 'vuex-class';
+
 import { Data } from '@/electron/services/clipboard';
+import AppBar from '@/renderer/components/AppBar.vue';
+import Grid from '@/renderer/components/Grid.vue';
+import SearchBar from '@/renderer/components/SearchBar.vue';
+import * as remote from '@/renderer/invokers/remote';
 import { copySilently } from '@/renderer/store/clips/actions';
+import { Clip, Label, User } from '@/renderer/store/types';
+import { ExtendedVue } from '@/renderer/utils/basevue';
+import {
+  ClipSearchConditions,
+  Format,
+  SearchFilters,
+} from '@/rxdb/clips/model';
+import * as utils from '@/rxdb/clips/utils';
 import { always, whenLinux, whenWindows } from '@/utils/environment';
 
 export type ClipFormat =

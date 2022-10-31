@@ -1,7 +1,9 @@
+import { ipcMain } from 'electron';
+
 import { Clip } from '@/renderer/store/types';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
-import { ipcMain } from 'electron';
+
 import { Data } from '../services/clipboard';
 
 export const onCopyToClipboard = (

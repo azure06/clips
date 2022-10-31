@@ -95,17 +95,17 @@
 </template>
 
 <script lang="ts">
-import { ExtendedVue } from '@/renderer/utils/basevue';
+import { Product } from 'electron';
 import { Component } from 'vue-property-decorator';
-
 import { Action, Mutation } from 'vuex-class';
+
+import { getProducts } from '@/renderer/invokers/index';
+import { InAppStatus } from '@/renderer/store/types';
+import { ExtendedVue } from '@/renderer/utils/basevue';
 import {
   activatePremium,
   createActivationCode,
 } from '@/renderer/utils/firebase';
-import { Product } from 'electron';
-import { getProducts } from '@/renderer/invokers/index';
-import { InAppStatus } from '@/renderer/store/types';
 import { always, whenMacOS } from '@/utils/environment';
 import { Result__, isSuccess } from '@/utils/result';
 

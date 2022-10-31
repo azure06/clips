@@ -1,7 +1,8 @@
 import fs_ from 'fs';
 import path_ from 'path';
-import adapter_ from 'pouchdb-adapter-leveldb';
+
 import leveldown_ from 'leveldown';
+import adapter_ from 'pouchdb-adapter-leveldb';
 
 export const fs = fs_;
 export const path = path_;

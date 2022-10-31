@@ -105,8 +105,9 @@
 <script lang="ts">
 // @ is an alias to /src
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { language } from '@/utils/common';
+
 import { Advanced } from '@/renderer/store/types';
+import { language } from '@/utils/common';
 import { always, whenMacOS } from '@/utils/environment';
 
 @Component

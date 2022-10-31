@@ -1,16 +1,17 @@
-import Home from '../views/Home.vue';
-import Account from '../views/Account.vue';
-import Note from '../views/Note.vue';
-import GoogleDrive from '../views/GoogleDrive.vue';
-import Share from '../views/Share.vue';
-import Editor from '../views/Editor.vue';
-import Settings from '../views/Settings.vue';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+
+import Room from '../components/Room.vue';
+import Advanced from '../components/settings/Advanced.vue';
 import General from '../components/settings/General.vue';
 import Language from '../components/settings/Language.vue';
-import Advanced from '../components/settings/Advanced.vue';
-import Room from '../components/Room.vue';
-import VueRouter from 'vue-router';
-import Vue from 'vue';
+import Account from '../views/Account.vue';
+import Editor from '../views/Editor.vue';
+import GoogleDrive from '../views/GoogleDrive.vue';
+import Home from '../views/Home.vue';
+import Note from '../views/Note.vue';
+import Settings from '../views/Settings.vue';
+import Share from '../views/Share.vue';
 
 Vue.use(VueRouter);
 

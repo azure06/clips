@@ -366,22 +366,24 @@
 </template>
 
 <script lang="ts">
-import {
-  Advanced as AdvancedSetting,
-  Drive,
-  InAppStatus,
-} from '../../store/types';
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Translation } from '@/renderer/utils/translations/types';
 import { Product, shell } from 'electron';
+import { Component, Prop, Vue } from 'vue-property-decorator';
+
 import {
   canMakePayments,
   purchaseProduct,
   restoreCompletedTransactions,
 } from '@/renderer/invokers/index';
+import { Translation } from '@/renderer/utils/translations/types';
 import { replace } from '@/utils/common';
 import { always, whenMas } from '@/utils/environment';
 import { Result__ } from '@/utils/result';
+
+import {
+  Advanced as AdvancedSetting,
+  Drive,
+  InAppStatus,
+} from '../../store/types';
 
 type Cycle = {
   oneHour: string;

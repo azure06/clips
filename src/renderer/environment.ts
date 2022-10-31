@@ -1,6 +1,6 @@
-import Vue from 'vue';
-import * as Integrations from '@sentry/integrations';
 import * as Sentry from '@sentry/electron';
+import * as Integrations from '@sentry/integrations';
+import Vue from 'vue';
 
 export const environment = {
   sentry: {

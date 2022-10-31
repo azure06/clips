@@ -1,4 +1,5 @@
 import { GetterTree } from 'vuex';
+
 import { AppConfState, RootState } from '@/renderer/store/types';
 
 const getters: GetterTree<AppConfState, RootState> = {

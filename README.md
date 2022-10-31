@@ -43,12 +43,6 @@ $ npm install
 $ npm run electron:serve
 ```
 
-Note:
-
-Clips has been tested with Node v16.13.0 and npm 8.1.0
-Recently due to an issue with [Electron Updater](https://giters.com/electron-userland/electron-builder/issues/6456) you may need to make some modifications to `node_modules/electron-updater/out/AppUpdater.js` file by changing `const promises_1 = require("fs/promises");` to `const promises_1 = require("fs").promises;`
-
-
 ## Philosophy
 
 Work in progress.

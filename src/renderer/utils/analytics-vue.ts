@@ -1,4 +1,5 @@
 import VueRouter from 'vue-router';
+
 import * as analytics from '../invokers/analytics';
 
 export const initAnalytics = async function (router: VueRouter) {

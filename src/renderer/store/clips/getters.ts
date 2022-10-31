@@ -1,4 +1,5 @@
 import { GetterTree } from 'vuex';
+
 import { ClipsState, RootState } from '@/renderer/store/types';
 
 const getters: GetterTree<ClipsState, RootState> = {

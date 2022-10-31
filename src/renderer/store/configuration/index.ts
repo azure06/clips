@@ -1,12 +1,14 @@
-import getters from './getters';
-import actions from './actions';
-import mutations from './mutations';
-import { AppConfState, RootState } from '@/renderer/store/types';
-import { Module } from 'vuex';
-import { always, whenMacOS } from '@/utils/environment';
-import { ShortcutFuzzy } from '@/electron/services/shortcuts';
 import { ipcRenderer } from 'electron';
+import { Module } from 'vuex';
+
+import { ShortcutFuzzy } from '@/electron/services/shortcuts';
+import { AppConfState, RootState } from '@/renderer/store/types';
 import { SENDERS } from '@/utils/constants';
+import { always, whenMacOS } from '@/utils/environment';
+
+import actions from './actions';
+import getters from './getters';
+import mutations from './mutations';
 
 const { x, y } = ipcRenderer.sendSync(SENDERS.GET_BOUNDS_SYNC);
 

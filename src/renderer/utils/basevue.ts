@@ -1,6 +1,6 @@
-import { language, replace } from '@/utils/common';
-import { translations } from '@/renderer/utils/translations';
-import { Translation } from '@/renderer/utils/translations/types';
+import { Component, Vue } from 'vue-property-decorator';
+import { Getter } from 'vuex-class';
+
 import {
   Advanced,
   Appearance,
@@ -9,8 +9,9 @@ import {
   InAppStatus,
   Label,
 } from '@/renderer/store/types';
-import { Getter } from 'vuex-class';
-import { Component, Vue } from 'vue-property-decorator';
+import { translations } from '@/renderer/utils/translations';
+import { Translation } from '@/renderer/utils/translations/types';
+import { language, replace } from '@/utils/common';
 
 type Language = typeof language[keyof typeof language];
 

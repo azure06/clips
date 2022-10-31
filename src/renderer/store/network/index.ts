@@ -1,8 +1,10 @@
-import getters from './getters';
-import actions from './actions';
-import mutations from './mutations';
-import { NetworkState, RootState } from '@/renderer/store/types';
 import { Module } from 'vuex';
+
+import { NetworkState, RootState } from '@/renderer/store/types';
+
+import actions from './actions';
+import getters from './getters';
+import mutations from './mutations';
 
 const state: NetworkState = {
   status: 'closed', // Server status

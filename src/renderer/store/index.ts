@@ -1,9 +1,10 @@
-import { RootState } from './types';
+import Vue from 'vue';
+import Vuex, { StoreOptions } from 'vuex';
+
 import { clips } from './clips/index';
 import { configuration } from './configuration';
 import { network } from './network/index';
-import Vuex, { StoreOptions } from 'vuex';
-import Vue from 'vue';
+import { RootState } from './types';
 
 declare const __DATE__: number;
 declare const __COMMITHASH__: string;

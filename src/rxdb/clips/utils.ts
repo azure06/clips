@@ -1,5 +1,6 @@
-import { ClipRegExp } from './model';
 import { RxQuery } from 'rxdb';
+
+import { ClipRegExp } from './model';
 
 type FieldName =
   | 'id'

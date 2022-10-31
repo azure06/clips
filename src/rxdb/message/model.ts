@@ -1,5 +1,6 @@
-import { Progress } from '@/electron/services/socket.io/types';
 import { RxCollection, RxDocument, RxJsonSchema } from 'rxdb';
+
+import { Progress } from '@/electron/services/socket.io/types';
 
 export interface MessageDatabaseCollection {
   message: MessageCollection;

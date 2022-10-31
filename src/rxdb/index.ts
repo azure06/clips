@@ -1,25 +1,26 @@
-import { ClipsCollection, ClipsDatabaseCollection } from './clips/model';
-import { clips } from './clips/collection';
-import { room } from './room/collection';
-import { message } from './message/collection';
-import { user } from './user/collection';
-import { RoomCollection, RoomDatabaseCollection } from './room/model';
-import { MessageCollection, MessageDatabaseCollection } from './message/model';
-import { UserCollection, UserDatabaseCollection } from './user/model';
+import { app } from 'electron';
 import {
   RxDatabase,
   addRxPlugin,
   createRxDatabase,
   removeRxDatabase,
 } from 'rxdb';
-import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
-import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
-import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
+import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { Observable, from } from 'rxjs';
+
 import { concatMap, map } from 'rxjs/operators';
-import { app } from 'electron';
+import { clips } from './clips/collection';
+import { ClipsCollection, ClipsDatabaseCollection } from './clips/model';
+import { message } from './message/collection';
+import { MessageCollection, MessageDatabaseCollection } from './message/model';
+import { room } from './room/collection';
+import { RoomCollection, RoomDatabaseCollection } from './room/model';
+import { user } from './user/collection';
+import { UserCollection, UserDatabaseCollection } from './user/model';
 
 type RxCollections = ClipsDatabaseCollection &
   RoomDatabaseCollection &

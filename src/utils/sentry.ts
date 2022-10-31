@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/electron';
-import log from 'electron-log';
-import * as storeService from '@/electron/services/electron-store';
 import { session } from 'electron';
+import log from 'electron-log';
+
+import * as storeService from '@/electron/services/electron-store';
 
 export function init(
   options: Omit<Sentry.ElectronOptions, 'ipcMode' | 'getSessions'>

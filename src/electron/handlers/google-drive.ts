@@ -1,8 +1,9 @@
+import { ipcMain } from 'electron';
+import { drive_v3 } from 'googleapis';
+
 import { Clip } from '@/renderer/store/types';
 import { INVOCATION } from '@/utils/constants';
 import { HttpResult__ } from '@/utils/result';
-import { ipcMain } from 'electron';
-import { drive_v3 } from 'googleapis';
 
 export const onChangePageToken = (
   func: (

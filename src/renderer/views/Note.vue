@@ -6,10 +6,11 @@
 
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import Quill from 'quill';
 import { Component } from 'vue-property-decorator';
 import { Action, Getter } from 'vuex-class';
+
 import { ExtendedVue } from '@/renderer/utils/basevue';
-import Quill from 'quill';
 
 @Component<Note>({
   components: {},

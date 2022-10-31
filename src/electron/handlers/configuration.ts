@@ -1,8 +1,10 @@
-import { AppConfState } from '@/renderer/store/types';
 import { BrowserWindow, ipcMain } from 'electron';
-import { ShortcutFuzzy } from '../services/shortcuts';
+
+import { AppConfState } from '@/renderer/store/types';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
+
+import { ShortcutFuzzy } from '../services/shortcuts';
 
 export function eventHandler(
   func: () => AppConfState | undefined,

@@ -128,9 +128,10 @@
 
 <script lang="ts">
 // @ is an alias to /src
+import { Component } from 'vue-property-decorator';
+
 import { ExtendedVue } from '@/renderer/utils/basevue';
 import { always, whenMacOS } from '@/utils/environment';
-import { Component } from 'vue-property-decorator';
 
 @Component
 export default class NavDrawerConfig extends ExtendedVue {

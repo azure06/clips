@@ -1,4 +1,5 @@
 import { GetterTree } from 'vuex';
+
 import { NetworkState, RootState } from '@/renderer/store/types';
 import { toDictionary } from '@/utils/common';
 

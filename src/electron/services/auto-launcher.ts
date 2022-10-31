@@ -1,6 +1,7 @@
-import * as Sentry from '@/utils/sentry';
 import AutoLaunch from 'auto-launch';
+
 import { Result__ } from '@/utils/result';
+import * as Sentry from '@/utils/sentry';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 

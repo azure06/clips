@@ -1,11 +1,12 @@
+import { EventEmitter } from 'events';
+import { stringify } from 'querystring';
+import * as url from 'url';
+
 import { BrowserWindow } from 'electron';
 import { OAuth2Client } from 'google-auth-library';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { google } from 'googleapis';
 import { Subject } from 'rxjs';
-import { stringify } from 'querystring';
-import * as url from 'url';
-import { EventEmitter } from 'events';
 
 /**
  * Tokens updated event

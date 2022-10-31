@@ -241,14 +241,16 @@
 
 <script lang="ts">
 // @ is an alias to /src
+import { Component, Prop, Vue } from 'vue-property-decorator';
+
+import { replace } from '@/utils/common';
+import { always, whenWindows } from '@/utils/environment';
+
 import {
   Appearance,
   Drive,
   General as GeneralSettings,
 } from '../../store/types';
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { replace } from '@/utils/common';
-import { always, whenWindows } from '@/utils/environment';
 
 @Component
 export default class General extends Vue {

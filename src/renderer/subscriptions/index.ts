@@ -1,9 +1,10 @@
 import electron, { Rectangle } from 'electron';
 import { Subject, merge, timer } from 'rxjs';
-import { ClipDoc } from '@/rxdb/clips/model';
 import { debounce, map } from 'rxjs/operators';
-import { MessageDoc } from '@/rxdb/message/model';
+
 import { IDevice, Progress } from '@/electron/services/socket.io/types';
+import { ClipDoc } from '@/rxdb/clips/model';
+import { MessageDoc } from '@/rxdb/message/model';
 
 const resizeSubject = new Subject<unknown>();
 const moveSubject = new Subject<unknown>();

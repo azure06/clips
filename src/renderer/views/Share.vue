@@ -216,15 +216,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator';
-import { Action, Getter } from 'vuex-class';
-import { Dictionary } from 'vue-router/types/router';
-import { ExtendedVue } from '@/renderer/utils/basevue';
-import Room from '@/renderer/components/Room.vue';
-import { Room as RoomType } from '@/renderer/store/types';
-import { UserDoc } from '@/rxdb/user/model';
-import { MessageDoc } from '@/rxdb/message/model';
-import { IDevice } from '@/electron/services/socket.io/types';
+import { Subject, combineLatest, from } from 'rxjs';
 import {
   concatMap,
   distinctUntilChanged,
@@ -234,7 +226,16 @@ import {
   startWith,
   withLatestFrom,
 } from 'rxjs/operators';
-import { Subject, combineLatest, from } from 'rxjs';
+import { Component } from 'vue-property-decorator';
+import { Dictionary } from 'vue-router/types/router';
+import { Action, Getter } from 'vuex-class';
+
+import { IDevice } from '@/electron/services/socket.io/types';
+import Room from '@/renderer/components/Room.vue';
+import { Room as RoomType } from '@/renderer/store/types';
+import { ExtendedVue } from '@/renderer/utils/basevue';
+import { MessageDoc } from '@/rxdb/message/model';
+import { UserDoc } from '@/rxdb/user/model';
 
 @Component<Share>({
   components: { Room },

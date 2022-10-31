@@ -98,11 +98,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
 import moment from 'moment';
+import { Subject, filter, from, map, merge, tap } from 'rxjs';
+import { Component, Prop, Vue } from 'vue-property-decorator';
+
 import * as remote from '@/renderer/invokers/remote';
 import { always, whenLinux, whenWindows } from '@/utils/environment';
-import { Subject, filter, from, map, merge, tap } from 'rxjs';
 import { Result__, isSuccess } from '@/utils/result';
 
 @Component<AppBarSmall>({

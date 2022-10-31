@@ -1,6 +1,7 @@
 // Main process
-import { empty, whenMacOS } from '@/utils/environment';
 import { inAppPurchase } from 'electron';
+
+import { empty, whenMacOS } from '@/utils/environment';
 
 export const PRODUCT_IDS = ['clips_premium'];
 

@@ -1,10 +1,11 @@
-import { MutationTree } from 'vuex';
-import { NetworkState } from '@/renderer/store/types';
 import Vue from 'vue';
-import { RoomDoc } from '@/rxdb/room/model';
+import { MutationTree } from 'vuex';
+
+import { NetworkState } from '@/renderer/store/types';
 import { MessageDoc } from '@/rxdb/message/model';
-import { toDictionary } from '@/utils/common';
+import { RoomDoc } from '@/rxdb/room/model';
 import { UserDoc } from '@/rxdb/user/model';
+import { toDictionary } from '@/utils/common';
 
 const mutations: MutationTree<NetworkState> = {
   setServerStatus(state, status: 'started' | 'closed') {

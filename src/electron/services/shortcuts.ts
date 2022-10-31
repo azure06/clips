@@ -1,7 +1,9 @@
 import { BrowserWindow, globalShortcut, screen } from 'electron';
-import { AppConfState } from '../../renderer/store/types';
+
 import { always, whenMacOS } from '@/utils/environment';
 import { Result__ } from '@/utils/result';
+
+import { AppConfState } from '../../renderer/store/types';
 
 export type ShortcutFuzzy = MacOSFuzzy | WindowsOSFuzzy;
 export type Shortcut = MacOS | WindowsOS;
