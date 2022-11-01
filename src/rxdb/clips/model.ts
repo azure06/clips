@@ -103,10 +103,10 @@ export const schema: RxJsonSchema<ClipDoc> = {
   description: 'Clipboard history collection',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
     id: {
       type: 'string',
-      primary: true,
       final: true,
     },
     plainText: {

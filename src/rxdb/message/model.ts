@@ -100,10 +100,10 @@ export const schema: RxJsonSchema<MessageDoc> = {
   description: 'Message collection',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
     id: {
       type: 'string',
-      primary: true,
       final: true,
     },
     roomId: {

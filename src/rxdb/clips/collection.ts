@@ -17,7 +17,7 @@ const clipsDocMethods: ClipsDocMethods = {
 
 const clipsCollectionsMethods: ClipsCollectionMethods = {
   async dumpCollection() {
-    return (await this.dump()).docs;
+    return (await this.find().exec()).map((v) => v.toMutableJSON());
   },
   async countAllDocuments() {
     const allDocs = await this.find().exec();
@@ -39,7 +39,7 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
     query = limit ? query.limit(limit) : query;
 
     const result = await query.exec();
-    return result.map((item) => item.toJSON());
+    return result.map((item) => item.toMutableJSON());
   },
   /** Find items older then *Date* and not starred  */
   async findClipsLte(lte) {
@@ -50,16 +50,16 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
       .eq('none');
 
     const result = await query.exec();
-    return result.map((clip) => clip.toJSON());
+    return result.map((clip) => clip.toMutableJSON());
   },
   async insertClip(clip) {
     return this.atomicUpsert({ ...clip, id: uuid() }).then((clip_) =>
-      clip_.toJSON()
+      clip_.toMutableJSON()
     );
   },
   async modifyClip(clip) {
     return this.atomicUpsert({ ...clip, updatedAt: Date.now() }).then((clip) =>
-      clip.toJSON()
+      clip.toMutableJSON()
     );
   },
   async removeClips(ids: string[]) {
@@ -67,12 +67,12 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
       .where('id')
       .in(ids)
       .remove()
-      .then((removedClips) => removedClips.map((clip) => clip.toJSON()));
+      .then((removedClips) => removedClips.map((clip) => clip.toMutableJSON()));
   },
   async removeAllClips() {
     return this.find()
       .remove()
-      .then((removedClips) => removedClips.map((clip) => clip.toJSON()));
+      .then((removedClips) => removedClips.map((clip) => clip.toMutableJSON()));
   },
   async restore() {
     return this.remove();
@@ -84,4 +84,10 @@ export const clips = {
   schema,
   methods: clipsDocMethods,
   statics: clipsCollectionsMethods,
+  migrationStrategies: {
+    // 1 means, this transforms data from version 0 to version 1
+    1(oldDoc: unknown) {
+      return oldDoc;
+    },
+  },
 };

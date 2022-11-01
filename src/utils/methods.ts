@@ -189,9 +189,12 @@ export const removeClipsLte = runCatching((updatedAt: number) =>
 );
 
 export const restoreFactoryDefault = runCatching(async () => {
-  const obs = removeClipsRxDB(adapter).pipe(
+  const obs = removeClipsRxDB(
+    adapter,
+    (await lastValueFrom(clipsRxDB)).storage
+  ).pipe(
     concatMap((result) =>
-      result.ok
+      result.length > 0
         ? (async () => {
             clipsRxDB = createClipsRxDB__(adapter);
           })()

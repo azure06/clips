@@ -46,4 +46,10 @@ export const user = {
   schema,
   methods: userDocMethods,
   statics: userCollectionsMethods,
+  migrationStrategies: {
+    // 1 means, this transforms data from version 0 to version 1
+    1(oldDoc: unknown) {
+      return oldDoc;
+    },
+  },
 };

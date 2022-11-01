@@ -4,12 +4,13 @@ import {
   addRxPlugin,
   createRxDatabase,
   removeRxDatabase,
+  RxStorage,
 } from 'rxdb';
 import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
+import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { Observable, from } from 'rxjs';
 
 import { concatMap, map } from 'rxjs/operators';
@@ -50,15 +51,18 @@ const nodeDBPath = async () => {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export async function initPlugins(adapter: RxDBAdapterNm) {
-  addRxPlugin(
+  addPouchPlugin(
     adapter === 'idb'
       ? await (async () =>
           (
             await import('@/renderer/utils/renderer')
           ).adapter)()
-      : await (async () => (await import('@/electron/utils/node')).adapter)()
+      : await (async () =>
+          (
+            await import('@/electron/utils/node')
+          ).pouchAdapter)()
   );
-  addRxPlugin(RxDBValidatePlugin);
+  // addRxPlugin(RxDBValidatePlugin);
   addRxPlugin(RxDBQueryBuilderPlugin);
   addRxPlugin(RxDBMigrationPlugin);
   addRxPlugin(RxDBUpdatePlugin);
@@ -75,7 +79,7 @@ async function createRxDB(adapter: RxDBAdapter) {
   const clipsRxDB: RxDatabase<RxCollections> =
     await createRxDatabase<RxCollections>({
       name: adapter === 'idb' ? 'clips' : await nodeDBPath(), // <- name
-      adapter, // <- storage-adapter
+      storage: getRxStoragePouch(adapter), // <- storage-adapter
       ignoreDuplicate: true,
       multiInstance: false, // <- multiInstance (optional, default: true)
     });
@@ -90,17 +94,15 @@ async function createRxDB(adapter: RxDBAdapter) {
   return clipsRxDB;
 }
 
-export const createClipsRxDB = (
-  adapter: Observable<RxDBAdapter>
-): Observable<RxDatabase<RxCollections>> =>
+// prettier-ignore
+export const createClipsRxDB = (adapter: Observable<RxDBAdapter>): Observable<RxDatabase<RxCollections>> =>
   from(adapter).pipe(concatMap((adapt) => createRxDB(adapt)));
 
-export const removeClipsRxDB = (
-  adapter: Observable<RxDBAdapter>
-): Observable<{ ok: boolean }> =>
+// prettier-ignore
+export const removeClipsRxDB = <T1, T2>(adapter: Observable<RxDBAdapter>, storage: RxStorage<T1, T2>): Observable<string[]> =>
   adapter.pipe(
     concatMap(async (adapt) =>
-      removeRxDatabase(adapt === 'idb' ? 'clips' : await nodeDBPath(), adapt)
+      removeRxDatabase(adapt === 'idb' ? 'clips' : await nodeDBPath(), storage)
     )
   );
 

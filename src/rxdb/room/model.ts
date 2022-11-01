@@ -42,10 +42,10 @@ export const schema: RxJsonSchema<RoomDoc> = {
   description: 'Room collection',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
     id: {
       type: 'string',
-      primary: true,
       final: true,
     },
     userIds: {

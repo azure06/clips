@@ -49,10 +49,10 @@ export const schema: RxJsonSchema<UserDoc> = {
   description: 'User collection',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
     id: {
       type: 'string',
-      primary: true,
       final: true,
     },
     username: {

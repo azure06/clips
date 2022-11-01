@@ -87,4 +87,10 @@ export const message = {
   schema,
   methods: messageDocMethods,
   statics: messageCollectionsMethods,
+  migrationStrategies: {
+    // 1 means, this transforms data from version 0 to version 1
+    1(oldDoc: unknown) {
+      return oldDoc;
+    },
+  },
 };
