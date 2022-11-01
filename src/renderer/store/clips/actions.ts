@@ -33,8 +33,8 @@ import {
 } from '@/renderer/store/types';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { isAuthenticated } from '@/utils/common';
-import { always } from '@/utils/environment';
-import { isSuccess, isSuccessHttp } from '@/utils/result';
+import { always, identity } from '@/utils/environment';
+import { fold, isSuccess, isSuccessHttp } from '@/utils/result';
 
 export const copySilently = new BehaviorSubject(false);
 export const rxAdapter = new Subject<'idb' | 'leveldb'>();
@@ -328,9 +328,16 @@ const actions: ActionTree<ClipsState, RootState> = {
             });
             return filePath
               ? (async () => {
-                  const response = await googleDriveInvokers.createBackup(
+                  // prettier-ignore
+                  const func = async ([head, ...tail]: Clip[], data: Clip[] = []): Promise<Clip[]> => {
+                    console.log(data);
+                    return head === undefined
+                      ? data
+                      : func(tail, [...data, { ...head, dataURI: fold(identity, always(head.dataURI), await clipboardInvokers.imagePathToDataURI(head.dataURI)) }]);
+                  };
+                  const response = await clipboardInvokers.createBackup(
                     filePath,
-                    clips
+                    await func(clips)
                   );
                   return isSuccess(response) ? clips : [];
                 })()
@@ -353,7 +360,7 @@ const actions: ActionTree<ClipsState, RootState> = {
             });
             return filePaths.length > 0
               ? (async () => {
-                  const result = await googleDriveInvokers.restoreBackup(
+                  const result = await clipboardInvokers.restoreBackup(
                     filePaths[0]
                   );
                   return isSuccess(result) ? result.data : [];

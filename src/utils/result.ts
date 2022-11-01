@@ -37,6 +37,24 @@ export function isSuccessHttp<T>(
   );
 }
 
+function isResult<T>(arg: Result__<T> | HttpResult__<T>): arg is Result__<T> {
+  return arg.status === 'success' || arg.status === 'failure';
+}
+
+export function fold<T1, R>(
+  onSuccess: (data: T1) => R,
+  onFailure: (args: HttpFailure | Failure) => R,
+  response: HttpResult__<T1> | Result__<T1>
+) {
+  return isResult(response)
+    ? isSuccess(response)
+      ? onSuccess(response.data)
+      : onFailure(response)
+    : isSuccessHttp(response)
+    ? onSuccess(response.data)
+    : onFailure(response);
+}
+
 export function runCatching(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   captureException: (e: any) => any

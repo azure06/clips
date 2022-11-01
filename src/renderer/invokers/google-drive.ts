@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { drive_v3 } from 'googleapis';
 import { INVOCATION } from '@/utils/constants';
-import { HttpResult__, Result__ } from '@/utils/result';
+import { HttpResult__ } from '@/utils/result';
 import { Clip } from '../store/types';
 
 export const changePageToken = (
@@ -27,12 +27,3 @@ export const uploadToDrive = <T>(
   clips: T[]
 ): Promise<HttpResult__<drive_v3.Schema$File>> =>
   ipcRenderer.invoke(INVOCATION.UPLOAD_TO_DRIVE, clips);
-
-export const createBackup = (
-  filePath: string,
-  clips: Clip[]
-): Promise<Result__<void>> =>
-  ipcRenderer.invoke(INVOCATION.CREATE_BACKUP, filePath, clips);
-
-export const restoreBackup = (filePath: string): Promise<Result__<Clip[]>> =>
-  ipcRenderer.invoke(INVOCATION.RESTORE_BACKUP, filePath);
