@@ -22,7 +22,7 @@ export function watchRxDBAdapter(
   return store.onDidChange(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     'app-conf.advanced.rxdbAdapter' as any,
-    (newValue, oldValue) => func(newValue)
+    (newValue) => func(newValue)
   );
 }
 

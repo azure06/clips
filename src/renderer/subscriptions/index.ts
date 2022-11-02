@@ -1,13 +1,12 @@
 import electron, { Rectangle } from 'electron';
 import { Subject, merge, timer } from 'rxjs';
-import { debounce, map } from 'rxjs/operators';
-
+import { debounce } from 'rxjs/operators';
 import { IDevice, Progress } from '@/electron/services/socket.io/types';
 import { ClipDoc } from '@/rxdb/clips/model';
 import { MessageDoc } from '@/rxdb/message/model';
 
-const resizeSubject = new Subject<unknown>();
-const moveSubject = new Subject<unknown>();
+const resizeSubject = new Subject<Rectangle>();
+const moveSubject = new Subject<Rectangle>();
 const clipSubject = new Subject<ClipDoc>();
 const navigateSubject = new Subject<{ name: string }>();
 const messageSubject = new Subject<{
@@ -30,8 +29,12 @@ const statusSubject = new Subject<
 >();
 const transactionsSubject = new Subject<Electron.Transaction[]>();
 
-electron.ipcRenderer.on('resize', (args: unknown) => resizeSubject.next(args));
-electron.ipcRenderer.on('move', (args: unknown) => resizeSubject.next(args));
+electron.ipcRenderer.on('resize', (event, args: Rectangle) =>
+  resizeSubject.next(args)
+);
+electron.ipcRenderer.on('move', (event, args: Rectangle) =>
+  resizeSubject.next(args)
+);
 electron.ipcRenderer.on('navigate', (event, args: { name: string }) =>
   navigateSubject.next(args)
 );
@@ -60,7 +63,4 @@ export const onTransactionsUpdated = transactionsSubject.asObservable();
 export const onBoundsChange = merge(
   moveSubject.asObservable(),
   resizeSubject.asObservable()
-)
-  .pipe(debounce(() => timer(1000)))
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  .pipe(map((args) => (args as any).sender.getBounds() as Rectangle));
+).pipe(debounce(() => timer(1000)));

@@ -6,9 +6,9 @@
 
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+// eslint-disable-next-line import/no-named-as-default
 import Quill from 'quill';
 import { Component } from 'vue-property-decorator';
-import { Action, Getter } from 'vuex-class';
 
 import { ExtendedVue } from '@/renderer/utils/basevue';
 
@@ -20,7 +20,7 @@ import { ExtendedVue } from '@/renderer/utils/basevue';
 })
 export default class Note extends ExtendedVue {
   mounted(): void {
-    var quill = new Quill('#editor', {
+    var _quill = new Quill('#editor', {
       debug: 'info',
       modules: {
         toolbar: [

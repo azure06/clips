@@ -321,6 +321,8 @@ export function onReady(): void {
     SENDERS.GET_BOUNDS_SYNC,
     (event) => (event.returnValue = win.getBounds())
   );
+  win.on('resize', () => win.webContents.send('resize', win.getBounds()));
+  win.on('move', () => win.webContents.send('move', win.getBounds()));
 
   configurationHandler.eventHandler(storeService.getAppConf, win);
   remoteHandler.onGetCurrentWindow(

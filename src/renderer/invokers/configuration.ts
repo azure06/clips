@@ -1,7 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { IDevice } from 'local-devices';
 import { ShortcutFuzzy } from '@/electron/services/shortcuts';
-import { MessageDoc } from '@/rxdb/message/model';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
 
