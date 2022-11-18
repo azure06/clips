@@ -133,10 +133,16 @@
         <v-list dense nav color="surfaceVariant" class="pt-1 px-0">
           <v-list-item
             v-for="(clip, index) in clipsObserver"
-            class="list-item-icon"
+            :ref="`clip-item-${index}`"
             :key="clip.id"
+            class="list-item-icon"
             @mouseover="$emit('clip-hover', index)"
-            @click="$emit('clip-click', $event, index, clip.displayingFormat)"
+            @click="
+              (event) => {
+                $emit('focus-next', index);
+                $emit('clip-click', event, index, clip.displayingFormat);
+              }
+            "
           >
             <v-list-item-content>
               <img
@@ -310,6 +316,7 @@
 
 <script lang="ts">
 // @ is an alias to /src
+import { tap } from 'rxjs';
 import { uuid } from 'uuidv4';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -323,7 +330,21 @@ import {
 } from '@/renderer/views/Home.vue';
 import { Format } from '@/rxdb/clips/model';
 
-@Component
+@Component<Grid>({
+  subscriptions() {
+    return {
+      onFocusIndex: this.$watchAsObservable(() => this.focusIndex).pipe(
+        tap(({ newValue }) => {
+          const [index] = newValue || [];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const [ref] = (this.$refs[`clip-item-${index}`] as any) ?? [];
+          ref?.$el.focus();
+          if (ref) this.$emit('focus-next', index !== undefined ? index : 0);
+        })
+      ),
+    };
+  },
+})
 export default class Grid extends Vue {
   @Prop({ required: true })
   public translations!: Translation;
@@ -337,6 +358,8 @@ export default class Grid extends Vue {
   public removeTarget!: { [id: string]: boolean };
   @Prop({ required: true })
   public labels!: Label[];
+  @Prop({ required: true })
+  public focusIndex?: number[];
 
   @Prop({ required: true })
   public viewMode!: 'list' | 'grid';

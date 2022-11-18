@@ -26,6 +26,7 @@
         :removeTarget="removeTarget"
         :viewMode="viewMode"
         :translations="$translations"
+        :focusIndex="focusIndex"
         @clip-hover="onClipHover"
         @clip-click="onClipClick"
         @label-click="onLabelClick"
@@ -37,6 +38,7 @@
         @create-label="addLabel"
         @edit-image="(index) => editImage(clips[index])"
         @edit-text="editText"
+        @focus-next="(value) => clipFocusSubject.next(value)"
       />
     </v-container>
 
@@ -116,6 +118,7 @@
       @sync-with-drive="syncWithDrive"
       @focus="onSearchBarFocus"
       @change-view-mode="(value) => (viewMode = value)"
+      ref="clips-searchbar"
       :translations="$translations"
       :type="searchConditions.filters.type"
       :sync-status="syncStatus"
@@ -137,6 +140,8 @@ import {
   map,
   scan,
   startWith,
+  tap,
+  withLatestFrom,
 } from 'rxjs/operators';
 import { Component } from 'vue-property-decorator';
 import { Action, Getter, Mutation } from 'vuex-class';
@@ -191,10 +196,45 @@ export const toClipProp = (type?: Format | string): ClipFormat => {
   }
 };
 
+const ARROW_UP = 'ArrowUp';
+const ARROW_DOWN = 'ArrowDown';
+const KEY_F = 'KeyF';
+
 @Component<Home>({
   components: { AppBar, SearchBar, Grid },
   subscriptions() {
     return {
+      keyboardEvent: fromEvent<KeyboardEvent>(document, 'keydown').pipe(
+        // filter((event) => event.code === ARROW_UP || event.code === ARROW_DOWN),
+        tap((event) => {
+          if (event.code === KEY_F && (event.metaKey || event.ctrlKey)) {
+            // Why the parents knows about the children...? For sake of simplicity...
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.$refs as any)['clips-searchbar']?.$refs[
+              'clips-searchbar-text'
+            ]?.focus();
+          }
+        })
+      ),
+
+      focusIndex: fromEvent<KeyboardEvent>(document, 'keydown').pipe(
+        filter((event) => event.code === ARROW_UP || event.code === ARROW_DOWN),
+        withLatestFrom(
+          this.clipFocusSubject.asObservable().pipe(startWith(null))
+        ),
+        map(([event, value]) => {
+          switch (event.code) {
+            case ARROW_UP:
+              // wrap to array in order to change the reference -- Grid.vue is watching it
+              return value !== null ? [value - 1] : [0];
+            case ARROW_DOWN:
+              return value !== null ? [value + 1] : [0];
+            default:
+              return [0]; // Impossible state
+          }
+        })
+      ),
+
       clipsObserver: combineLatest([
         this.clipsFormatSubject
           .asObservable()
@@ -284,6 +324,7 @@ export default class Home extends ExtendedVue {
   public clipboardMode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
   public clipsFormatSubject = new Subject<ClipsFormatMap>();
+  public clipFocusSubject = new Subject<number>();
   public dateTime: number = Date.now(); // Not used anymore
 
   public snackbar = false;

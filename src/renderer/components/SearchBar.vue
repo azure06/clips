@@ -2,6 +2,7 @@
   <v-toolbar bottom color="surfaceVariant" dense flat>
     <v-toolbar-items :class="`toolbar`">
       <v-text-field
+        ref="clips-searchbar-text"
         :value="searchQuery"
         @input="(value) => $emit('query-change', value)"
         @focus="$emit('focus', $event)"
