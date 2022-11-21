@@ -1,9 +1,8 @@
 import { BrowserWindow, ipcMain } from 'electron';
-
+import { Format } from '@/renderer/invokers/configuration';
 import { AppConfState } from '@/renderer/store/types';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
-
 import { ShortcutFuzzy } from '../services/shortcuts';
 
 export function eventHandler(
@@ -49,3 +48,14 @@ export const onOpenEditor = (
 // Relaunch Electron App
 export const onRelaunchApp = (func: () => Promise<Result__<void>>): void =>
   ipcMain.handle(INVOCATION.RELAUNCH_APP, func);
+
+// Code Open Editor
+export const onOpenFile = (
+  func: (
+    conf: { args: string; format: Format },
+    data: string
+  ) => Promise<Result__<void>>
+): void =>
+  ipcMain.handle(INVOCATION.CONF.OPEN_WITH_EDITOR, (_, conf, data) =>
+    func(conf, data)
+  );

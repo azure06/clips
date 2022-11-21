@@ -136,10 +136,12 @@
             :ref="`clip-item-${index}`"
             :key="clip.id"
             class="list-item-icon"
-            @mouseover="$emit('clip-hover', index)"
+            @mouseout="$emit('hover', [index, false])"
+            @mouseover="$emit('hover', [index, true])"
+            @blur="$emit('focus', [index, false])"
             @click="
               (event) => {
-                $emit('focus-next', index);
+                $emit('focus', [index, true]);
                 $emit('clip-click', event, index, clip.displayingFormat);
               }
             "
@@ -239,6 +241,48 @@
                   <v-icon>mdi-pencil</v-icon>
                 </v-btn>
 
+                <!-- Open with Editor-->
+                <v-btn
+                  class="show-icon"
+                  icon
+                  @click.stop="
+                    $emit(
+                      'open-with-editor',
+                      (() => {
+                        switch (clip.displayingFormat) {
+                          case 'plainText':
+                            return {
+                              format: 'plain/text',
+                              data: clip.plainText,
+                            };
+                          case 'richText':
+                            return {
+                              format: 'text/rtf',
+                              data: clip.richText,
+                            };
+                          case 'htmlText':
+                            return {
+                              format: 'text/html',
+                              data: clip.htmlText,
+                            };
+                          case 'dataURI':
+                            return {
+                              format: 'image/png',
+                              data: clip.dataURI,
+                            };
+                          default:
+                            return {
+                              format: 'plain/text',
+                              data: clip.plainText,
+                            };
+                        }
+                      })()
+                    )
+                  "
+                >
+                  <v-icon>mdi-microsoft-visual-studio-code</v-icon>
+                </v-btn>
+
                 <!-- Star -->
                 <v-menu offset-x max-height="170">
                   <template v-slot:activator="{ on, attrs }">
@@ -316,7 +360,6 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { tap } from 'rxjs';
 import { uuid } from 'uuidv4';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -330,21 +373,7 @@ import {
 } from '@/renderer/views/Home.vue';
 import { Format } from '@/rxdb/clips/model';
 
-@Component<Grid>({
-  subscriptions() {
-    return {
-      onFocusIndex: this.$watchAsObservable(() => this.focusIndex).pipe(
-        tap(({ newValue }) => {
-          const [index] = newValue || [];
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const [ref] = (this.$refs[`clip-item-${index}`] as any) ?? [];
-          ref?.$el.focus();
-          if (ref) this.$emit('focus-next', index !== undefined ? index : 0);
-        })
-      ),
-    };
-  },
-})
+@Component
 export default class Grid extends Vue {
   @Prop({ required: true })
   public translations!: Translation;
@@ -358,8 +387,6 @@ export default class Grid extends Vue {
   public removeTarget!: { [id: string]: boolean };
   @Prop({ required: true })
   public labels!: Label[];
-  @Prop({ required: true })
-  public focusIndex?: number[];
 
   @Prop({ required: true })
   public viewMode!: 'list' | 'grid';

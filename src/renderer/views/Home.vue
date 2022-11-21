@@ -19,6 +19,7 @@
     </div>
     <v-container ref="scroll-target" fluid pa-0 ma-0 class="container">
       <Grid
+        ref="clips-grid"
         :clipsObserver="clipsObserver"
         :labels="labels"
         :loading="loading"
@@ -26,8 +27,8 @@
         :removeTarget="removeTarget"
         :viewMode="viewMode"
         :translations="$translations"
-        :focusIndex="focusIndex"
-        @clip-hover="onClipHover"
+        @focus="([index, value]) => focusEventSubject.next([index, value])"
+        @hover="([index, value]) => (clipHover = [index, value])"
         @clip-click="onClipClick"
         @label-click="onLabelClick"
         @label-select="onLabelSelect"
@@ -38,7 +39,7 @@
         @create-label="addLabel"
         @edit-image="(index) => editImage(clips[index])"
         @edit-text="editText"
-        @focus-next="(value) => clipFocusSubject.next(value)"
+        @open-with-editor="openWithEditor"
       />
     </v-container>
 
@@ -131,7 +132,15 @@
 
 <script lang="ts">
 import moment from 'moment';
-import { Subject, combineLatest, fromEvent } from 'rxjs';
+import {
+  Subject,
+  combineLatest,
+  fromEvent,
+  Observable,
+  merge,
+  lastValueFrom,
+  firstValueFrom,
+} from 'rxjs';
 import {
   concatMap,
   debounceTime,
@@ -199,72 +208,127 @@ export const toClipProp = (type?: Format | string): ClipFormat => {
 const ARROW_UP = 'ArrowUp';
 const ARROW_DOWN = 'ArrowDown';
 const KEY_F = 'KeyF';
+const KEY_N = 'KeyN';
 
 @Component<Home>({
   components: { AppBar, SearchBar, Grid },
   subscriptions() {
-    return {
-      keyboardEvent: fromEvent<KeyboardEvent>(document, 'keydown').pipe(
-        // filter((event) => event.code === ARROW_UP || event.code === ARROW_DOWN),
-        tap((event) => {
-          if (event.code === KEY_F && (event.metaKey || event.ctrlKey)) {
-            // Why the parents knows about the children...? For sake of simplicity...
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.$refs as any)['clips-searchbar']?.$refs[
-              'clips-searchbar-text'
-            ]?.focus();
-          }
-        })
-      ),
-
-      focusIndex: fromEvent<KeyboardEvent>(document, 'keydown').pipe(
-        filter((event) => event.code === ARROW_UP || event.code === ARROW_DOWN),
-        withLatestFrom(
-          this.clipFocusSubject.asObservable().pipe(startWith(null))
-        ),
-        map(([event, value]) => {
-          switch (event.code) {
-            case ARROW_UP:
-              // wrap to array in order to change the reference -- Grid.vue is watching it
-              return value !== null ? [value - 1] : [0];
-            case ARROW_DOWN:
-              return value !== null ? [value + 1] : [0];
-            default:
-              return [0]; // Impossible state
-          }
-        })
-      ),
-
-      clipsObserver: combineLatest([
-        this.clipsFormatSubject
+    const keyboardEvent = fromEvent<KeyboardEvent>(document, 'keydown').pipe(
+      withLatestFrom(
+        this.focusEventSubject
           .asObservable()
-          .pipe(
-            scan((acc: ClipsFormatMap, value) => ({ ...acc, ...value }), {})
-          )
-          .pipe(startWith({} as ClipsFormatMap)),
-        this.$watchAsObservable(() => this.clips),
-      ]).pipe(
-        map(([clipsFormatMap, { newValue: clips }]) =>
-          clips.map(
-            (clip): ClipExtended => ({
-              ...clip,
-              formats: clip.formats.filter(
-                (format) => format !== 'vscode-editor-data'
-              ),
-              preview: (clip.plainText || '').substring(0, 255),
-              displayingFormat:
-                clipsFormatMap[clip.id] ||
-                (clip.type === 'image'
-                  ? clip.richText //  In this case very likely is from MS Office
-                    ? 'all'
-                    : 'dataURI'
-                  : 'plainText'),
-              fromNow: moment(clip.updatedAt).fromNow(),
-            })
-          )
-        )
+          .pipe(startWith([null, false] as const))
       ),
-    };
+      tap(([event, [index]]) => {
+        const moveNextPrev = async (args: 'next' | 'previous') => {
+          const targetIndex =
+            index !== null ? (args === 'next' ? index + 1 : index - 1) : 0;
+          const [item] =
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.$refs[`clips-grid`] as any)?.$refs[
+              `clip-item-${targetIndex}`
+            ] || [];
+
+          if (item !== undefined) {
+            item?.$el?.focus();
+            this.focusEventSubject.next([targetIndex, true]);
+          }
+        };
+        switch (event.code) {
+          case ARROW_UP:
+            return moveNextPrev('previous');
+          case ARROW_DOWN:
+            return moveNextPrev('next');
+          case KEY_F: {
+            // Why the parents knows about the children...? For sake of simplicity...
+            if (event.metaKey || event.ctrlKey) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (this.$refs as any)['clips-searchbar']?.$refs[
+                'clips-searchbar-text'
+              ]?.focus();
+            }
+            break;
+          }
+          default:
+            return void 0;
+        }
+      })
+    );
+    const clipsObserver: Observable<ClipExtended[]> = combineLatest([
+      this.clipsFormatSubject
+        .asObservable()
+        .pipe(scan((acc: ClipsFormatMap, value) => ({ ...acc, ...value }), {}))
+        .pipe(startWith({} as ClipsFormatMap)),
+      this.$watchAsObservable(() => this.clips),
+    ]).pipe(
+      map(([clipsFormatMap, { newValue: clips }]) =>
+        clips.map(
+          (clip): ClipExtended => ({
+            ...clip,
+            formats: clip.formats.filter(
+              (format) => format !== 'vscode-editor-data'
+            ),
+            preview: (clip.plainText || '').substring(0, 255),
+            displayingFormat:
+              clipsFormatMap[clip.id] ||
+              (clip.type === 'image'
+                ? clip.richText //  In this case very likely is from MS Office
+                  ? 'all'
+                  : 'dataURI'
+                : 'plainText'),
+            fromNow: moment(clip.updatedAt).fromNow(),
+          })
+        )
+      )
+    );
+    const openWithEditorObs = fromEvent<KeyboardEvent>(
+      document,
+      'keydown'
+    ).pipe(
+      filter(
+        (event) => event.code === KEY_N && (event.metaKey || event.ctrlKey)
+      ),
+      withLatestFrom(this.focusEventSubject.asObservable(), clipsObserver),
+      tap(([_, [focusIndex, focussed], clips]) => {
+        const [hoverIndex, hovered] = this.clipHover;
+        const target = hovered ? hoverIndex : focussed ? focusIndex : null;
+        const clip = clips.find((_, index) => index === target);
+        if (clip)
+          this.openWithEditor(
+            (() => {
+              switch (clip.displayingFormat) {
+                case 'plainText':
+                  return {
+                    format: 'plain/text',
+                    data: clip.plainText,
+                  };
+                case 'richText':
+                  return {
+                    format: 'text/rtf',
+                    data: clip.richText,
+                  };
+                case 'htmlText':
+                  return {
+                    format: 'text/html',
+                    data: clip.htmlText,
+                  };
+                case 'dataURI':
+                  return {
+                    format: 'image/png',
+                    data: clip.dataURI,
+                  };
+                default:
+                  return {
+                    format: 'plain/text',
+                    data: clip.plainText,
+                  };
+              }
+            })()
+          );
+      })
+    );
+
+    return { keyboardEvent, clipsObserver, openWithEditorObs };
   },
 })
 export default class Home extends ExtendedVue {
@@ -298,6 +362,12 @@ export default class Home extends ExtendedVue {
   }) => Promise<Clip[]>;
   @Action('editImage', { namespace: 'clips' })
   public editImage!: (clipId: Clip) => void;
+  @Action('openWithEditor', { namespace: 'clips' })
+  public openWithEditor!: (args: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    format: any;
+    data: string;
+  }) => Promise<void>;
   @Action('removeLabel', { namespace: 'configuration' })
   public removeLabel!: (labelId: string) => void;
   @Mutation('modifyLabel', { namespace: 'configuration' })
@@ -324,8 +394,8 @@ export default class Home extends ExtendedVue {
   public clipboardMode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
   public clipsFormatSubject = new Subject<ClipsFormatMap>();
-  public clipFocusSubject = new Subject<number>();
-  public dateTime: number = Date.now(); // Not used anymore
+  public focusEventSubject = new Subject<[number, boolean]>();
+  public clipHover: [number | null, boolean | null] = [null, null]; // Not used anymore
 
   public snackbar = false;
   public snackbarText = '';
@@ -346,10 +416,6 @@ export default class Home extends ExtendedVue {
     return this.clipboardMode === 'select'
       ? Object.entries(this.removeTarget).length
       : this.clips.length;
-  }
-
-  public onClipHover(clipIndex: number): void {
-    this.dateTime = this.clips[clipIndex].updatedAt;
   }
 
   public editText(clipIndex: number): void {

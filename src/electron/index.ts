@@ -38,6 +38,7 @@ import { iDevice as getIDevice } from './services/socket.io/utils/network';
 import { tray } from './services/tray';
 import { editorWindow } from './services/windows/editor';
 import { mainWindow } from './services/windows/main';
+import * as openWithEditor from './services/with-editor';
 
 const runCatching = handler.runCatching(Sentry.captureException);
 const runCatchingHttpError = handler.runCatchingHttpError(
@@ -339,6 +340,12 @@ export function onReady(): void {
       editorWindow.create(clipId);
     })
   );
+  configurationHandler.onOpenFile(
+    runCatching((args, data) => {
+      openWithEditor.openWithEditor(args, data);
+    })
+  );
+
   // eslint-disable-next-line import/namespace
   leveldownHandler.onNodeDB((methodNm, args) => methods[methodNm](...args));
   configurationHandler.onRelaunchApp(

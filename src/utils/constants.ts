@@ -10,6 +10,9 @@ export const INVOCATION = {
   ANALYTICS: {
     PAGE_VIEW: 'PAGE_VIEW',
   },
+  CONF: {
+    OPEN_WITH_EDITOR: 'OPEN_WITH_VSCODE',
+  },
   COPY_TO_CLIPBOARD: 'copy-to-clipboard',
   //
   TO_DATA_URI: 'to-dataURI',

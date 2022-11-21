@@ -151,6 +151,21 @@ const actions: ActionTree<ClipsState, RootState> = {
         .pipe(tap(() => commit('setLoadingStatus', false)))
     ),
   editImage: async (_, clip: Clip) => configurationInvokers.openEditor(clip.id),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  openWithEditor: async (
+    _,
+    args: { format: configurationInvokers.Format; data: string }
+  ) => {
+    const result =
+      args.format === 'image/png'
+        ? await clipboardInvokers.imagePathToDataURI(args.data) // This is smart enough to handle real links and dataURI
+        : { status: 'success' as const, data: args.data };
+    if (isSuccess(result))
+      configurationInvokers.openWithEditor(
+        { format: args.format, args: 'code' },
+        result.data
+      );
+  },
   removeClips: async ({ commit }, ids: string[]) =>
     lastValueFrom(
       range(1, 1)
@@ -330,7 +345,6 @@ const actions: ActionTree<ClipsState, RootState> = {
               ? (async () => {
                   // prettier-ignore
                   const func = async ([head, ...tail]: Clip[], data: Clip[] = []): Promise<Clip[]> => {
-                    console.log(data);
                     return head === undefined
                       ? data
                       : func(tail, [...data, { ...head, dataURI: fold(identity, always(head.dataURI), await clipboardInvokers.imagePathToDataURI(head.dataURI)) }]);
