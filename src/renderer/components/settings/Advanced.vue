@@ -272,6 +272,184 @@
         </v-row>
       </v-list-item>
       <v-divider></v-divider>
+
+      <!-- Editor -->
+      <v-subheader>{{ translations.executeCommandOn }}</v-subheader>
+      <v-list-item>
+        <v-row
+          v-for="(command, index) in commands"
+          :key="`clips-command-${index}`"
+        >
+          <!-- Trigger -->
+          <!-- <v-col class="label">
+            <v-select
+              :items="['None', 'Copy Event']"
+              :value="command[0]"
+              @change="
+                (event) =>
+                  $emit('set-advanced', {
+                    ...advanced,
+                    commands: advanced.commands.map((command, i) => {
+                      return index === i
+                        ? (() => {
+                            const [z, a, b, c, d] = command;
+                            switch (event) {
+                              case 'None':
+                                return ['none', a, b, c, d];
+                              case 'Copy Event':
+                                return ['copy-event', a, b, c, d];
+                            }
+                          })()
+                        : value;
+                    }),
+                  })
+              "
+              filled
+              label="Trigger"
+              dense
+              background-color="background"
+              item-color="blue"
+            ></v-select>
+          </v-col> -->
+          <!--  Command: open/ start/ code -->
+          <v-col class="label">
+            <v-combobox
+              :items="['open', 'code']"
+              :value="command[1]"
+              @change="
+                (event) =>
+                  $emit('set-advanced', {
+                    ...advanced,
+                    commands: advanced.commands.map((command, i) => {
+                      return index === i
+                        ? (() => {
+                            const [z, _, b, c, d] = command;
+                            return [z, event, b, c, d];
+                          })()
+                        : value;
+                    }),
+                  })
+              "
+              filled
+              label="Command"
+              dense
+              background-color="background"
+              item-color="blue"
+            ></v-combobox>
+          </v-col>
+          <v-col class="label">
+            <!-- ['File Location', 'Value'] -->
+            <v-select
+              :items="['File Location']"
+              :value="command[2]"
+              @change="
+                (event) =>
+                  $emit('set-advanced', {
+                    ...advanced,
+                    commands: advanced.commands.map((command, i) => {
+                      return index === i
+                        ? (() => {
+                            const [z, a, _, c, d] = command;
+                            switch (event) {
+                              case 'File Location':
+                                return [z, a, 'file-location', c, d];
+                              case 'Value':
+                                return [z, a, 'value', c, d];
+                            }
+                          })()
+                        : value;
+                    }),
+                  })
+              "
+              filled
+              label="Args"
+              dense
+              background-color="background"
+              item-color="blue"
+            ></v-select>
+          </v-col>
+          <v-col class="label">
+            <v-select
+              :items="[
+                'All',
+                'Text',
+                'JSON',
+                'HTML',
+                'Rich Text Format',
+                'Picture',
+              ]"
+              :value="command[3]"
+              @change="
+                (event) =>
+                  $emit('set-advanced', {
+                    ...advanced,
+                    commands: advanced.commands.map((command, i) => {
+                      return index === i
+                        ? (() => {
+                            const [z, a, b, _, d] = command;
+                            switch (event) {
+                              case 'All':
+                                return [z, a, b, 'all', d];
+                              case 'Text':
+                                return [z, a, b, 'text', d];
+                              case 'JSON':
+                                return [z, a, b, 'json', d];
+                              case 'HTML':
+                                return [z, a, b, 'html', d];
+                              case 'Rich Text Format':
+                                return [z, a, b, 'rtf', d];
+                              case 'Picture':
+                                return [z, a, b, 'picture', d];
+                            }
+                          })()
+                        : value;
+                    }),
+                  })
+              "
+              filled
+              label="Type"
+              dense
+              background-color="background"
+              item-color="blue"
+            ></v-select>
+          </v-col>
+          <v-col class="label">
+            <v-select
+              :items="['None', 'Add New Entry', 'Replace Entry', 'Pop-up']"
+              :value="command[4]"
+              @change="
+                (event) =>
+                  $emit('set-advanced', {
+                    ...advanced,
+                    commands: advanced.commands.map((command, i) => {
+                      return index === i
+                        ? (() => {
+                            const [z, a, b, c, _] = command;
+                            switch (event) {
+                              case 'None':
+                                return [z, a, b, c, 'none'];
+                              case 'Add New Entry':
+                                return [z, a, b, c, 'new-entry'];
+                              case 'Replace Entry':
+                                return [z, a, b, c, 'replace-entry'];
+                              case 'Pop-up':
+                                return [z, a, b, c, 'popup'];
+                            }
+                          })()
+                        : value;
+                    }),
+                  })
+              "
+              filled
+              label="Result"
+              dense
+              background-color="background"
+              item-color="blue"
+            ></v-select>
+          </v-col>
+        </v-row>
+      </v-list-item>
+      <v-divider></v-divider>
       <v-subheader>{{ translations.googleDrive }}</v-subheader>
       <v-list-item>
         <v-list-item-action>
@@ -436,6 +614,56 @@ export default class Advanced extends Vue {
 
   public openLink(link: string): void {
     shell.openExternal(link);
+  }
+
+  public get commands() {
+    return this.advanced.commands.map((command) => [
+      (() => {
+        switch (command[0]) {
+          case 'none':
+            return 'None' as const;
+          case 'copy-event':
+            return 'Copy Event' as const;
+        }
+      })(),
+      command[1],
+      (() => {
+        switch (command[2]) {
+          case 'file-location':
+            return 'File Location' as const;
+          case 'value':
+            return 'Value' as const;
+        }
+      })(),
+      (() => {
+        switch (command[3]) {
+          case 'all':
+            return 'All' as const;
+          case 'text':
+            return 'Text' as const;
+          case 'json':
+            return 'JSON' as const;
+          case 'html':
+            return 'HTML' as const;
+          case 'rtf':
+            return 'Rich Text Format' as const;
+          case 'picture':
+            return 'Picture' as const;
+        }
+      })(),
+      (() => {
+        switch (command[4]) {
+          case 'none':
+            return 'None' as const;
+          case 'new-entry':
+            return 'Add New Entry' as const;
+          case 'replace-entry':
+            return 'Replace Entry' as const;
+          case 'popup':
+            return 'Pop-up' as const;
+        }
+      })(),
+    ]);
   }
 
   public get scheduleSync(): number {

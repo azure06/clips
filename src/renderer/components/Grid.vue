@@ -141,6 +141,7 @@
             @blur="$emit('focus', [index, false])"
             @click="
               (event) => {
+                onClick(event, clip.id);
                 $emit('focus', [index, true]);
                 $emit('clip-click', event, index, clip.displayingFormat);
               }
@@ -184,104 +185,144 @@
               v-if="clipboardMode !== 'select'"
             >
               <div>
-                <!-- This is not required anymore -->
-                <v-menu
-                  v-if="clip.formats.length > 1"
-                  offset-x
-                  max-height="170"
+                <!-- Menu -->
+                <div
+                  :style="`display: inline; position: relative; right: ${client[0]}px`"
                 >
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="show-icon" icon v-bind="attrs" v-on="on">
-                      <v-icon>mdi-format-letter-case-lower</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-list dense width="190">
-                    <v-list-item-group
-                      :value="indexSelectedFormat(clip)"
-                      color="primary"
-                    >
+                  <v-menu
+                    :value="clip.menuOpen"
+                    @input="
+                      (event) =>
+                        $emit('open-menu', {
+                          [clip.id]: event,
+                        })
+                    "
+                    transition="slide-y-transition"
+                    bottom
+                    :close-on-click="true"
+                    :close-on-content-click="true"
+                  >
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon v-on="on">
+                        <v-icon>mdi-dots-vertical</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list dense>
+                      <!-- Edit Text/Image -->
                       <v-list-item
-                        v-for="(format, formatIndex) in clip.formats"
-                        :key="`${format}-${formatIndex}-format`"
-                        @click="
-                          $emit('change-format', {
-                            [clip.id]:
-                              clip.displayingFormat !== toClipProp(format)
-                                ? toClipProp(format)
-                                : 'all',
-                          })
+                        link
+                        @click.stop="
+                          $emit(
+                            clip.displayingFormat === 'dataURI'
+                              ? 'edit-image'
+                              : 'edit-text',
+                            index
+                          )
                         "
-                        dense
                       >
-                        <v-list-item-icon class="mx-0">
-                          <v-icon v-text="`mdi-label`" small></v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title class="mx-2">{{
-                          translationByFormat[format]
-                        }}</v-list-item-title>
+                        <v-list-item-avatar class="pa-0 ma-0">
+                          <v-icon v-text="`mdi-pencil`" dense></v-icon>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title>{{
+                            translations.edit
+                          }}</v-list-item-title>
+                        </v-list-item-content>
                       </v-list-item>
-                    </v-list-item-group>
-                  </v-list>
-                </v-menu>
-                <!-- Not required until here -->
 
-                <!-- Edit Text/Image -->
-                <v-btn
-                  class="show-icon"
-                  icon
-                  @click.stop="
-                    $emit(
-                      clip.displayingFormat === 'dataURI'
-                        ? 'edit-image'
-                        : 'edit-text',
-                      index
-                    )
-                  "
-                >
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
+                      <!-- Open with Editor -->
+                      <v-list-item
+                        link
+                        @click.stop="
+                          $emit(
+                            'open-with-editor',
+                            (() => {
+                              switch (clip.displayingFormat) {
+                                case 'plainText':
+                                  return {
+                                    format: 'plain/text',
+                                    data: clip.plainText,
+                                  };
+                                case 'richText':
+                                  return {
+                                    format: 'text/rtf',
+                                    data: clip.richText,
+                                  };
+                                case 'htmlText':
+                                  return {
+                                    format: 'text/html',
+                                    data: clip.htmlText,
+                                  };
+                                case 'dataURI':
+                                  return {
+                                    format: 'image/png',
+                                    data: clip.dataURI,
+                                  };
+                                default:
+                                  return {
+                                    format: 'plain/text',
+                                    data: clip.plainText,
+                                  };
+                              }
+                            })()
+                          )
+                        "
+                      >
+                        <v-list-item-avatar class="pa-0 ma-0">
+                          <v-icon
+                            v-text="`mdi-code-greater-than-or-equal`"
+                            dense
+                          ></v-icon>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title>{{
+                            translations.openWithEditor
+                          }}</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
 
-                <!-- Open with Editor-->
-                <v-btn
-                  class="show-icon"
-                  icon
-                  @click.stop="
-                    $emit(
-                      'open-with-editor',
-                      (() => {
-                        switch (clip.displayingFormat) {
-                          case 'plainText':
-                            return {
-                              format: 'plain/text',
-                              data: clip.plainText,
-                            };
-                          case 'richText':
-                            return {
-                              format: 'text/rtf',
-                              data: clip.richText,
-                            };
-                          case 'htmlText':
-                            return {
-                              format: 'text/html',
-                              data: clip.htmlText,
-                            };
-                          case 'dataURI':
-                            return {
-                              format: 'image/png',
-                              data: clip.dataURI,
-                            };
-                          default:
-                            return {
-                              format: 'plain/text',
-                              data: clip.plainText,
-                            };
-                        }
-                      })()
-                    )
-                  "
-                >
-                  <v-icon>mdi-microsoft-visual-studio-code</v-icon>
-                </v-btn>
+                      <!-- Select Format -->
+                      <v-list-item>
+                        <v-list-item-avatar class="pa-0 ma-0">
+                          <v-icon
+                            v-text="`mdi-format-letter-case-lower`"
+                            dense
+                          ></v-icon>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list dense rounded>
+                            <v-list-item-group
+                              :value="indexSelectedFormat(clip)"
+                              color="primary"
+                            >
+                              <v-list-item
+                                v-for="(format, formatIndex) in clip.formats"
+                                :key="`${format}-${formatIndex}-format`"
+                                @click="
+                                  $emit('change-format', {
+                                    [clip.id]:
+                                      clip.displayingFormat !==
+                                      toClipProp(format)
+                                        ? toClipProp(format)
+                                        : 'all',
+                                  })
+                                "
+                                dense
+                              >
+                                <v-list-item-icon class="mx-0">
+                                  <v-icon v-text="`mdi-label`" small></v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title class="mx-2">{{
+                                  translationByFormat[format]
+                                }}</v-list-item-title>
+                              </v-list-item>
+                            </v-list-item-group>
+                          </v-list>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </div>
 
                 <!-- Star -->
                 <v-menu offset-x max-height="170">
@@ -378,7 +419,9 @@ export default class Grid extends Vue {
   @Prop({ required: true })
   public translations!: Translation;
   @Prop({ required: true })
-  public clipsObserver!: Array<Clip & { fromNow?: string; preview?: string }>;
+  public clipsObserver!: Array<
+    Clip & { fromNow?: string; preview?: string; menuOpen: boolean }
+  >;
   @Prop()
   public loading?: boolean;
   @Prop({ required: true })
@@ -395,6 +438,12 @@ export default class Grid extends Vue {
   public labelDialog = false;
   public editNewLabel = false;
   public newLabel = '';
+  public client: [number, number] = [0, 0];
+
+  public onClick(event: PointerEvent) {
+    console.log(event);
+    this.client = [event.clientX, event.clientY];
+  }
 
   public get colorByLabelId(): { [labelId: string]: string | undefined } {
     return this.labels.reduce(

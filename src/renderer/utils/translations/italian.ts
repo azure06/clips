@@ -85,6 +85,7 @@ export const it: Translation = {
   richText: 'Testo Rich',
   runAtStartup: "Parti all'avvio",
   saveFollowingFormats: 'Salva i seguenti formati',
+  executeCommandOn: 'Eseguisci comando (Beta)',
   save: 'Salva',
   search: 'Cerca',
   searchType: 'Tipo di ricerca',

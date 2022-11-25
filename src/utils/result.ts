@@ -23,6 +23,14 @@ export interface HttpFailure {
 export type Result__<T> = Success<T> | Failure;
 export type HttpResult__<T> = HttpSuccess<T> | HttpFailure;
 
+export function toSuccess<T>(data: T): Success<T> {
+  return { status: 'success' as const, data };
+}
+
+export function toFailure<T>(message: string): Failure {
+  return { status: 'failure' as const, message };
+}
+
 export function isSuccess<T>(response: Result__<T>): response is Success<T> {
   return response.status === 'success';
 }

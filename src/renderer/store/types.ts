@@ -81,6 +81,16 @@ export interface Advanced {
     htmlText: boolean;
     dataURI: boolean;
   };
+  //
+  commands: Array<
+    [
+      'none' | 'copy-event',
+      string,
+      'file-location' | 'value',
+      'all' | 'text' | 'json' | 'html' | 'rtf' | 'picture',
+      'none' | 'new-entry' | 'replace-entry' | 'popup'
+    ]
+  >;
   // Optimization
   optimize: number;
   // System

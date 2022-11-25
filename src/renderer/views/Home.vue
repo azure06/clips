@@ -32,14 +32,15 @@
         @clip-click="onClipClick"
         @label-click="onLabelClick"
         @label-select="onLabelSelect"
-        @change-format="(format) => clipsFormatSubject.next(format)"
+        @change-format="(formatMap) => clipsFormatSubject.next(formatMap)"
+        @open-menu="(clipMap) => clipsOpenMenuSubject.next(clipMap)"
         @remove-click="onRemoveClick"
         @edit-label="modifyLabel"
         @remove-label="removeLabel"
         @create-label="addLabel"
         @edit-image="(index) => editImage(clips[index])"
         @edit-text="editText"
-        @open-with-editor="openWithEditor"
+        @open-with-editor="withCommand"
       />
     </v-container>
 
@@ -179,11 +180,13 @@ export type ClipFormat =
   | 'dataURI';
 
 export type ClipsFormatMap = { [clipdId: string]: ClipFormat | undefined };
+export type ClipsOpenMap = { [clipId: string]: boolean | undefined };
 
 export type ClipExtended = Clip & {
   fromNow?: string;
   preview?: string;
   displayingFormat?: ClipFormat;
+  menuOpen: boolean;
 };
 
 export const toClipProp = (type?: Format | string): ClipFormat => {
@@ -259,9 +262,13 @@ const KEY_N = 'KeyN';
         .asObservable()
         .pipe(scan((acc: ClipsFormatMap, value) => ({ ...acc, ...value }), {}))
         .pipe(startWith({} as ClipsFormatMap)),
+      this.clipsOpenMenuSubject
+        .asObservable()
+        .pipe(scan((acc: ClipsOpenMap, value) => ({ ...acc, ...value }), {}))
+        .pipe(startWith({} as ClipsOpenMap)),
       this.$watchAsObservable(() => this.clips),
     ]).pipe(
-      map(([clipsFormatMap, { newValue: clips }]) =>
+      map(([clipsFormatMap, clipsOpenMap, { newValue: clips }]) =>
         clips.map(
           (clip): ClipExtended => ({
             ...clip,
@@ -277,14 +284,12 @@ const KEY_N = 'KeyN';
                   : 'dataURI'
                 : 'plainText'),
             fromNow: moment(clip.updatedAt).fromNow(),
+            menuOpen: clipsOpenMap[clip.id] ?? false,
           })
         )
       )
     );
-    const openWithEditorObs = fromEvent<KeyboardEvent>(
-      document,
-      'keydown'
-    ).pipe(
+    const withCommandObs = fromEvent<KeyboardEvent>(document, 'keydown').pipe(
       filter(
         (event) => event.code === KEY_N && (event.metaKey || event.ctrlKey)
       ),
@@ -294,7 +299,7 @@ const KEY_N = 'KeyN';
         const target = hovered ? hoverIndex : focussed ? focusIndex : null;
         const clip = clips.find((_, index) => index === target);
         if (clip)
-          this.openWithEditor(
+          this.withCommand(
             (() => {
               switch (clip.displayingFormat) {
                 case 'plainText':
@@ -328,7 +333,7 @@ const KEY_N = 'KeyN';
       })
     );
 
-    return { keyboardEvent, clipsObserver, openWithEditorObs };
+    return { keyboardEvent, clipsObserver, withCommandObs };
   },
 })
 export default class Home extends ExtendedVue {
@@ -362,8 +367,8 @@ export default class Home extends ExtendedVue {
   }) => Promise<Clip[]>;
   @Action('editImage', { namespace: 'clips' })
   public editImage!: (clipId: Clip) => void;
-  @Action('openWithEditor', { namespace: 'clips' })
-  public openWithEditor!: (args: {
+  @Action('withCommand', { namespace: 'clips' })
+  public withCommand!: (args: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     format: any;
     data: string;
@@ -394,6 +399,7 @@ export default class Home extends ExtendedVue {
   public clipboardMode: 'normal' | 'select' = 'normal';
   public removeTarget: { [id: string]: boolean } = {};
   public clipsFormatSubject = new Subject<ClipsFormatMap>();
+  public clipsOpenMenuSubject = new Subject<ClipsOpenMap>();
   public focusEventSubject = new Subject<[number, boolean]>();
   public clipHover: [number | null, boolean | null] = [null, null]; // Not used anymore
 

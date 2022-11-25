@@ -30,6 +30,7 @@ import {
   Clip,
   ClipsState,
   RootState,
+  Advanced,
 } from '@/renderer/store/types';
 import { ClipSearchConditions } from '@/rxdb/clips/model';
 import { isAuthenticated } from '@/utils/common';
@@ -152,19 +153,56 @@ const actions: ActionTree<ClipsState, RootState> = {
     ),
   editImage: async (_, clip: Clip) => configurationInvokers.openEditor(clip.id),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  openWithEditor: async (
-    _,
+  withCommand: async (
+    { rootState },
     args: { format: configurationInvokers.Format; data: string }
   ) => {
-    const result =
-      args.format === 'image/png'
-        ? await clipboardInvokers.imagePathToDataURI(args.data) // This is smart enough to handle real links and dataURI
-        : { status: 'success' as const, data: args.data };
-    if (isSuccess(result))
-      configurationInvokers.openWithEditor(
-        { format: args.format, args: 'code' },
-        result.data
-      );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { advanced }: { advanced: Advanced } = (rootState as any)
+      .configuration;
+    const func = async (command: string, commandArgs: string) => {
+      const result =
+        args.format === 'image/png'
+          ? await clipboardInvokers.imagePathToDataURI(args.data) // This is smart enough to handle real links and dataURI
+          : { status: 'success' as const, data: args.data };
+      if (isSuccess(result))
+        configurationInvokers.withCommand(
+          { format: args.format, command, args: commandArgs },
+          result.data
+        );
+    };
+    const arr = await Promise.all(
+      advanced.commands.map(async ([_, command, argu, format, action]) => {
+        switch (format) {
+          case 'all':
+            return func(command, argu);
+          case 'html':
+            return args.format === 'text/html'
+              ? func(command, argu)
+              : Promise.resolve();
+          case 'json':
+            return args.format === 'plain/text'
+              ? Promise.resolve(args.data)
+                  .then((data) => JSON.parse(data))
+                  .then(() => func(command, argu))
+                  .catch(() => console.log('Invalid json'))
+              : Promise.resolve();
+          case 'picture':
+            return args.format === 'image/png'
+              ? func(command, argu)
+              : Promise.resolve();
+          case 'rtf':
+            return args.format === 'text/rtf'
+              ? func(command, argu)
+              : Promise.resolve();
+          case 'text':
+            return args.format === 'plain/text'
+              ? func(command, argu)
+              : Promise.resolve();
+        }
+      })
+    );
+    console.log(arr);
   },
   removeClips: async ({ commit }, ids: string[]) =>
     lastValueFrom(

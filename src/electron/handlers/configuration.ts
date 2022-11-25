@@ -50,12 +50,12 @@ export const onRelaunchApp = (func: () => Promise<Result__<void>>): void =>
   ipcMain.handle(INVOCATION.RELAUNCH_APP, func);
 
 // Code Open Editor
-export const onOpenFile = (
+export const withCommand = (
   func: (
-    conf: { args: string; format: Format },
+    conf: { format: Format; command: string; args: 'file-location' | 'value' },
     data: string
-  ) => Promise<Result__<void>>
+  ) => Promise<Result__<string>>
 ): void =>
-  ipcMain.handle(INVOCATION.CONF.OPEN_WITH_EDITOR, (_, conf, data) =>
+  ipcMain.handle(INVOCATION.CONF.WITH_COMMAND, (_, conf, data) =>
     func(conf, data)
   );

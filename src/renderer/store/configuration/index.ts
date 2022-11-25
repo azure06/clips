@@ -47,6 +47,7 @@ const state: AppConfState = {
   advanced: {
     rxdbAdapter: 'auto',
     searchMode: 'fuzzy',
+    commands: [['none', 'open', 'file-location', 'all', 'none']],
     optimize: 0,
     formats: {
       plainText: true,

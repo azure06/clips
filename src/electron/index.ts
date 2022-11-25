@@ -1,3 +1,4 @@
+import { identity } from './../utils/environment';
 import fs from 'fs';
 import http from 'http';
 
@@ -18,7 +19,7 @@ import { MessageDoc } from '@/rxdb/message/model';
 import { SENDERS } from '@/utils/constants';
 import { always, whenShareAvailable } from '@/utils/environment';
 import * as methods from '@/utils/methods';
-import * as handler from '@/utils/result';
+import * as resultHandler from '@/utils/result';
 import * as Sentry from '@/utils/sentry';
 import * as analyticsHandler from '../electron/handlers/analytics';
 import * as remoteHandler from '../electron/handlers/remote';
@@ -38,10 +39,10 @@ import { iDevice as getIDevice } from './services/socket.io/utils/network';
 import { tray } from './services/tray';
 import { editorWindow } from './services/windows/editor';
 import { mainWindow } from './services/windows/main';
-import * as openWithEditor from './services/with-editor';
+import * as withCommand from './services/with-editor';
 
-const runCatching = handler.runCatching(Sentry.captureException);
-const runCatchingHttpError = handler.runCatchingHttpError(
+const runCatching = resultHandler.runCatching(Sentry.captureException);
+const runCatchingHttpError = resultHandler.runCatchingHttpError(
   Sentry.captureException
 );
 
@@ -340,9 +341,11 @@ export function onReady(): void {
       editorWindow.create(clipId);
     })
   );
-  configurationHandler.onOpenFile(
-    runCatching((args, data) => {
-      openWithEditor.openWithEditor(args, data);
+  configurationHandler.withCommand(
+    runCatching(async (args, data) => {
+      const res = await withCommand.withCommand(args, data);
+      if (resultHandler.isSuccess(res)) return res.data;
+      return Promise.reject(res.message);
     })
   );
 

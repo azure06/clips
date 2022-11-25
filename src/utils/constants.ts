@@ -11,7 +11,7 @@ export const INVOCATION = {
     PAGE_VIEW: 'PAGE_VIEW',
   },
   CONF: {
-    OPEN_WITH_EDITOR: 'OPEN_WITH_VSCODE',
+    WITH_COMMAND: 'OPEN_WITH_VSCODE',
   },
   COPY_TO_CLIPBOARD: 'copy-to-clipboard',
   //

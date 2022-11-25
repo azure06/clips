@@ -23,8 +23,8 @@ export const relaunchApp = (): Promise<Result__<void>> =>
   ipcRenderer.invoke(INVOCATION.RELAUNCH_APP);
 
 // Relaunch App
-export const openWithEditor = (
-  conf: { format: Format; args: string },
+export const withCommand = (
+  conf: { format: Format; command: string; args: string },
   data: string
-): Promise<Result__<void>> =>
-  ipcRenderer.invoke(INVOCATION.CONF.OPEN_WITH_EDITOR, conf, data);
+): Promise<Result__<string>> =>
+  ipcRenderer.invoke(INVOCATION.CONF.WITH_COMMAND, conf, data);
