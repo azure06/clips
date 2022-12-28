@@ -1,6 +1,6 @@
 import { Observables, WatchObservable } from '@auzre06/vue-rx';
-import { WatchOptions } from 'vue';
 import { Observable } from 'rxjs';
+import { WatchOptions } from 'vue';
 
 declare module 'vue/types/vue' {
   interface Vue {

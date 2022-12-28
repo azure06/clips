@@ -1,12 +1,13 @@
-import * as utils from './utils';
+import { uuid } from 'uuidv4';
+
 import {
   ClipDoc,
+  ClipSearchConditions,
   ClipsCollectionMethods,
   ClipsDocMethods,
-  ClipSearchConditions,
   schema,
 } from './model';
-import { uuid } from 'uuidv4';
+import * as utils from './utils';
 
 const clipsDocMethods: ClipsDocMethods = {
   scream(this: ClipDoc, what: string) {

@@ -1,16 +1,20 @@
-import { autoUpdaterObservable } from '../auto-updater';
-import * as storeService from '../electron-store';
-import { app, BrowserWindow } from 'electron';
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import path from 'path';
-import { AppConfState } from '@/store/types';
+
+import { BrowserWindow, app } from 'electron';
+import { Subscription } from 'rxjs';
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
+
+import { ActionGetCurrentWindow } from '@/renderer/invokers/remote';
 import {
   always,
   empty,
   whenAutoUpdateAvailable,
   whenMacOS,
 } from '@/utils/environment';
-import { Subscription } from 'rxjs';
+
+import { AppConfState } from '../../../renderer/store/types';
+import { autoUpdaterObservable } from '../auto-updater';
+import * as storeService from '../electron-store';
 
 declare const __static: string;
 
@@ -88,12 +92,37 @@ function create(): BrowserWindow {
   return win;
 }
 
-function setAlwaysOnTop(win: BrowserWindow): (alwaysOnTop: boolean) => void {
-  return (alwaysOnTop: boolean) => win.setAlwaysOnTop(alwaysOnTop);
-}
-
-function setSkipTaskbar(win: BrowserWindow): (skip: boolean) => void {
-  return (skip: boolean) => win.setSkipTaskbar(skip);
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow>(action: T1) => T1 extends 'isVisible' | 'isMaximized' ? boolean : void;
+// prettier-ignore
+function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow>(action: T1, payload: boolean) => void;
+// prettier-ignore
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function onGetCurrentWindow(win: BrowserWindow): <T1 extends ActionGetCurrentWindow, T2 extends boolean>(action: T1, payload?: T2) => any {
+  return (action, payload) => {
+    switch (action) {
+      case 'isVisible':
+        return win.isVisible();
+      case 'isMaximized':
+        return win.isMaximized();
+      case 'maximize':
+        return win.maximize();
+      case 'minimize':
+        return win.minimize();
+      case 'unmaximize':
+        return win.unmaximize();
+      case 'hide':
+        return win.hide();
+      case 'close':
+        return win.close();
+      case 'getBounds':
+        return win.getBounds();
+      case 'setAlwaysOnTop':
+        return payload ? win.setAlwaysOnTop(payload) : void 0;
+      case 'setSkipTaskbar':
+        return payload ? win.setSkipTaskbar(payload) : void 0;
+    }
+  };
 }
 
 export const mainWindow = {
@@ -101,6 +130,5 @@ export const mainWindow = {
     return win;
   },
   create,
-  setSkipTaskbar,
-  setAlwaysOnTop,
+  onGetCurrentWindow,
 };

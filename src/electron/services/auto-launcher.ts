@@ -1,6 +1,7 @@
-import * as Sentry from '@/sentry';
 import AutoLaunch from 'auto-launch';
-import { HandlerResponse } from '@/utils/handler';
+
+import { Result__ } from '@/utils/result';
+import * as Sentry from '@/utils/sentry';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -10,7 +11,7 @@ const autoLauncher = new AutoLaunch({
 
 export function autoLauncherHandler(
   startup: boolean
-): Promise<HandlerResponse<boolean>> {
+): Promise<Result__<boolean>> {
   return autoLauncher
     .isEnabled()
     .then(async (isEnabled) => {

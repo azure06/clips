@@ -2,6 +2,7 @@ import fullName from 'fullname';
 import getPort from 'get-port';
 import internalIp from 'internal-ip';
 import macaddress from 'macaddress';
+
 import { IDevice } from '../types';
 
 export const PortRange = {

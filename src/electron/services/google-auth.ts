@@ -1,11 +1,12 @@
+import { EventEmitter } from 'events';
+import { stringify } from 'querystring';
+import * as url from 'url';
+
 import { BrowserWindow } from 'electron';
 import { OAuth2Client } from 'google-auth-library';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import { google } from 'googleapis';
 import { Subject } from 'rxjs';
-import { stringify } from 'querystring';
-import * as url from 'url';
-import { EventEmitter } from 'events';
 
 /**
  * Tokens updated event
@@ -151,7 +152,8 @@ export class GoogleOAuth2Service extends EventEmitter {
       }
 
       // Tries to load 127.0.0.1 and will get rejected
-      browserWindow.webContents.on('did-fail-load', (_event, errorCode) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      browserWindow.webContents.on('did-fail-load', (_event, _errorCode) => {
         const parsed = url.parse(browserWindow.webContents.getURL(), true);
         if (parsed.query.error) {
           reject(new Error(parsed.query.error_description as string));

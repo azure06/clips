@@ -1,12 +1,13 @@
-import {
-  MessageDoc,
-  MessageCollectionMethods,
-  MessageDocMethods,
-  schema,
-  MessageCollection,
-  MessageStatus,
-} from './model';
 import { uuid } from 'uuidv4';
+
+import {
+  MessageCollection,
+  MessageCollectionMethods,
+  MessageDoc,
+  MessageDocMethods,
+  MessageStatus,
+  schema,
+} from './model';
 
 const messageDocMethods: MessageDocMethods = {
   scream(this: MessageDoc, what: string) {
@@ -46,10 +47,7 @@ const messageCollectionsMethods: MessageCollectionMethods = {
     roomId: string,
     options?: { limit: number; skip: number }
   ): Promise<MessageDoc[]> {
-    const query = this.find()
-      .where('roomId')
-      .eq(roomId)
-      .sort('-createdAt');
+    const query = this.find().where('roomId').eq(roomId).sort('-createdAt');
     return (!options ? query : query.skip(options.skip).limit(options.limit))
       .exec()
       .then((messages) => messages.map((message) => message.toJSON()));

@@ -1,9 +1,10 @@
- import * as Sentry from '@/sentry';
 import { dialog } from 'electron';
+import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import { interval, of } from 'rxjs';
 import { catchError, concatMap, map, startWith } from 'rxjs/operators';
-import log from 'electron-log';
+
+import * as Sentry from '@/utils/sentry';
 
 const ONE_HOUR = 1000 * (60 * 60);
 const INTERVAL = 6 * ONE_HOUR;

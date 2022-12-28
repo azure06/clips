@@ -1,10 +1,12 @@
+import * as stream from 'stream';
+
+import { GaxiosPromise } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
 import { drive_v3, google } from 'googleapis';
-import { from, EMPTY, Subject, of, zip, Observable, lastValueFrom } from 'rxjs';
-import { scan, expand, tap } from 'rxjs/operators';
-import * as stream from 'stream';
-import { GaxiosPromise } from 'gaxios';
-import { Clip } from '@/store/types';
+import { EMPTY, Observable, Subject, from, lastValueFrom, of, zip } from 'rxjs';
+import { expand, scan, tap } from 'rxjs/operators';
+
+import { Clip } from '../../renderer/store/types';
 
 const createStream = (arg: string) => {
   const readableStream = new stream.Readable();

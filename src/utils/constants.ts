@@ -1,4 +1,18 @@
+export const SENDERS = {
+  GET_BOUNDS_SYNC: 'GET_BOUNDS_SYNC',
+};
+
 export const INVOCATION = {
+  REMOTE: {
+    GET_CURRENT_WINDOW: 'GET_CURRENT_WINDOW',
+    DIALOG: 'DIALOG',
+  },
+  ANALYTICS: {
+    PAGE_VIEW: 'PAGE_VIEW',
+  },
+  CONF: {
+    WITH_COMMAND: 'OPEN_WITH_VSCODE',
+  },
   COPY_TO_CLIPBOARD: 'copy-to-clipboard',
   //
   TO_DATA_URI: 'to-dataURI',

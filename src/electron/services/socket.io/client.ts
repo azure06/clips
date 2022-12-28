@@ -1,12 +1,15 @@
-import { IDevice, State, Progress, StateOmitP as PartialState } from './types';
-import ioClient, { Socket } from 'socket.io-client';
+import fs from 'fs';
+import pathNode from 'path';
+
 import findLocalDevices from 'local-devices';
 import { Observable, ReplaySubject } from 'rxjs';
-import { MessageDoc, parseContent } from '@/rxdb/message/model';
-import pathNode from 'path';
-import fs from 'fs';
-import { ports } from './utils/network';
 import { concatMap, scan, tap } from 'rxjs/operators';
+import ioClient, { Socket } from 'socket.io-client';
+
+import { MessageDoc, parseContent } from '@/rxdb/message/model';
+
+import { IDevice, StateOmitP as PartialState, Progress, State } from './types';
+import { ports } from './utils/network';
 
 const socketIoClientSettings = {
   reconnection: false,

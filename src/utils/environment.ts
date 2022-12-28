@@ -15,7 +15,10 @@ export const empty = () => {};
 
 export const identity = <T>(a: T): T => a;
 
-export const always = <T1>(a: T1): ((b?: unknown) => T1) => () => a;
+export const always =
+  <T1>(a: T1): ((b?: unknown) => T1) =>
+  () =>
+    a;
 
 export function whenDevelopment<T>(func: () => T, func2: () => T): T {
   return isDevelopment ? func() : func2();

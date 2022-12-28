@@ -1,6 +1,8 @@
+import path from 'path';
+
 import { BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import path from 'path';
+
 import { always, whenMacOS } from '@/utils/environment';
 
 declare const __static: string;
