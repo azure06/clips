@@ -4,7 +4,7 @@ import { Module } from 'vuex';
 import { ShortcutFuzzy } from '@/electron/services/shortcuts';
 import { AppConfState, RootState } from '@/renderer/store/types';
 import { SENDERS } from '@/utils/constants';
-import { always, whenMacOS } from '@/utils/environment';
+import { always, whenMacOS, whenWindows } from '@/utils/environment';
 
 import actions from './actions';
 import getters from './getters';
@@ -47,7 +47,15 @@ const state: AppConfState = {
   advanced: {
     rxdbAdapter: 'auto',
     searchMode: 'fuzzy',
-    commands: [['none', 'open', 'file-location', 'all', 'none']],
+    commands: [
+      [
+        'none',
+        whenWindows(always('start'), always('open')),
+        'file-location',
+        'all',
+        'none',
+      ],
+    ],
     optimize: 0,
     formats: {
       plainText: true,
