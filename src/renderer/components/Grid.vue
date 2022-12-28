@@ -138,10 +138,10 @@
             class="list-item-icon"
             @mouseout="$emit('hover', [index, false])"
             @mouseover="$emit('hover', [index, true])"
+            @mousedown="onRightClick($event, clip.id)"
             @blur="$emit('focus', [index, false])"
             @click="
               (event) => {
-                onClick(event, clip.id);
                 $emit('focus', [index, true]);
                 $emit('clip-click', event, index, clip.displayingFormat);
               }
@@ -186,24 +186,30 @@
             >
               <div>
                 <!-- Menu -->
+
                 <div
-                  :style="`display: inline; position: relative; right: ${client[0]}px`"
+                  :style="
+                    clip.menuState.client
+                      ? `display: inline; position: absolute; left: ${clip.menuState.client[0]}px`
+                      : 'display: inline;'
+                  "
                 >
                   <v-menu
-                    :value="clip.menuOpen"
+                    :value="clip.menuState.open"
                     @input="
                       (event) =>
                         $emit('open-menu', {
-                          [clip.id]: event,
+                          [clip.id]: { open: event },
                         })
                     "
                     transition="slide-y-transition"
+                    min-width="215"
                     bottom
                     :close-on-click="true"
                     :close-on-content-click="true"
                   >
                     <template v-slot:activator="{ on }">
-                      <v-btn icon v-on="on">
+                      <v-btn icon v-on="on" :hidden="clip.menuState.open">
                         <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
@@ -420,7 +426,11 @@ export default class Grid extends Vue {
   public translations!: Translation;
   @Prop({ required: true })
   public clipsObserver!: Array<
-    Clip & { fromNow?: string; preview?: string; menuOpen: boolean }
+    Clip & {
+      fromNow?: string;
+      preview?: string;
+      menuState: { open: boolean; client: [string, string] | undefined };
+    }
   >;
   @Prop()
   public loading?: boolean;
@@ -438,11 +448,13 @@ export default class Grid extends Vue {
   public labelDialog = false;
   public editNewLabel = false;
   public newLabel = '';
-  public client: [number, number] = [0, 0];
 
-  public onClick(event: PointerEvent) {
-    console.log(event);
-    this.client = [event.clientX, event.clientY];
+  public onRightClick(event: PointerEvent, clipId: string) {
+    if (event.button === 2) {
+      this.$emit('open-menu', {
+        [clipId]: { open: true, client: [event.offsetX, event.offsetY] },
+      });
+    }
   }
 
   public get colorByLabelId(): { [labelId: string]: string | undefined } {

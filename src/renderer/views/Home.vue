@@ -180,13 +180,15 @@ export type ClipFormat =
   | 'dataURI';
 
 export type ClipsFormatMap = { [clipdId: string]: ClipFormat | undefined };
-export type ClipsOpenMap = { [clipId: string]: boolean | undefined };
+export type ClipsOpenMap = {
+  [clipId: string]: { open: boolean; client: [string, string] | undefined };
+};
 
 export type ClipExtended = Clip & {
   fromNow?: string;
   preview?: string;
   displayingFormat?: ClipFormat;
-  menuOpen: boolean;
+  menuState: ClipsOpenMap[string];
 };
 
 export const toClipProp = (type?: Format | string): ClipFormat => {
@@ -264,7 +266,18 @@ const KEY_N = 'KeyN';
         .pipe(startWith({} as ClipsFormatMap)),
       this.clipsOpenMenuSubject
         .asObservable()
-        .pipe(scan((acc: ClipsOpenMap, value) => ({ ...acc, ...value }), {}))
+        .pipe(
+          scan(
+            (acc: ClipsOpenMap, value) => ({
+              ...(Object.keys(acc).reduce(
+                (acc, key) => ({ ...acc, [key]: { open: false } }),
+                {}
+              ) as ClipsOpenMap),
+              ...value,
+            }),
+            {}
+          )
+        )
         .pipe(startWith({} as ClipsOpenMap)),
       this.$watchAsObservable(() => this.clips),
     ]).pipe(
@@ -284,7 +297,7 @@ const KEY_N = 'KeyN';
                   : 'dataURI'
                 : 'plainText'),
             fromNow: moment(clip.updatedAt).fromNow(),
-            menuOpen: clipsOpenMap[clip.id] ?? false,
+            menuState: clipsOpenMap[clip.id] ?? { open: false },
           })
         )
       )

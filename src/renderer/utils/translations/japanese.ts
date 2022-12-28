@@ -37,6 +37,7 @@ export const ja: Translation = {
   acceptInivationFrom: 'Accept the invitation from',
   find: '探す',
   edit: '編集',
+  openWithEditor: 'エディターで開く',
   youWantToContinue: '続行してもよろしいですか?',
   turnOnOffTheServer: 'サーバーON/OFF',
   discoverNewDevice: '新しいデバイスを探す',

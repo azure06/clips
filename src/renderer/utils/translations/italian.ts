@@ -37,6 +37,7 @@ export const it: Translation = {
   acceptInivationFrom: "Accetta l'invito da",
   find: 'Cerca',
   edit: 'Edita',
+  openWithEditor: 'Apri con un Editor',
   youWantToContinue: 'Sicuro di voler continuare?',
   turnOnOffTheServer: 'Avvia o Stoppa il server',
   discoverNewDevice: 'Trova nuovi device',
