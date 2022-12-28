@@ -314,7 +314,7 @@
           <!--  Command: open/ start/ code -->
           <v-col class="label">
             <v-combobox
-              :items="['open', 'code']"
+              :items="isWindows ? ['start', 'code'] : ['open', 'code']"
               :value="command[1]"
               @change="
                 (event) =>
@@ -413,7 +413,8 @@
               item-color="blue"
             ></v-select>
           </v-col>
-          <v-col class="label">
+          <!-- Commented Out Result of Open with Editor -->
+          <!-- <v-col class="label">
             <v-select
               :items="['None', 'Add New Entry', 'Replace Entry', 'Pop-up']"
               :value="command[4]"
@@ -446,7 +447,7 @@
               background-color="background"
               item-color="blue"
             ></v-select>
-          </v-col>
+          </v-col> -->
         </v-row>
       </v-list-item>
       <v-divider></v-divider>
@@ -550,7 +551,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import * as paymentsInvokers from '@/renderer/invokers/payments';
 import { Translation } from '@/renderer/utils/translations/types';
 import { replace } from '@/utils/common';
-import { always, whenMas } from '@/utils/environment';
+import { always, whenMas, whenWindows } from '@/utils/environment';
 import { Result__ } from '@/utils/result';
 
 import {
@@ -610,6 +611,10 @@ export default class Advanced extends Vue {
 
   get isMas(): boolean {
     return whenMas(always(true), always(false));
+  }
+
+  get isWindows(): boolean {
+    return whenWindows(always(true), always(false));
   }
 
   public openLink(link: string): void {

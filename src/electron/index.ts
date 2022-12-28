@@ -341,12 +341,8 @@ export function onReady(): void {
       editorWindow.create(clipId);
     })
   );
-  configurationHandler.withCommand(
-    runCatching(async (args, data) => {
-      const res = await withCommand.withCommand(args, data);
-      if (resultHandler.isSuccess(res)) return res.data;
-      return Promise.reject(res.message);
-    })
+  configurationHandler.withCommand(async (args, data) =>
+    withCommand.withCommand(args, data)
   );
 
   // eslint-disable-next-line import/namespace

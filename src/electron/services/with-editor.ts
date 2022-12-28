@@ -46,10 +46,10 @@ function createFile(format: Format, data: string) {
 }
 
 function executeCommand(...args: string[]): Promise<Result__<string>> {
-  return new Promise<Result__<string>>((resolve, reject) =>
+  return new Promise<Result__<string>>((resolve, _) =>
     exec(`${args.join(' ')}`, (error, stdout, stderr) => {
-      if (error) reject(toFailure(stderr));
-      if (stderr) reject(toFailure(stderr));
+      if (error) resolve(toFailure(stderr));
+      if (stderr) resolve(toFailure(stderr));
       resolve(toSuccess(stdout ?? 'empty::response'));
     })
   );

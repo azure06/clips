@@ -205,8 +205,8 @@
                     transition="slide-y-transition"
                     min-width="215"
                     bottom
-                    :close-on-click="true"
-                    :close-on-content-click="true"
+                    close-on-click
+                    close-on-content-click
                   >
                     <template v-slot:activator="{ on }">
                       <v-btn icon v-on="on" :hidden="clip.menuState.open">
@@ -217,7 +217,7 @@
                       <!-- Edit Text/Image -->
                       <v-list-item
                         link
-                        @click.stop="
+                        @click="
                           $emit(
                             clip.displayingFormat === 'dataURI'
                               ? 'edit-image'
@@ -239,7 +239,7 @@
                       <!-- Open with Editor -->
                       <v-list-item
                         link
-                        @click.stop="
+                        @click="
                           $emit(
                             'open-with-editor',
                             (() => {
