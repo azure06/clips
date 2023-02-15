@@ -30,6 +30,8 @@ export interface ClipSearchConditions {
   regex: ClipRegExp;
   limit: number;
   skip: number;
+  lte: number;
+  gte: number;
   filters: Partial<SearchFilters>;
   sort:
     | 'plainText'

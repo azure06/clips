@@ -17,6 +17,68 @@
         solo
         filled
       ></v-text-field>
+      <v-menu
+        ref="menu"
+        :close-on-content-click="false"
+        transition="scale-transition"
+        offset-y
+        min-width="auto"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-row class="pa-1" style="max-width: 170px">
+            <v-col>
+              <v-text-field
+                :value="startDate"
+                class="pa-0"
+                label="Start"
+                dense
+                append-icon="mdi-calendar"
+                readonly
+                outlined
+                v-bind="attrs"
+                v-on="on"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </template>
+        <v-date-picker
+          :value="startDate"
+          :max="endDate"
+          :min="pickerOptions.min"
+          @change="(value) => $emit('picker-change', 'start', value)"
+        ></v-date-picker>
+      </v-menu>
+      <v-menu
+        ref="menu"
+        :close-on-content-click="false"
+        transition="scale-transition"
+        offset-y
+        min-width="auto"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-row class="pa-1" style="max-width: 170px">
+            <v-col>
+              <v-text-field
+                :value="endDate"
+                class="pa-0"
+                dense
+                label="End"
+                readonly
+                append-icon="mdi-calendar"
+                outlined
+                v-bind="attrs"
+                v-on="on"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </template>
+        <v-date-picker
+          :value="endDate"
+          :max="pickerOptions.max"
+          :min="startDate"
+          @change="(value) => $emit('picker-change', 'end', value)"
+        ></v-date-picker>
+      </v-menu>
     </v-toolbar-items>
     <v-spacer></v-spacer>
     <template>
@@ -189,6 +251,19 @@ export default class SearchBar extends Vue {
   public translations!: unknown;
   @Prop({ required: true })
   public viewMode!: 'list' | 'grid';
+  @Prop({ required: true })
+  public startDate!: `${number}-${number}-${number}`;
+  @Prop({ required: true })
+  public endDate!: `${number}-${number}-${number}`;
+  @Prop({ required: true })
+  public pickerOptions!: {
+    max: `${number}-${number}-${number}`;
+    min: `${number}-${number}-${number}`;
+  };
+
+  created() {
+    console.log(this.startDate);
+  }
 }
 </script>
 

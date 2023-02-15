@@ -120,6 +120,7 @@
       @sync-with-drive="syncWithDrive"
       @focus="onSearchBarFocus"
       @change-view-mode="(value) => (viewMode = value)"
+      @picker-change="onPickerChange"
       ref="clips-searchbar"
       :translations="$translations"
       :type="searchConditions.filters.type"
@@ -127,21 +128,16 @@
       :clipboardMode="clipboardMode"
       :viewMode="viewMode"
       :searchQuery="searchQuery"
+      :startDate="startDate"
+      :endDate="endDate"
+      :pickerOptions="pickerOptions"
     />
   </div>
 </template>
 
 <script lang="ts">
 import moment from 'moment';
-import {
-  Subject,
-  combineLatest,
-  fromEvent,
-  Observable,
-  merge,
-  lastValueFrom,
-  firstValueFrom,
-} from 'rxjs';
+import { Subject, combineLatest, fromEvent, Observable } from 'rxjs';
 import {
   concatMap,
   debounceTime,
@@ -423,6 +419,20 @@ export default class Home extends ExtendedVue {
   public editingOpen = false;
   public editingClipIndex?: number;
   public editingText = '';
+  public get pickerOptions() {
+    return {
+      max: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+        .toISOString()
+        .substr(0, 10),
+      min: '2000-01-01',
+    };
+  }
+  endDate = this.pickerOptions.max;
+  startDate = (() => {
+    const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
+    today.setMonth(today.getMonth() - 1);
+    return today.toISOString().substr(0, 10);
+  })();
 
   public get isWindowsOrLinux(): boolean {
     return (
@@ -505,6 +515,17 @@ export default class Home extends ExtendedVue {
       },
       options: { silently: true },
     });
+  }
+
+  public onPickerChange(opt: 'start' | 'end', value: string) {
+    switch (opt) {
+      case 'start':
+        this.startDate = value;
+        break;
+      case 'end':
+        this.endDate = value;
+        break;
+    }
   }
 
   public async onRemoveClick(event: Event, clipIndex: number): Promise<void> {
@@ -599,10 +620,14 @@ export default class Home extends ExtendedVue {
           }
         }
       })();
-
+      const lteDate = new Date(this.endDate);
+      lteDate.setDate(lteDate.getDate() + 1);
+      lteDate.setMilliseconds(lteDate.getMilliseconds() - 1);
       this.searchConditions = {
         ...this.searchConditions,
         regex,
+        gte: new Date(this.startDate).getTime(),
+        lte: lteDate.getTime(),
         filters: {
           ...this.searchConditions.filters,
           type: typeof args === 'string' ? undefined : args.type,

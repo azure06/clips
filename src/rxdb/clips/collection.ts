@@ -29,11 +29,15 @@ const clipsCollectionsMethods: ClipsCollectionMethods = {
     regex,
     filters,
     sort,
+    lte,
+    gte,
   }: Partial<ClipSearchConditions>) {
     let query = this.find({ selector: { ...regex } });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { formats, ...rest } = filters || {};
     query = utils.query.applyFilter(query, Object.entries(rest));
+    query = lte !== undefined ? query.where('updatedAt').lte(lte) : query;
+    query = gte !== undefined ? query.where('updatedAt').gte(gte) : query;
     query = sort ? query.sort(sort) : query;
     query = skip ? query.skip(skip) : query;
     query = limit ? query.limit(limit) : query;
