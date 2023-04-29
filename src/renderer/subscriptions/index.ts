@@ -2,16 +2,15 @@ import electron, { Rectangle } from 'electron';
 import { Subject, merge, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import { IDevice, Progress } from '@/electron/services/socket.io/types';
-import { ClipDoc } from '@/rxdb/clips/model';
-import { MessageDoc } from '@/rxdb/message/model';
+import { clipsModel, messageModel } from '@/rxdb-v2/dist/src';
 
 const resizeSubject = new Subject<Rectangle>();
 const moveSubject = new Subject<Rectangle>();
-const clipSubject = new Subject<ClipDoc>();
+const clipSubject = new Subject<clipsModel.ClipDoc>();
 const navigateSubject = new Subject<{ name: string }>();
 const messageSubject = new Subject<{
   sender: IDevice;
-  message: MessageDoc;
+  message: messageModel.MessageDoc;
 }>();
 const authorizeSubject = new Subject<IDevice>();
 const statusSubject = new Subject<

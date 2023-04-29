@@ -73,7 +73,7 @@ import { Action, Getter } from 'vuex-class';
 import { Data } from '@/electron/services/clipboard';
 import { Clip } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
-import { ClipSearchConditions } from '@/rxdb/clips/model';
+import { clipsModel } from '@/rxdb-v2/dist/src';
 import { loadImage } from '@/utils/common';
 import { getClipId } from '@/utils/environment';
 
@@ -90,7 +90,9 @@ export default class Editor extends ExtendedVue {
   @Getter('premium', { namespace: 'configuration' })
   public premium!: boolean;
   @Action('findClips', { namespace: 'clips' })
-  public findClips!: (condition: Partial<ClipSearchConditions>) => Clip[];
+  public findClips!: (
+    condition: Partial<clipsModel.ClipSearchConditions>
+  ) => Clip[];
   @Action('copyToClipboard', { namespace: 'clips' })
   public copyToClipboard!: (data: Data) => Promise<void>;
 
@@ -150,8 +152,8 @@ export default class Editor extends ExtendedVue {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const canvas = this.$el.querySelector('.lower-canvas') as any;
     if (!this.premium) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const image = await loadImage(
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         require('./../../assets/icons/watermark.png')
       );
       const targetWidth = Math.floor(canvas.width / 5);

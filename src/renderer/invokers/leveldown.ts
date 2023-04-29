@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { Observable, lastValueFrom } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
-import { RxDBAdapterNm } from '@/rxdb';
+import { RxDBAdapter } from '@/rxdb-v2/dist/src';
 import {
   Methods,
   MethodsReturnType,
@@ -46,7 +46,7 @@ import { INVOCATION } from '../../utils/constants';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 export function switchdb(
-  adapterObserver: Observable<RxDBAdapterNm>
+  adapterObserver: Observable<'idb' | 'leveldb'>
 ): <T extends Methods>(
   methodNm: T,
   ...args: T extends 'findClips'
@@ -116,7 +116,7 @@ export function switchdb(
   ? ReturnSetMessageToRead
   : never;
 export function switchdb(
-  adapterObserver: Observable<RxDBAdapterNm>
+  adapterObserver: Observable<'idb' | 'leveldb'>
 ): <T extends Methods>(methodNm: T, ...args: never[]) => MethodsReturnType {
   return <T extends Methods>(methodNm: T, ...args: never[]) => {
     const obs = adapterObserver.pipe(

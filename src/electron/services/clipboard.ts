@@ -9,7 +9,7 @@ import { uuid } from 'uuidv4';
 import { isSuccess, runCatching } from '@/utils/result';
 import * as Sentry from '@/utils/sentry';
 
-import { ClipDoc, Format } from '../../rxdb/clips/model';
+import { clipsModel } from '@/rxdb-v2/dist/src';
 interface Clipboard {
   plainText: string;
   htmlText: string;
@@ -84,7 +84,7 @@ export const clipboardAsObservable = interval(1000).pipe(
     ({
       previous,
       current,
-    }): ObservableInput<Omit<ClipDoc, 'id'> | undefined> => {
+    }): ObservableInput<Omit<clipsModel.ClipDoc, 'id'> | undefined> => {
       const isText = current
         ? !!current.formats.find((format) => format.includes('text'))
         : false;
@@ -127,7 +127,7 @@ export const clipboardAsObservable = interval(1000).pipe(
               dataURI: saveImage(),
               category: 'none',
               type: isImage ? ('image' as const) : ('text' as const),
-              formats: current.formats as Format[],
+              formats: current.formats as clipsModel.Format[],
               createdAt: Date.now(),
               updatedAt: Date.now(),
             };

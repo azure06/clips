@@ -78,13 +78,8 @@ import { ExtendedVue } from '@/renderer/utils/basevue';
 import { handleTransaction } from '@/renderer/utils/in-app-transaction';
 import { isSuccess, isSuccessHttp } from '@/utils/result';
 import { IDevice } from '../electron/services/socket.io/types';
-import { Format } from '../rxdb/clips/model';
-import {
-  MessageDoc,
-  parseContent,
-  stringifyContent,
-} from '../rxdb/message/model';
-import { UserDoc } from '../rxdb/user/model';
+import { clipsModel, userModel, messageModel } from '@/rxdb-v2/dist/src';
+
 import { isAuthenticated } from '../utils/common';
 import {
   always,
@@ -188,22 +183,22 @@ export default class App extends ExtendedVue {
   public loadRooms!: () => Promise<Room[]>;
   @Action('findRoomFromUserOrCreate', { namespace: 'network' })
   public findRoomFromUserOrCreate!: (
-    user: Pick<UserDoc, 'id' | 'username'>
+    user: Pick<userModel.UserDoc, 'id' | 'username'>
   ) => Promise<Room>;
   @Action('addOrUpdateMessage', { namespace: 'network' })
   public addOrUpdateMessage!: (args: {
-    message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
+    message: Omit<messageModel.MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
       id?: string;
     };
     skipUpsert?: boolean;
-  }) => Promise<MessageDoc | undefined>;
+  }) => Promise<messageModel.MessageDoc | undefined>;
   @Action('findMessage', { namespace: 'network' })
   public findMessage!: (args: {
     roomId: string;
     messageId: string;
-  }) => Promise<MessageDoc | undefined>;
+  }) => Promise<messageModel.MessageDoc | undefined>;
   @Action('upsertUser', { namespace: 'network' })
-  public upsertUser!: (device: UserUpsert) => Promise<UserDoc>;
+  public upsertUser!: (device: UserUpsert) => Promise<userModel.UserDoc>;
   @Action('handleServer', { namespace: 'network' })
   public handleServer!: (action: 'start' | 'close') => Promise<boolean>;
 
@@ -251,7 +246,7 @@ export default class App extends ExtendedVue {
         const filterFormat = (
           clipFormat: 'plainText' | 'richText' | 'htmlText' | 'dataURI',
           present: boolean,
-          formats: Format[]
+          formats: clipsModel.Format[]
         ) => {
           return present
             ? formats
@@ -411,7 +406,7 @@ export default class App extends ExtendedVue {
     // onMessage received (onAuthorize is in App.vue)
     this.$subscribeTo(
       subscriptions.onMessage,
-      async ({ sender, message }: { sender: IDevice; message: MessageDoc }) => {
+      async ({ sender, message }: { sender: IDevice; message: messageModel.MessageDoc }) => {
         //  Find user or create if necessary
         const room: Room = await findRoomFromUserOrCreate(message.id)({
           id: sender.mac,
@@ -423,7 +418,7 @@ export default class App extends ExtendedVue {
           message: {
             ...message,
             roomId: room.id,
-          } as MessageDoc,
+          } as messageModel.MessageDoc,
         });
         // Notify user
         (() => {
@@ -452,7 +447,7 @@ export default class App extends ExtendedVue {
           const message = (await this.findMessage({
             roomId: room.id,
             messageId: data.messageId,
-          })) as MessageDoc;
+          })) as messageModel.MessageDoc;
           // Update the roomId inside the message (Currently is the sender roomId)
           return this.addOrUpdateMessage({
             skipUpsert: data.status === 'next',
@@ -461,8 +456,8 @@ export default class App extends ExtendedVue {
               content: (() => {
                 switch (data.status) {
                   case 'next':
-                    return stringifyContent({
-                      path: parseContent(message.content).path,
+                    return messageModel.stringifyContent({
+                      path: messageModel.parseContent(message.content).path,
                       progress: data.progress,
                     });
                   default:
@@ -479,7 +474,7 @@ export default class App extends ExtendedVue {
                     return 'rejected';
                 }
               })(),
-            } as MessageDoc,
+            } as messageModel.MessageDoc,
           });
         })
       ),

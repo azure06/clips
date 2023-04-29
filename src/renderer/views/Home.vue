@@ -160,12 +160,7 @@ import * as remote from '@/renderer/invokers/remote';
 import { copySilently } from '@/renderer/store/clips/actions';
 import { Clip, Label, User } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
-import {
-  ClipSearchConditions,
-  Format,
-  SearchFilters,
-} from '@/rxdb/clips/model';
-import * as utils from '@/rxdb/clips/utils';
+import { clipsModel, clipsUtils } from '@/rxdb-v2/dist/src';
 import { always, whenLinux, whenWindows } from '@/utils/environment';
 
 export type ClipFormat =
@@ -187,7 +182,7 @@ export type ClipExtended = Clip & {
   menuState: ClipsOpenMap[string];
 };
 
-export const toClipProp = (type?: Format | string): ClipFormat => {
+export const toClipProp = (type?: clipsModel.Format | string): ClipFormat => {
   switch (type) {
     case 'text/plain':
       return 'plainText';
@@ -348,11 +343,11 @@ const KEY_N = 'KeyN';
 export default class Home extends ExtendedVue {
   @Action('loadClips', { namespace: 'clips' })
   public loadClips!: (
-    searchConditions: Partial<ClipSearchConditions>
+    searchConditions: Partial<clipsModel.ClipSearchConditions>
   ) => Promise<Clip[]>;
   @Action('loadNext', { namespace: 'clips' })
   public loadNext!: (
-    searchConditions: Partial<ClipSearchConditions>
+    searchConditions: Partial<clipsModel.ClipSearchConditions>
   ) => Promise<Clip[]>;
   @Action('modifyClip', { namespace: 'clips' })
   public modifyClip!: (payload: {
@@ -398,8 +393,8 @@ export default class Home extends ExtendedVue {
   public processing!: boolean;
   @Getter('syncStatus', { namespace: 'clips' })
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
-  public searchConditions: Partial<ClipSearchConditions> & {
-    filters: Partial<SearchFilters>;
+  public searchConditions: Partial<clipsModel.ClipSearchConditions> & {
+    filters: Partial<clipsModel.SearchFilters>;
   } = {
     limit: 15,
     sort: '-updatedAt',
@@ -611,9 +606,9 @@ export default class Home extends ExtendedVue {
         if (search) {
           switch (this.advanced.searchMode) {
             case 'fuzzy':
-              return utils.patterns.likeSearch('plainText', search);
+              return clipsUtils.patterns.likeSearch('plainText', search);
             case 'advanced-fuzzy':
-              return utils.patterns.advancedSearch(
+              return clipsUtils.patterns.advancedSearch(
                 'plainText',
                 search.split(' ')
               );

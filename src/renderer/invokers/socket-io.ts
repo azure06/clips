@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { IDevice } from 'local-devices';
-import { MessageDoc } from '@/rxdb/message/model';
+import { messageModel } from '@/rxdb-v2/dist/src';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
 
@@ -16,6 +16,6 @@ export const getMyDevice = (): Promise<Result__<IDevice>> =>
 export const sendFile = (
   sender: IDevice,
   receiver: IDevice,
-  message: MessageDoc
+  message: messageModel.MessageDoc
 ): Promise<Result__<void>> =>
   ipcRenderer.invoke(INVOCATION.SEND_FILE, sender, receiver, message);

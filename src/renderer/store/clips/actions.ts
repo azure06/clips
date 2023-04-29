@@ -32,7 +32,7 @@ import {
   RootState,
   Advanced,
 } from '@/renderer/store/types';
-import { ClipSearchConditions } from '@/rxdb/clips/model';
+import { clipsModel } from '@/rxdb-v2/dist/src';
 import { isAuthenticated } from '@/utils/common';
 import { always, identity } from '@/utils/environment';
 import { fold, isSuccess, isSuccessHttp } from '@/utils/result';
@@ -76,7 +76,7 @@ export const methods = leveldownInvokers.switchdb(
 const actions: ActionTree<ClipsState, RootState> = {
   findClips: async (
     { commit },
-    searchConditions: Partial<ClipSearchConditions>
+    searchConditions: Partial<clipsModel.ClipSearchConditions>
   ) =>
     lastValueFrom(
       range(1, 1)
@@ -87,7 +87,7 @@ const actions: ActionTree<ClipsState, RootState> = {
     ),
   loadClips: async (
     { commit },
-    searchConditions: Partial<ClipSearchConditions>
+    searchConditions: Partial<clipsModel.ClipSearchConditions>
   ) =>
     lastValueFrom(
       range(1, 1)
@@ -99,7 +99,7 @@ const actions: ActionTree<ClipsState, RootState> = {
     ),
   loadNext: async (
     { commit, state },
-    searchConditions: Partial<ClipSearchConditions>
+    searchConditions: Partial<clipsModel.ClipSearchConditions>
   ) =>
     lastValueFrom(
       range(1, 1)

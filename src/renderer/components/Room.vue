@@ -266,12 +266,16 @@ import {
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 import { Room as RoomType } from '@/renderer/store/types';
-import { MessageDoc, MessageStatus, parseContent } from '@/rxdb/message/model';
+import { messageModel } from '@/rxdb-v2/dist/src';
 import { INVOCATION } from '@/utils/constants';
 
 type RoomEx = Omit<RoomType, 'messages'> & {
   messages: Array<
-    MessageDoc & { fromThisDevice?: boolean; time?: string; date?: string }
+    messageModel.MessageDoc & {
+      fromThisDevice?: boolean;
+      time?: string;
+      date?: string;
+    }
   >;
 };
 
@@ -292,7 +296,7 @@ type EventName = 'drop' | 'dragenter' | 'dragleave' | 'dragover';
                 ...message,
                 content:
                   message.type === 'file'
-                    ? parseContent(message.content)
+                    ? messageModel.parseContent(message.content)
                     : message.content,
                 fromThisDevice:
                   this.room.userIds[0] !== message.senderId ||
@@ -414,18 +418,18 @@ export default class Room extends Vue {
     return rows >= 1 && rows <= 3 ? rows : rows > 3 ? 3 : 1;
   }
 
-  public isReadOrSent(status: MessageStatus): boolean {
+  public isReadOrSent(status: messageModel.MessageStatus): boolean {
     return status === 'sent' || status === 'read';
   }
-  public isRejectedOrPending(status: MessageStatus): boolean {
+  public isRejectedOrPending(status: messageModel.MessageStatus): boolean {
     return status === 'pending' || status === 'rejected';
   }
 
-  public isPending(status: MessageStatus): boolean {
+  public isPending(status: messageModel.MessageStatus): boolean {
     return status === 'pending';
   }
 
-  public isRejected(status: MessageStatus): boolean {
+  public isRejected(status: messageModel.MessageStatus): boolean {
     return status === 'rejected';
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "clips",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "private": true,
   "description": "Simple, Reliable Clipboard",
   "author": "Gabriele Sato",
@@ -8,7 +8,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "eslint -c .eslintrc.js --ext ts,vue ./src",
-    "electron:build": "vue-cli-service electron:build -mw",
+    "electron:build": "vue-cli-service electron:build -w",
     "electron:generate-icons": "electron-icon-builder --input=./public/icon.png --output=build --flatten",
     "electron:publish": "npm run electron:build -- -p always",
     "electron:serve": "vue-cli-service electron:serve",

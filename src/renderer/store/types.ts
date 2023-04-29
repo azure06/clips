@@ -1,10 +1,12 @@
-import { ClipDoc as Clip } from '@/rxdb/clips/model';
-import { MessageDoc } from '@/rxdb/message/model';
-import { RoomDoc } from '@/rxdb/room/model';
-import { UserDoc } from '@/rxdb/user/model';
+import {
+  clipsModel,
+  messageModel,
+  roomModel,
+  userModel,
+} from '@/rxdb-v2/dist/src';
 
 /** Network Types */
-export type Room = RoomDoc & { messages: MessageDoc[] };
+export type Room = roomModel.RoomDoc & { messages: messageModel.MessageDoc[] };
 
 export type LoDevices = boolean;
 export type LoRooms = boolean;
@@ -14,8 +16,8 @@ export type Loading = [LoDevices, LoRooms, LoMessages];
 
 export interface NetworkState {
   status: 'started' | 'closed'; // Server status
-  thisUser?: UserDoc;
-  users: UserDoc[];
+  thisUser?: userModel.UserDoc;
+  users: userModel.UserDoc[];
   rooms: Room[];
   loading: Loading;
 }
@@ -137,7 +139,7 @@ export interface AppConfState {
 export interface ClipsState {
   loading: boolean;
   processing: boolean;
-  clips: Clip[];
+  clips: clipsModel.ClipDoc[];
   sync?: 'resolved' | 'rejected' | 'pending';
 }
 
@@ -148,4 +150,4 @@ export interface RootState {
   version: string;
 }
 
-export { ClipDoc as Clip } from '@/rxdb/clips/model';
+export type Clip = clipsModel.ClipDoc;

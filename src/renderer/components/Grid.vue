@@ -418,7 +418,7 @@ import {
   ClipFormat,
   toClipProp,
 } from '@/renderer/views/Home.vue';
-import { Format } from '@/rxdb/clips/model';
+import { clipsModel } from '@/rxdb-v2/dist/src';
 
 @Component
 export default class Grid extends Vue {
@@ -467,7 +467,7 @@ export default class Grid extends Vue {
     );
   }
 
-  public get translationByFormat(): { [P in Format]: string } {
+  public get translationByFormat(): { [P in clipsModel.Format]: string } {
     return {
       'text/plain': this.translations.text,
       'text/html': this.translations.htmlText,
@@ -497,7 +497,7 @@ export default class Grid extends Vue {
     return [{ name: 'None', color: '#1d1d20', id: '' }, ...this.labels];
   }
 
-  public toClipProp(format: Format): ClipFormat {
+  public toClipProp(format: clipsModel.Format): ClipFormat {
     return toClipProp(format);
   }
 

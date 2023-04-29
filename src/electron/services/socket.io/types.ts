@@ -1,6 +1,6 @@
 import findLocalDevices from 'local-devices';
 
-import { MessageDoc } from '@/rxdb/message/model';
+import { messageModel } from '@/rxdb-v2/dist/src';
 
 export type IDevice = findLocalDevices.IDevice & {
   username: string;
@@ -40,8 +40,10 @@ export type StateOmitP =
   | Omit<End, 'progress'>
   | Error;
 
-export type MessageReq = MessageDoc | State;
+export type MessageReq = messageModel.MessageDoc | State;
 
-export function isMessageText(args: MessageReq): args is MessageDoc {
+export function isMessageText(
+  args: MessageReq
+): args is messageModel.MessageDoc {
   return 'type' in args && args.type === 'text';
 }

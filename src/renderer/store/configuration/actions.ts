@@ -6,7 +6,7 @@ import * as configurationInvokers from '@/renderer/invokers/configuration';
 import * as remote from '@/renderer/invokers/remote';
 import * as signInInvokers from '@/renderer/invokers/sign-in';
 import { AppConfState, Clip, RootState } from '@/renderer/store/types';
-import { ClipSearchConditions } from '@/rxdb/clips/model';
+import { clipsModel } from '@/rxdb-v2/dist/src';
 import { isSuccess, isSuccessHttp } from '@/utils/result';
 
 const actions: ActionTree<AppConfState, RootState> = {
@@ -28,7 +28,9 @@ const actions: ActionTree<AppConfState, RootState> = {
   async removeLabel({ commit, dispatch }, labelId: string) {
     const clips: Clip[] = await dispatch(
       'clips/findClips',
-      { filters: { category: labelId } } as Partial<ClipSearchConditions>,
+      {
+        filters: { category: labelId },
+      } as Partial<clipsModel.ClipSearchConditions>,
       {
         root: true,
       }

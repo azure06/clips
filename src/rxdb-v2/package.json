@@ -1,0 +1,45 @@
+{
+  "name": "clips-rxdb",
+  "version": "0.0.1",
+  "private": true,
+  "description": "RxDB Clips instance",
+  "author": "Gabriele Sato",
+  "scripts": {
+    "start": "rollup -c -w",
+    "build": "webpack",
+    "build:r": "rollup -c",
+    "lint": "eslint . --ext .js.ts --ignore-path .gitignore .",
+    "lintfix": "eslint --fix --ext .js,.ts --ignore-path .gitignore ."
+  },
+  "bugs": {
+    "url": "https://github.com/azure06/clips/issues"
+  },
+  "types": "dist/types",
+  "homepage": "https://infiniticlips.com",
+  "keywords": [
+    "clipboard",
+    "electron",
+    "vue-electron",
+    "vue",
+    "universal",
+    "windows",
+    "mac"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azure06/clips.git"
+  },
+  "dependencies": {
+    "leveldown": "^6.1.1",
+    "pouchdb-adapter-idb": "^7.3.0",
+    "pouchdb-adapter-leveldb": "^7.3.0",
+    "rxdb": "^9.20.0",
+    "rxjs": "^7.5.7",
+    "uuidv4": "^6.2.13"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^11.0.0",
+    "webpack": "^5.81.0",
+    "webpack-cli": "^5.0.2"
+  }
+}

@@ -15,7 +15,7 @@ import * as leveldownHandler from '@/electron/handlers/leveldown';
 import * as paymentsHandler from '@/electron/handlers/payments';
 import * as signInHandler from '@/electron/handlers/sign-in';
 import * as socketIoHandler from '@/electron/handlers/socket-io';
-import { MessageDoc } from '@/rxdb/message/model';
+import { messageModel } from '@/rxdb-v2/dist/src';
 import { SENDERS } from '@/utils/constants';
 import { always, whenShareAvailable } from '@/utils/environment';
 import * as methods from '@/utils/methods';
@@ -252,7 +252,7 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
   const handleSendFile = async (
     sender: IDevice,
     receiver: IDevice,
-    message: MessageDoc
+    message: messageModel.MessageDoc
   ) => {
     sendFile(sender, receiver, message).subscribe({
       next: (progress) => {
