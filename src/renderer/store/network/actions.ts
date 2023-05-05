@@ -9,7 +9,8 @@ import {
 import { IDevice } from '@/electron/services/socket.io/types';
 import * as socketIoInvokers from '@/renderer/invokers/socket-io';
 import { NetworkState, RootState } from '@/renderer/store/types';
-import { messageModel, userModel } from '@/rxdb-v2/dist/src';
+import { Message, User } from '@/rxdb-v2/src/types';
+import { stringifyMessageContent } from '@/rxdb-v2/src/utils';
 import { toDictionary } from '@/utils/common';
 import { always } from '@/utils/environment';
 import { isSuccess } from '@/utils/result';
@@ -17,7 +18,7 @@ import * as Sentry from '@/utils/sentry';
 
 import { methods } from '../clips/actions';
 
-export type UserUpsert = Partial<Omit<userModel.UserDoc, 'device'>> & {
+export type UserUpsert = Partial<Omit<User, 'device'>> & {
   device: IDevice;
 };
 
@@ -94,7 +95,7 @@ const actions: ActionTree<NetworkState, RootState> = {
     ),
   upsertUser: async (
     { commit },
-    user: Partial<Omit<userModel.UserDoc, 'device'>> & { device: IDevice }
+    user: Partial<Omit<User, 'device'>> & { device: IDevice }
   ) =>
     lastValueFrom(
       from(methods('upsertUser', user))
@@ -107,7 +108,7 @@ const actions: ActionTree<NetworkState, RootState> = {
     ),
   findRoomFromUserOrCreate: async (
     { state, commit },
-    user: Pick<userModel.UserDoc, 'id' | 'username'>
+    user: Pick<User, 'id' | 'username'>
   ) =>
     lastValueFrom(
       from(methods('findRoomFromUserOrCreate', user)).pipe(
@@ -163,10 +164,7 @@ const actions: ActionTree<NetworkState, RootState> = {
   addOrUpdateMessage: async (
     { commit },
     args: {
-      message: Omit<
-        messageModel.MessageDoc,
-        'id' | 'updatedAt' | 'createdAt'
-      > & {
+      message: Omit<Message, 'id' | 'updatedAt' | 'createdAt'> & {
         id?: string;
       };
       skipUpsert?: boolean;
@@ -200,7 +198,7 @@ const actions: ActionTree<NetworkState, RootState> = {
   sendMessage: async (
     { commit },
     args: {
-      message: Pick<messageModel.MessageDoc, 'roomId' | 'content'> & {
+      message: Pick<Message, 'roomId' | 'content'> & {
         id?: string;
       };
       sender?: IDevice;
@@ -266,7 +264,7 @@ const actions: ActionTree<NetworkState, RootState> = {
         roomId: args.message.roomId,
         senderId: args.sender?.mac || 'unknown',
         type: 'file',
-        content: messageModel.stringifyContent({
+        content: stringifyMessageContent({
           path: args.message.path,
           progress: {
             eta: 0,

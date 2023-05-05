@@ -232,9 +232,9 @@ import { Action, Getter } from 'vuex-class';
 
 import { IDevice } from '@/electron/services/socket.io/types';
 import Room from '@/renderer/components/Room.vue';
-import { Room as RoomType } from '@/renderer/store/types';
+// import { Room as RoomType } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
-import { messageModel, userModel } from '@/rxdb-v2/dist/src';
+import { User, Room as RoomType, Message } from '@/rxdb-v2/src/types';
 
 @Component<Share>({
   components: { Room },
@@ -310,12 +310,12 @@ export default class Share extends ExtendedVue {
   public unreadMessagesTotal!: number;
 
   @Getter('thisUser', { namespace: 'network' })
-  public thisUser?: userModel.UserDoc;
+  public thisUser?: User;
 
   @Getter('users', { namespace: 'network' })
-  public users!: userModel.UserDoc[];
+  public users!: User[];
   @Getter('userDictionary', { namespace: 'network' })
-  public userDictionary!: Dictionary<userModel.UserDoc>;
+  public userDictionary!: Dictionary<User>;
 
   @Getter('rooms', { namespace: 'network' })
   public rooms!: RoomType[];
@@ -325,7 +325,7 @@ export default class Share extends ExtendedVue {
   @Action('discoverUsers', { namespace: 'network' })
   public discoverUsers!: () => Promise<void>;
   @Action('findUser', { namespace: 'network' })
-  public findUser!: (userId: string) => Promise<userModel.UserDoc | undefined>;
+  public findUser!: (userId: string) => Promise<User | undefined>;
 
   @Action('loadRooms', { namespace: 'network' })
   public loadRooms!: () => Promise<RoomType[]>;
@@ -333,25 +333,23 @@ export default class Share extends ExtendedVue {
   public loadMessages!: (data: {
     roomId: string;
     options?: { limit: number; skip: number };
-  }) => Promise<messageModel.MessageDoc[]>;
+  }) => Promise<Message[]>;
 
   @Action('findRoomFromUserOrCreate', { namespace: 'network' })
-  public findRoomFromUserOrCreate!: (
-    user: userModel.UserDoc
-  ) => Promise<RoomType>;
+  public findRoomFromUserOrCreate!: (user: User) => Promise<RoomType>;
   @Action('setMessagesToRead', { namespace: 'network' })
   public setMessagesToRead!: (
     roomId: string,
     senderId: string
-  ) => Promise<messageModel.MessageDoc[]>;
+  ) => Promise<Message[]>;
   @Action('sendMessage', { namespace: 'network' })
   public sendMessage!: (args: {
-    message: Pick<messageModel.MessageDoc, 'roomId' | 'content'> & {
+    message: Pick<Message, 'roomId' | 'content'> & {
       id?: string;
     };
     sender?: IDevice;
     receiver: IDevice;
-  }) => Promise<messageModel.MessageDoc>;
+  }) => Promise<Message>;
   @Action('sendFile', { namespace: 'network' })
   public sendFile!: (args: {
     message: {
@@ -361,7 +359,7 @@ export default class Share extends ExtendedVue {
     };
     sender?: IDevice;
     receiver: IDevice;
-  }) => Promise<messageModel.MessageDoc>;
+  }) => Promise<Message>;
   @Action('handleServer', { namespace: 'network' })
   public handleServer!: (arg: 'start' | 'close') => Promise<boolean>;
 
@@ -369,7 +367,7 @@ export default class Share extends ExtendedVue {
   public onDraftChange = new Subject<{ roomId: string; draft: string }>();
   public showDialog = false;
 
-  public async openRoom(user: userModel.UserDoc): Promise<void> {
+  public async openRoom(user: User): Promise<void> {
     const room = await this.findRoomFromUserOrCreate(user);
     // Mode to room
     this.$router.push({
@@ -387,7 +385,7 @@ export default class Share extends ExtendedVue {
 
   public async onResendMessage(
     room: RoomType,
-    message: messageModel.MessageDoc
+    message: Message
   ): Promise<void> {
     const receiver = await this.findUser(room.userIds[0]);
     if (!receiver) return; // TODO Handle receiver absent exception

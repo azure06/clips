@@ -5,8 +5,8 @@ import { ActionTree } from 'vuex';
 import * as configurationInvokers from '@/renderer/invokers/configuration';
 import * as remote from '@/renderer/invokers/remote';
 import * as signInInvokers from '@/renderer/invokers/sign-in';
-import { AppConfState, Clip, RootState } from '@/renderer/store/types';
-import { clipsModel } from '@/rxdb-v2/dist/src';
+import { AppConfState, RootState } from '@/renderer/store/types';
+import { Clip, ClipSearchConditions } from '@/rxdb-v2/src/types';
 import { isSuccess, isSuccessHttp } from '@/utils/result';
 
 const actions: ActionTree<AppConfState, RootState> = {
@@ -30,7 +30,7 @@ const actions: ActionTree<AppConfState, RootState> = {
       'clips/findClips',
       {
         filters: { category: labelId },
-      } as Partial<clipsModel.ClipSearchConditions>,
+      } as Partial<ClipSearchConditions>,
       {
         root: true,
       }

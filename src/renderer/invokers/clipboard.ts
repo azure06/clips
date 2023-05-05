@@ -1,8 +1,8 @@
 import { ipcRenderer } from 'electron';
 import { Data } from '@/electron/services/clipboard';
+import { Clip } from '@/rxdb-v2/src/types';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
-import { Clip } from '../store/types';
 
 export type DataURI = string;
 

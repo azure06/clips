@@ -1,4 +1,3 @@
-import { identity } from './../utils/environment';
 import fs from 'fs';
 import http from 'http';
 
@@ -15,7 +14,7 @@ import * as leveldownHandler from '@/electron/handlers/leveldown';
 import * as paymentsHandler from '@/electron/handlers/payments';
 import * as signInHandler from '@/electron/handlers/sign-in';
 import * as socketIoHandler from '@/electron/handlers/socket-io';
-import { messageModel } from '@/rxdb-v2/dist/src';
+import { Message } from '@/rxdb-v2/src/types';
 import { SENDERS } from '@/utils/constants';
 import { always, whenShareAvailable } from '@/utils/environment';
 import * as methods from '@/utils/methods';
@@ -40,6 +39,7 @@ import { tray } from './services/tray';
 import { editorWindow } from './services/windows/editor';
 import { mainWindow } from './services/windows/main';
 import * as withCommand from './services/with-editor';
+import { clipsWorker } from './workers/worker-threads';
 
 const runCatching = resultHandler.runCatching(Sentry.captureException);
 const runCatchingHttpError = resultHandler.runCatchingHttpError(
@@ -252,7 +252,7 @@ async function subscribeToSocketIo(mainWindow: BrowserWindow) {
   const handleSendFile = async (
     sender: IDevice,
     receiver: IDevice,
-    message: messageModel.MessageDoc
+    message: Message
   ) => {
     sendFile(sender, receiver, message).subscribe({
       next: (progress) => {
@@ -345,8 +345,24 @@ export function onReady(): void {
     withCommand.withCommand(args, data)
   );
 
-  // eslint-disable-next-line import/namespace
-  leveldownHandler.onNodeDB((methodNm, args) => methods[methodNm](...args));
+  const [complationRate, workerSearchClips] = clipsWorker(
+    methods.countAllDocuments,
+    methods.findClips
+  );
+
+  complationRate.subscribe((searchRation) =>
+    win.webContents.send('search-ratio-change', searchRation)
+  );
+
+  leveldownHandler.onNodeDB((methodNm, args) => {
+    switch (methodNm) {
+      case 'findClips':
+        return workerSearchClips(args[0]);
+      default:
+        // eslint-disable-next-line import/namespace
+        return methods[methodNm](...args);
+    }
+  });
   configurationHandler.onRelaunchApp(
     runCatching(() => {
       app.relaunch();

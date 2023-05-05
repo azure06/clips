@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import { drive_v3 } from 'googleapis';
 
-import { Clip } from '@/renderer/store/types';
+import { Clip } from '@/rxdb-v2/src/types';
 import { INVOCATION } from '@/utils/constants';
 import { HttpResult__ } from '@/utils/result';
 

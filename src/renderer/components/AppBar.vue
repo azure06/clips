@@ -212,9 +212,8 @@ import { Action, Mutation } from 'vuex-class';
 import Advanced from '@/renderer/components/settings/Advanced.vue';
 import * as remote from '@/renderer/invokers/remote';
 import { adapterObserver } from '@/renderer/store/clips/actions';
-import { Clip } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
-import { clipsModel } from '@/rxdb-v2/dist/src';
+import { Clip, ClipSearchConditions } from '@/rxdb-v2/src/types';
 import { always, whenLinux, whenWindows } from '@/utils/environment';
 import { Result__, isSuccess } from '@/utils/result';
 
@@ -235,7 +234,7 @@ import { Result__, isSuccess } from '@/utils/result';
 export default class AppBar extends ExtendedVue {
   @Action('loadClips', { namespace: 'clips' })
   public loadClips!: (
-    searchConditions: Partial<clipsModel.ClipSearchConditions>
+    searchConditions: Partial<ClipSearchConditions>
   ) => Promise<Clip[]>;
   @Mutation('setAdvanced', { namespace: 'configuration' })
   public setAdvanced!: (advanced: Advanced) => Promise<void>;

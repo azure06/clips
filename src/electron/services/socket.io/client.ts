@@ -6,8 +6,9 @@ import { Observable, ReplaySubject } from 'rxjs';
 import { concatMap, scan, tap } from 'rxjs/operators';
 import ioClient, { Socket } from 'socket.io-client';
 
-import { messageModel } from '@/rxdb-v2/dist/src';
+import { Message } from '@/rxdb-v2/src/types';
 
+import { parseMessageContent } from '@/rxdb-v2/src/utils';
 import { IDevice, StateOmitP as PartialState, Progress, State } from './types';
 import { ports } from './utils/network';
 
@@ -59,12 +60,12 @@ function authorize(socket: Socket, sender: IDevice, receiver: IDevice): Promise<
 }
 
 // prettier-ignore
-export async function sendMessage(sender: IDevice, receiver: IDevice, message: messageModel.MessageDoc): Promise<messageModel.MessageDoc> {
+export async function sendMessage(sender: IDevice, receiver: IDevice, message: Message): Promise<Message> {
   const socket = await connect(receiver.ip, receiver.port);
   await authorize(socket, sender, receiver);
   // prettier-ignore
   console.info(`%cSending message to ${receiver.username} 🙈🙉🙊`,`background: rgb(235,0,135); ${style}`);
-  return new Promise<messageModel.MessageDoc>((resolve) => {
+  return new Promise<Message>((resolve) => {
     socket.emit('message', message, () => {
       console.info(`Disconnecting from ${receiver.username} 👀 🎬`);
       socket.disconnect();
@@ -76,7 +77,7 @@ export async function sendMessage(sender: IDevice, receiver: IDevice, message: m
 export function sendFile(
   sender: IDevice,
   receiver: IDevice,
-  message: messageModel.MessageDoc
+  message: Message
 ): Observable<Progress> {
   const progressReplay = new ReplaySubject<Progress>(1);
   const emitReplay = new ReplaySubject<PartialState>();
@@ -84,14 +85,14 @@ export function sendFile(
     progressReplay.complete();
     emitReplay.complete();
   };
-  if (fs.lstatSync(messageModel.parseContent(message.content).path).isDirectory()) {
+  if (fs.lstatSync(parseMessageContent(message.content).path).isDirectory()) {
     completeAll();
   } else {
     (async () => {
       const socket = await connect(receiver.ip, receiver.port);
       return authorize(socket, sender, receiver)
         .then(() => {
-          const { path } = messageModel.parseContent(message.content);
+          const { path } = parseMessageContent(message.content);
           const filename = pathNode.basename(path);
           const stat = fs.statSync(path);
           const readStream = fs.createReadStream(path);

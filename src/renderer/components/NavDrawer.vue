@@ -8,16 +8,20 @@
     color="surfaceVariant"
   >
     <v-list dense nav :class="isMacOS ? 'mt-6' : ''">
-      <div>
-        <v-list-item class="px-1">
-          <v-list-item-avatar>
-            <img v-if="user" :src="user.photoLink" />
-            <v-icon v-else large>mdi-account-circle</v-icon>
+      <v-list-item
+        style="-webkit-app-region: no-drag"
+        class="fill-width d-flex justify-center my-3"
+        @click="() => $router.push({ name: 'account' })"
+      >
+        <v-row>
+          <v-list-item-avatar class="ma-0">
+            <img v-if="false" :src="user.photoLink" />
+            <v-icon large v-else>mdi-account-circle</v-icon>
           </v-list-item-avatar>
-        </v-list-item>
+        </v-row>
+      </v-list-item>
 
-        <v-divider class="pb-1"></v-divider>
-      </div>
+      <v-divider class="pb-1"></v-divider>
 
       <v-tooltip top>
         <template v-slot:activator="{ on }">
@@ -39,27 +43,6 @@
         </template>
         <span>{{ $translations.home }}</span>
       </v-tooltip>
-
-      <!-- <v-tooltip top>
-        <template v-slot:activator="{ on }">
-          <v-list-item
-            v-on="on"
-            class="px-3"
-            link
-            color="primary"
-            :to="{ name: 'note' }"
-            style="-webkit-app-region: no-drag"
-          >
-            <v-list-item-icon>
-              <v-icon>mdi-folder-edit</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>Note</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-        <span>{{ $translations.home }}</span>
-      </v-tooltip> -->
 
       <v-tooltip top>
         <template v-slot:activator="{ on }">
@@ -104,28 +87,6 @@
           </v-list-item>
         </template>
         <span>{{ $translations.share }}</span>
-      </v-tooltip>
-
-      <!-- Account -->
-      <v-tooltip top>
-        <template v-slot:activator="{ on }">
-          <v-list-item
-            v-on="on"
-            class="px-3"
-            link
-            :to="{ name: 'account' }"
-            style="-webkit-app-region: no-drag"
-            color="primary"
-          >
-            <v-list-item-icon>
-              <v-icon>mdi-account-circle</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>Account</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-        <span>{{ $translations.account }}</span>
       </v-tooltip>
 
       <!-- if = false -->

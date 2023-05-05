@@ -7,13 +7,17 @@ import fullName from 'fullname';
 import { Observable, Subject } from 'rxjs';
 import { Server } from 'socket.io';
 
-import { messageModel } from '@/rxdb-v2/dist/src';
+import { Message } from '@/rxdb-v2/src/types';
 
+import {
+  defaultMessageContent,
+  stringifyMessageContent,
+} from '@/rxdb-v2/src/utils';
 import { IDevice, Keep, MessageReq, Start, isMessageText } from './types';
 
 type MessageSub = {
   sender: IDevice;
-  message: messageModel.MessageDoc;
+  message: Message;
 };
 
 const DIR_DOWNLOAD = ((dir) => path.join(dir || '~', 'Downloads/'))(
@@ -75,14 +79,12 @@ function initSocket(
                   case 'error':
                     return {
                       status: 'rejected',
-                      content: messageModel.stringifyContent(
-                        messageModel.defaultContent()
-                      ),
+                      content: stringifyMessageContent(defaultMessageContent()),
                     };
                   default:
                     return {
                       status: request.status === 'end' ? 'sent' : 'pending',
-                      content: messageModel.stringifyContent({
+                      content: stringifyMessageContent({
                         path: path.join(DIR_DOWNLOAD, request.filename),
                         progress: request.progress,
                       }),
@@ -91,12 +93,12 @@ function initSocket(
               })(),
               senderId: sender.mac,
               ext: path.extname(request.filename),
-            } as messageModel.MessageDoc)
+            } as Message)
           : ({
               ...request,
               type: 'text',
               status: 'sent',
-            } as messageModel.MessageDoc);
+            } as Message);
         messageSubject.next({ sender, message });
         disconnectMe();
       });

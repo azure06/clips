@@ -6,7 +6,7 @@ import { drive_v3, google } from 'googleapis';
 import { EMPTY, Observable, Subject, from, lastValueFrom, of, zip } from 'rxjs';
 import { expand, scan, tap } from 'rxjs/operators';
 
-import { Clip } from '../../renderer/store/types';
+import { Clip } from '@/rxdb-v2/src/types';
 
 const createStream = (arg: string) => {
   const readableStream = new stream.Readable();

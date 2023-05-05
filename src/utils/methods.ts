@@ -1,38 +1,29 @@
+import { concatMap, from, lastValueFrom } from 'rxjs';
 import { IDevice } from '@/electron/services/socket.io/types';
 import {
   createClipsRxDB as createClipsRxDB__,
   getCollection,
   initPlugins,
   removeClipsRxDB,
-  messageModel,
-  clipsModel,
-  userModel,
-  rxjs,
-  operators,
-  leveldownUtils,
-  pouchDbUtils,
 } from '@/rxdb-v2/src';
+import { Clip, ClipSearchConditions, Message, User } from '@/rxdb-v2/src/types';
+import { getRxDBAdapter } from '@/rxdb-v2/src/utils';
 import { whenRenderer } from '@/utils/environment';
 import * as handler from '@/utils/result';
 
 import { randomColor } from '../renderer/store/network/actions';
-import { Clip } from '../renderer/store/types';
+import { SearchFilters } from '@/rxdb-v2/src/internal/clips/model';
 
-const adapter = rxjs.from(
+const adapter = from(
   whenRenderer(
-    () => async () => {
-      return initPlugins(['idb', pouchDbUtils.adapter, 'idb', 'clips']);
-    },
-    () => async () => {
+    async () => initPlugins(await getRxDBAdapter(['browser'])),
+    async () => {
       const { app } = await import('electron');
-      return initPlugins([
-        'leveldb',
-        leveldownUtils.adapter,
-        leveldownUtils.leveldown,
-        await leveldownUtils.getLeveldownPath(await app.getPath('userData')),
-      ]);
+      return initPlugins(
+        await getRxDBAdapter(['node', await app.getPath('userData')])
+      );
     }
-  )()
+  )
 );
 
 const captureException = whenRenderer(
@@ -43,14 +34,11 @@ const captureException = whenRenderer(
 );
 let clipsRxDB = createClipsRxDB__(adapter);
 const runCatching = handler.runCatching(captureException);
-const clipsCollection = () =>
-  rxjs.lastValueFrom(getCollection(clipsRxDB, 'clips'));
-const userCollection = () =>
-  rxjs.lastValueFrom(getCollection(clipsRxDB, 'user'));
-const roomCollection = () =>
-  rxjs.lastValueFrom(getCollection(clipsRxDB, 'room'));
+const clipsCollection = () => lastValueFrom(getCollection(clipsRxDB, 'clips'));
+const userCollection = () => lastValueFrom(getCollection(clipsRxDB, 'user'));
+const roomCollection = () => lastValueFrom(getCollection(clipsRxDB, 'room'));
 const messageCollection = () =>
-  rxjs.lastValueFrom(getCollection(clipsRxDB, 'message'));
+  lastValueFrom(getCollection(clipsRxDB, 'message'));
 
 export type Methods =
   | 'findClips'
@@ -153,9 +141,8 @@ export type MethodsParams =
 /**
  * Clips
  */
-
 export const findClips = runCatching(
-  (searchConditions: Partial<clipsModel.ClipSearchConditions>) =>
+  (searchConditions: Partial<ClipSearchConditions>) =>
     clipsCollection().then((methods) => methods.findClips(searchConditions))
 );
 
@@ -206,7 +193,7 @@ export const removeClipsLte = runCatching((updatedAt: number) =>
 
 export const restoreFactoryDefault = runCatching(async () => {
   const obs = removeClipsRxDB(adapter).pipe(
-    operators.concatMap((result) =>
+    concatMap((result) =>
       result.ok
         ? (async () => {
             clipsRxDB = createClipsRxDB__(adapter);
@@ -214,15 +201,16 @@ export const restoreFactoryDefault = runCatching(async () => {
         : Promise.reject('Unable to remove DB')
     )
   );
-  return rxjs.lastValueFrom(obs);
+  return lastValueFrom(obs);
 });
 
 export const dumpCollection = runCatching(() =>
   clipsCollection().then((methods) => methods.dumpCollection())
 );
 
-export const countAllDocuments = runCatching(() =>
-  clipsCollection().then((methods) => methods.countAllDocuments())
+export const countAllDocuments = runCatching(
+  (filters?: Partial<SearchFilters>) =>
+    clipsCollection().then((methods) => methods.countAllDocuments(filters))
 );
 
 /**
@@ -234,7 +222,7 @@ export const findUser = runCatching((deviceId: string) =>
 );
 
 export const upsertUser = runCatching(
-  (user: Partial<Omit<userModel.UserDoc, 'device'>> & { device: IDevice }) =>
+  (user: Partial<Omit<User, 'device'>> & { device: IDevice }) =>
     userCollection().then(async (methods) => {
       const userCurrent = await methods.findUser(user.device.mac);
       const { username, ...device } = user.device;
@@ -257,7 +245,7 @@ export const findRooms = runCatching(() =>
 );
 
 export const findRoomFromUserOrCreate = runCatching(
-  (user: Pick<userModel.UserDoc, 'id' | 'username'>) =>
+  (user: Pick<User, 'id' | 'username'>) =>
     roomCollection().then(async (methods) => {
       const [room] = await methods.findRoomsByUserIds([user.id]);
       return (
@@ -288,7 +276,7 @@ export const findMessage = runCatching((roomId: string, messageId: string) =>
 
 export const upsertMessage = runCatching(
   (
-    message: Omit<messageModel.MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
+    message: Omit<Message, 'id' | 'updatedAt' | 'createdAt'> & {
       id?: string;
       updatedAt?: number;
       createdAt?: number;
@@ -306,9 +294,9 @@ export const setMessageToRead = runCatching(
         'sent'
       );
       const upsert = async (
-        [head, ...tail]: messageModel.MessageDoc[],
-        acc: messageModel.MessageDoc[]
-      ): Promise<messageModel.MessageDoc[]> =>
+        [head, ...tail]: Message[],
+        acc: Message[]
+      ): Promise<Message[]> =>
         head
           ? upsert(tail, [
               ...acc,

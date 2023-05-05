@@ -2,7 +2,7 @@ import Vue from 'vue';
 import { MutationTree } from 'vuex';
 
 import { NetworkState } from '@/renderer/store/types';
-import { messageModel, roomModel, userModel } from '@/rxdb-v2/dist/src';
+import { User, Room, Message } from '@/rxdb-v2/src/types';
 import { toDictionary } from '@/utils/common';
 
 const mutations: MutationTree<NetworkState> = {
@@ -21,14 +21,14 @@ const mutations: MutationTree<NetworkState> = {
     const [devices, rooms] = state.loading;
     Vue.set(state, 'loading', [devices, rooms, messages]);
   },
-  addOrUpdateUser(state, user: userModel.UserDoc) {
+  addOrUpdateUser(state, user: User) {
     const users = state.users.filter((user_) => user_.id !== user.id);
     Vue.set(state, 'users', [user, ...users]);
   },
-  setThisUser(state, user: userModel.UserDoc) {
+  setThisUser(state, user: User) {
     Vue.set(state, 'thisUser', user);
   },
-  mergeRooms(state, rooms: roomModel.RoomDoc[]) {
+  mergeRooms(state, rooms: Room[]) {
     const roomDict = toDictionary(state.rooms);
     const mergedDict = { ...roomDict, ...toDictionary(rooms) };
     const rooms_ = Object.values(mergedDict).map((room) => ({
@@ -37,10 +37,7 @@ const mutations: MutationTree<NetworkState> = {
     }));
     Vue.set(state, 'rooms', rooms_);
   },
-  setMessages(
-    state,
-    data: { roomId: string; messages: messageModel.MessageDoc[] }
-  ) {
+  setMessages(state, data: { roomId: string; messages: Message[] }) {
     const roomDictionary = toDictionary(state.rooms);
     const room = roomDictionary[data.roomId];
     const roomCopy = {
@@ -50,10 +47,7 @@ const mutations: MutationTree<NetworkState> = {
     const rooms = Object.values({ ...roomDictionary, [roomCopy.id]: roomCopy });
     Vue.set(state, 'rooms', rooms);
   },
-  addMessages(
-    state,
-    data: { roomId: string; messages: messageModel.MessageDoc[] }
-  ) {
+  addMessages(state, data: { roomId: string; messages: Message[] }) {
     const roomDictionary = toDictionary(state.rooms);
     const room = roomDictionary[data.roomId];
     const roomCopy = {
@@ -63,7 +57,7 @@ const mutations: MutationTree<NetworkState> = {
     const rooms = Object.values({ ...roomDictionary, [roomCopy.id]: roomCopy });
     Vue.set(state, 'rooms', rooms);
   },
-  addOrUpdateMessage(state, message: messageModel.MessageDoc) {
+  addOrUpdateMessage(state, message: Message) {
     const roomDictionary = toDictionary(state.rooms);
     const messages = roomDictionary[message.roomId]?.messages || [];
     const index = messages.findIndex((message_) => message_.id === message.id);

@@ -27,12 +27,11 @@ import * as leveldownInvokers from '@/renderer/invokers/leveldown';
 import * as remote from '@/renderer/invokers/remote';
 import {
   AppConfState,
-  Clip,
   ClipsState,
   RootState,
   Advanced,
 } from '@/renderer/store/types';
-import { clipsModel } from '@/rxdb-v2/dist/src';
+import { Clip, ClipSearchConditions } from '@/rxdb-v2/src/types';
 import { isAuthenticated } from '@/utils/common';
 import { always, identity } from '@/utils/environment';
 import { fold, isSuccess, isSuccessHttp } from '@/utils/result';
@@ -76,7 +75,7 @@ export const methods = leveldownInvokers.switchdb(
 const actions: ActionTree<ClipsState, RootState> = {
   findClips: async (
     { commit },
-    searchConditions: Partial<clipsModel.ClipSearchConditions>
+    searchConditions: Partial<ClipSearchConditions>
   ) =>
     lastValueFrom(
       range(1, 1)
@@ -87,19 +86,20 @@ const actions: ActionTree<ClipsState, RootState> = {
     ),
   loadClips: async (
     { commit },
-    searchConditions: Partial<clipsModel.ClipSearchConditions>
+    searchConditions: Partial<ClipSearchConditions>
   ) =>
     lastValueFrom(
       range(1, 1)
         .pipe(tap(() => commit('setLoadingStatus', true)))
         .pipe(concatMap(() => methods('findClips', searchConditions)))
         .pipe(map((result) => (isSuccess(result) ? result.data : [])))
+        .pipe(tap((result) => console.log(result.map((value) => value.id))))
         .pipe(tap((clips) => commit('loadClips', { clips })))
         .pipe(tap(() => commit('setLoadingStatus', false)))
     ),
   loadNext: async (
     { commit, state },
-    searchConditions: Partial<clipsModel.ClipSearchConditions>
+    searchConditions: Partial<ClipSearchConditions>
   ) =>
     lastValueFrom(
       range(1, 1)

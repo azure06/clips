@@ -1,6 +1,7 @@
 import { MutationTree } from 'vuex';
 
-import { Clip, ClipsState } from '@/renderer/store/types';
+import { ClipsState } from '@/renderer/store/types';
+import { Clip } from '@/rxdb-v2/src/types';
 
 const mutations: MutationTree<ClipsState> = {
   loadClips: (state, { clips }: { clips: Clip[] }) => {

@@ -35,7 +35,7 @@ const state: AppConfState = {
     skipTaskbar: true,
   },
   appearance: {
-    theme: 'light',
+    theme: 'auto',
   },
   drive: {
     sync: false,

@@ -17,7 +17,33 @@
         {{ $translations.items }}
       </div>
     </div>
-    <v-container ref="scroll-target" fluid pa-0 ma-0 class="container">
+
+    <v-progress-linear
+      :style="`${
+        onSearchRatioChange[0] === 'running'
+          ? ''
+          : 'visibility: hidden; opacity: 0; height: 0px !important;'
+      } transition: opacity 1s, visibility 1s, height 1s;`"
+      :value="
+        onSearchRatioChange[0] === 'idle'
+          ? 100
+          : Math.round((onSearchRatioChange[1] / onSearchRatioChange[2]) * 100)
+      "
+      :indeterminate="
+        onSearchRatioChange[0] === 'running' && onSearchRatioChange[1] === 0
+      "
+      rounded
+      color="cyan darken-2"
+    ></v-progress-linear>
+    <v-container
+      ref="scroll-target"
+      fluid
+      pa-0
+      ma-0
+      :class="`container ${
+        onSearchRatioChange[0] === 'running' ? 'progress' : ''
+      }`"
+    >
       <Grid
         ref="clips-grid"
         :clipsObserver="clipsObserver"
@@ -120,7 +146,7 @@
       @sync-with-drive="syncWithDrive"
       @focus="onSearchBarFocus"
       @change-view-mode="(value) => (viewMode = value)"
-      @picker-change="onPickerChange"
+      @range-change="onRangeChange"
       ref="clips-searchbar"
       :translations="$translations"
       :type="searchConditions.filters.type"
@@ -128,9 +154,7 @@
       :clipboardMode="clipboardMode"
       :viewMode="viewMode"
       :searchQuery="searchQuery"
-      :startDate="startDate"
-      :endDate="endDate"
-      :pickerOptions="pickerOptions"
+      :searchRange="searchRange"
     />
   </div>
 </template>
@@ -158,9 +182,12 @@ import Grid from '@/renderer/components/Grid.vue';
 import SearchBar from '@/renderer/components/SearchBar.vue';
 import * as remote from '@/renderer/invokers/remote';
 import { copySilently } from '@/renderer/store/clips/actions';
-import { Clip, Label, User } from '@/renderer/store/types';
+import { Label } from '@/renderer/store/types';
+import { onSearchRatioChange } from '@/renderer/subscriptions';
 import { ExtendedVue } from '@/renderer/utils/basevue';
-import { clipsModel, clipsUtils } from '@/rxdb-v2/dist/src';
+import { SearchFilters } from '@/rxdb-v2/src/internal/clips/model';
+import { Clip, ClipSearchConditions, Format, User } from '@/rxdb-v2/src/types';
+import { clipsPattern } from '@/rxdb-v2/src/utils';
 import { always, whenLinux, whenWindows } from '@/utils/environment';
 
 export type ClipFormat =
@@ -182,7 +209,7 @@ export type ClipExtended = Clip & {
   menuState: ClipsOpenMap[string];
 };
 
-export const toClipProp = (type?: clipsModel.Format | string): ClipFormat => {
+export const toClipProp = (type?: Format | string): ClipFormat => {
   switch (type) {
     case 'text/plain':
       return 'plainText';
@@ -337,17 +364,22 @@ const KEY_N = 'KeyN';
       })
     );
 
-    return { keyboardEvent, clipsObserver, withCommandObs };
+    return {
+      keyboardEvent,
+      clipsObserver,
+      withCommandObs,
+      onSearchRatioChange,
+    };
   },
 })
 export default class Home extends ExtendedVue {
   @Action('loadClips', { namespace: 'clips' })
   public loadClips!: (
-    searchConditions: Partial<clipsModel.ClipSearchConditions>
+    searchConditions: Partial<ClipSearchConditions>
   ) => Promise<Clip[]>;
   @Action('loadNext', { namespace: 'clips' })
   public loadNext!: (
-    searchConditions: Partial<clipsModel.ClipSearchConditions>
+    searchConditions: Partial<ClipSearchConditions>
   ) => Promise<Clip[]>;
   @Action('modifyClip', { namespace: 'clips' })
   public modifyClip!: (payload: {
@@ -393,8 +425,8 @@ export default class Home extends ExtendedVue {
   public processing!: boolean;
   @Getter('syncStatus', { namespace: 'clips' })
   public syncStatus?: 'pending' | 'resolved' | 'rejected';
-  public searchConditions: Partial<clipsModel.ClipSearchConditions> & {
-    filters: Partial<clipsModel.SearchFilters>;
+  public searchConditions: Partial<ClipSearchConditions> & {
+    filters: Partial<SearchFilters>;
   } = {
     limit: 15,
     sort: '-updatedAt',
@@ -414,20 +446,12 @@ export default class Home extends ExtendedVue {
   public editingOpen = false;
   public editingClipIndex?: number;
   public editingText = '';
-  public get pickerOptions() {
-    return {
-      max: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-        .toISOString()
-        .substr(0, 10),
-      min: '2000-01-01',
-    };
-  }
-  endDate = this.pickerOptions.max;
-  startDate = (() => {
-    const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
-    today.setMonth(today.getMonth() - 1);
-    return today.toISOString().substr(0, 10);
-  })();
+  public searchRange:
+    | 'Last 4 weeks'
+    | 'Last 2 weeks'
+    | 'Last 24 hours'
+    | 'Today'
+    | 'None' = 'None';
 
   public get isWindowsOrLinux(): boolean {
     return (
@@ -471,18 +495,18 @@ export default class Home extends ExtendedVue {
               return {
                 text: this.clips[clipIndex].plainText,
               };
-            case 'richText':
-              return {
-                rtf: this.clips[clipIndex].richText,
-              };
+            // case 'richText':
+            //   return {
+            //     rtf: this.clips[clipIndex].richText,
+            //   };
             case 'dataURI':
               return {
                 image: this.clips[clipIndex].dataURI,
               };
-            case 'htmlText':
-              return {
-                html: this.clips[clipIndex].htmlText,
-              };
+            // case 'htmlText':
+            //   return {
+            //     html: this.clips[clipIndex].htmlText,
+            //   };
             default:
               return {
                 text: this.clips[clipIndex].plainText,
@@ -512,17 +536,6 @@ export default class Home extends ExtendedVue {
     });
   }
 
-  public onPickerChange(opt: 'start' | 'end', value: string) {
-    switch (opt) {
-      case 'start':
-        this.startDate = value;
-        break;
-      case 'end':
-        this.endDate = value;
-        break;
-    }
-  }
-
   public async onRemoveClick(event: Event, clipIndex: number): Promise<void> {
     event.stopPropagation();
     this.removeTarget = {
@@ -549,6 +562,40 @@ export default class Home extends ExtendedVue {
   public onLabelClick(label: Label): void {
     const target = this.labels.find((label_) => label_.id === label.id);
     this.search(this.normalizeQuery(this.searchQuery, { label: target?.name }));
+  }
+
+  public onRangeChange(value: typeof this.searchRange) {
+    this.searchRange = value;
+  }
+
+  public searchRangeToMillis(value: typeof this.searchRange) {
+    const today = new Date();
+    Date.now();
+    switch (value) {
+      case 'None':
+        return null;
+      case 'Today':
+        return new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate()
+        ).getTime();
+      case 'Last 24 hours': {
+        const dateOffset = 24 * 60 * 60 * 1000; // 1day
+        today.setTime(today.getTime() - dateOffset);
+        return today.getTime();
+      }
+      case 'Last 2 weeks': {
+        const dateOffset = 24 * 60 * 60 * 1000 * 14;
+        today.setTime(today.getTime() - dateOffset);
+        return today.getTime();
+      }
+      case 'Last 4 weeks': {
+        const dateOffset = 24 * 60 * 60 * 1000 * 28; // 1day
+        today.setTime(today.getTime() - dateOffset);
+        return today.getTime();
+      }
+    }
   }
 
   public normalizeQuery(
@@ -606,23 +653,19 @@ export default class Home extends ExtendedVue {
         if (search) {
           switch (this.advanced.searchMode) {
             case 'fuzzy':
-              return clipsUtils.patterns.likeSearch('plainText', search);
+              return clipsPattern.likeSearch('plainText', search);
             case 'advanced-fuzzy':
-              return clipsUtils.patterns.advancedSearch(
+              return clipsPattern.advancedSearch(
                 'plainText',
                 search.split(' ')
               );
           }
         }
       })();
-      const lteDate = new Date(this.endDate);
-      lteDate.setDate(lteDate.getDate() + 1);
-      lteDate.setMilliseconds(lteDate.getMilliseconds() - 1);
       this.searchConditions = {
         ...this.searchConditions,
         regex,
-        gte: new Date(this.startDate).getTime(),
-        lte: lteDate.getTime(),
+        gte: this.searchRangeToMillis(this.searchRange) ?? undefined,
         filters: {
           ...this.searchConditions.filters,
           type: typeof args === 'string' ? undefined : args.type,
@@ -636,6 +679,8 @@ export default class Home extends ExtendedVue {
           plainText: search && !regex ? search : undefined,
         },
       };
+
+      console.log(this.searchConditions);
 
       this.searchQuery =
         typeof args === 'string'
@@ -713,6 +758,10 @@ export default class Home extends ExtendedVue {
   height: calc(100vh - 78px);
   overflow: auto;
   z-index: -1;
+  transition: height 1s;
+}
+.container.progress {
+  height: calc(100vh - 82px);
 }
 
 .fade-enter-active,

@@ -6,10 +6,10 @@ import { ObservableInput, interval, of } from 'rxjs';
 import { concatMap, filter, map, scan } from 'rxjs/operators';
 import { uuid } from 'uuidv4';
 
+import { Clip, Format } from '@/rxdb-v2/src/types';
 import { isSuccess, runCatching } from '@/utils/result';
 import * as Sentry from '@/utils/sentry';
 
-import { clipsModel } from '@/rxdb-v2/dist/src';
 interface Clipboard {
   plainText: string;
   htmlText: string;
@@ -81,10 +81,7 @@ export const clipboardAsObservable = interval(1000).pipe(
     {} as Partial<{ previous: Clipboard; current: Clipboard }>
   ),
   concatMap(
-    ({
-      previous,
-      current,
-    }): ObservableInput<Omit<clipsModel.ClipDoc, 'id'> | undefined> => {
+    ({ previous, current }): ObservableInput<Omit<Clip, 'id'> | undefined> => {
       const isText = current
         ? !!current.formats.find((format) => format.includes('text'))
         : false;
@@ -127,7 +124,7 @@ export const clipboardAsObservable = interval(1000).pipe(
               dataURI: saveImage(),
               category: 'none',
               type: isImage ? ('image' as const) : ('text' as const),
-              formats: current.formats as clipsModel.Format[],
+              formats: current.formats as Format[],
               createdAt: Date.now(),
               updatedAt: Date.now(),
             };

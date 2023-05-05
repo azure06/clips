@@ -265,13 +265,14 @@ import {
 } from 'rxjs/operators';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-import { Room as RoomType } from '@/renderer/store/types';
-import { messageModel } from '@/rxdb-v2/dist/src';
+import { RoomExt } from '@/renderer/store/types';
+import { Message, MessageStatus } from '@/rxdb-v2/src/types';
+import { parseMessageContent } from '@/rxdb-v2/src/utils';
 import { INVOCATION } from '@/utils/constants';
 
-type RoomEx = Omit<RoomType, 'messages'> & {
+type RoomEx = Omit<RoomExt, 'messages'> & {
   messages: Array<
-    messageModel.MessageDoc & {
+    Message & {
       fromThisDevice?: boolean;
       time?: string;
       date?: string;
@@ -296,7 +297,7 @@ type EventName = 'drop' | 'dragenter' | 'dragleave' | 'dragover';
                 ...message,
                 content:
                   message.type === 'file'
-                    ? messageModel.parseContent(message.content)
+                    ? parseMessageContent(message.content)
                     : message.content,
                 fromThisDevice:
                   this.room.userIds[0] !== message.senderId ||
@@ -367,7 +368,7 @@ type EventName = 'drop' | 'dragenter' | 'dragleave' | 'dragover';
 })
 export default class Room extends Vue {
   @Prop({ required: true })
-  public room!: RoomType;
+  public room!: RoomExt;
   @Prop({ required: true })
   public draft!: string;
   @Prop({ default: false })
@@ -418,18 +419,18 @@ export default class Room extends Vue {
     return rows >= 1 && rows <= 3 ? rows : rows > 3 ? 3 : 1;
   }
 
-  public isReadOrSent(status: messageModel.MessageStatus): boolean {
+  public isReadOrSent(status: MessageStatus): boolean {
     return status === 'sent' || status === 'read';
   }
-  public isRejectedOrPending(status: messageModel.MessageStatus): boolean {
+  public isRejectedOrPending(status: MessageStatus): boolean {
     return status === 'pending' || status === 'rejected';
   }
 
-  public isPending(status: messageModel.MessageStatus): boolean {
+  public isPending(status: MessageStatus): boolean {
     return status === 'pending';
   }
 
-  public isRejected(status: messageModel.MessageStatus): boolean {
+  public isRejected(status: MessageStatus): boolean {
     return status === 'rejected';
   }
 

@@ -12,34 +12,26 @@ import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { Observable, from } from 'rxjs';
 
 import { concatMap, map } from 'rxjs/operators';
-import { clips } from './clips/collection';
-import { ClipsCollection, ClipsDatabaseCollection } from './clips/model';
-import { message } from './message/collection';
-import { MessageCollection, MessageDatabaseCollection } from './message/model';
-import { room } from './room/collection';
-import { RoomCollection, RoomDatabaseCollection } from './room/model';
-import { user } from './user/collection';
-import { UserCollection, UserDatabaseCollection } from './user/model';
-
-export * as rxjs from 'rxjs';
-export * as operators from 'rxjs/operators';
-export * as leveldownUtils from './utils/leveldown';
-export * as pouchDbUtils from './utils/pouchdb-adapter';
-export * as clipsModel from './clips/model';
-export * as messageModel from './message/model';
-export * as roomModel from './room/model';
-export * as userModel from './user/model';
-export * as clipsUtils from './clips/utils';
+import { clips } from './internal/clips/collection';
+import {
+  ClipsCollection,
+  ClipsDatabaseCollection,
+} from './internal/clips/model';
+import { message } from './internal/message/collection';
+import {
+  MessageCollection,
+  MessageDatabaseCollection,
+} from './internal/message/model';
+import { room } from './internal/room/collection';
+import { RoomCollection, RoomDatabaseCollection } from './internal/room/model';
+import { user } from './internal/user/collection';
+import { UserCollection, UserDatabaseCollection } from './internal/user/model';
+import { RxDBAdapter } from './utils';
 
 type RxCollections = ClipsDatabaseCollection &
   RoomDatabaseCollection &
   MessageDatabaseCollection &
   UserDatabaseCollection;
-
-// [DBType, plugin, adapter, path]
-export type RxDBAdapter =
-  | ['idb', unknown, 'idb', 'clips']
-  | ['leveldb', unknown, unknown, string];
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function initPlugins(rxDbAdapter: RxDBAdapter): RxDBAdapter {
@@ -54,9 +46,6 @@ export function initPlugins(rxDbAdapter: RxDBAdapter): RxDBAdapter {
 }
 
 async function createRxDB([, , adapter, path]: RxDBAdapter) {
-  /**
-   * create database and collections
-   */
   const clipsRxDB: RxDatabase<RxCollections> =
     await createRxDatabase<RxCollections>({
       name: path, // <- name
@@ -64,14 +53,12 @@ async function createRxDB([, , adapter, path]: RxDBAdapter) {
       ignoreDuplicate: true,
       multiInstance: false, // <- multiInstance (optional, default: true)
     });
-
   await clipsRxDB.addCollections({
     clips,
     room,
     message,
     user,
   });
-
   return clipsRxDB;
 }
 

@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const gitRevisionPlugin = new GitRevisionPlugin();
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   transpileDependencies: ['vuetify'],
@@ -58,6 +60,32 @@ module.exports = {
           });
           return definitions;
         });
+      },
+      chainWebpackMainProcess(config) {
+        // console.log(
+        //   "this is my path",
+        //   path.resolve(
+        //     __dirname,
+        //     'dist_electron/prebuilds/darwin-x64+arm64/node.napi.node'
+        //   )
+        // );
+        // config.externals({
+        //   '/Users/gabriele.sato/Codes/clips/node_modules/leveldown/prebuilds/darwin-x64+arm64/node.napi.node':
+        //     path.resolve(
+        //       __dirname,
+        //       'dist_electron/prebuilds/darwin-x64+arm64/node.napi.node'
+        //     ),
+        // });
+        // config.plugin('copy').use(CopyWebpackPlugin, [
+        //   {
+        //     patterns: [
+        //       {
+        //         from: path.resolve('./src/rxdb-v2/dist/src/prebuilds'),
+        //         to: './prebuilds',
+        //       },
+        //     ],
+        //   },
+        // ]);
       },
     },
   },

@@ -88,8 +88,8 @@
 import { Component } from 'vue-property-decorator';
 import { Action, Getter } from 'vuex-class';
 
-import { User } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
+import { User } from '@/rxdb-v2/src/types';
 
 @Component({ components: {} })
 export default class Account extends ExtendedVue {

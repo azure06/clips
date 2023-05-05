@@ -411,14 +411,14 @@ import { uuid } from 'uuidv4';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 import { randomColor } from '@/renderer/store/network/actions';
-import { Clip, Label } from '@/renderer/store/types';
+import { Label } from '@/renderer/store/types';
 import { Translation } from '@/renderer/utils/translations/types';
 import {
   ClipExtended,
   ClipFormat,
   toClipProp,
 } from '@/renderer/views/Home.vue';
-import { clipsModel } from '@/rxdb-v2/dist/src';
+import { Clip, Format } from '@/rxdb-v2/src/types';
 
 @Component
 export default class Grid extends Vue {
@@ -467,7 +467,7 @@ export default class Grid extends Vue {
     );
   }
 
-  public get translationByFormat(): { [P in clipsModel.Format]: string } {
+  public get translationByFormat(): { [P in Format]: string } {
     return {
       'text/plain': this.translations.text,
       'text/html': this.translations.htmlText,
@@ -497,7 +497,7 @@ export default class Grid extends Vue {
     return [{ name: 'None', color: '#1d1d20', id: '' }, ...this.labels];
   }
 
-  public toClipProp(format: clipsModel.Format): ClipFormat {
+  public toClipProp(format: Format): ClipFormat {
     return toClipProp(format);
   }
 

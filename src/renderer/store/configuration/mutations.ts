@@ -12,7 +12,7 @@ import {
   General,
   InAppStatus,
   Label,
-  User,
+  GoogleUser,
 } from '@/renderer/store/types';
 
 function isObject<T>(item: T) {
@@ -47,6 +47,14 @@ function labelMap(func: (args: Label[]) => Label[], conf: AppConfState) {
   return storeService.getAppConf(conf).labels;
 }
 
+const isDarkTheme = (theme: 'auto' | 'dark' | 'light'): boolean => {
+  return (
+    (theme === 'auto' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+    theme === 'dark'
+  );
+};
+
 const mutations: MutationTree<AppConfState> = {
   loadConfig(state, { vuetify }: { vuetify: Framework }) {
     const storedConfig = storeService.getAppConf(state);
@@ -54,9 +62,9 @@ const mutations: MutationTree<AppConfState> = {
       state,
       mergeDeep(state, { ...storedConfig, inAppStatus: 'none' })
     );
-    vuetify.theme.dark = state.appearance.theme === 'dark';
+    vuetify.theme.dark = isDarkTheme(state.appearance.theme);
   },
-  setUser(state, user: User) {
+  setUser(state, user: GoogleUser) {
     storeService.setAppConf({ ...state, user });
     Vue.set(state, 'user', storeService.getAppConf(state).user);
   },
@@ -76,7 +84,7 @@ const mutations: MutationTree<AppConfState> = {
     const { vuetify, ...appearance } = payload;
     storeService.setAppConf({ ...state, appearance });
     state.appearance = storeService.getAppConf(state).appearance;
-    vuetify.theme.dark = state.appearance.theme === 'dark';
+    vuetify.theme.dark = isDarkTheme(state.appearance.theme);
   },
   setPremium: (state, premium: boolean) => {
     storeService.setAppConf({ ...state, premium });

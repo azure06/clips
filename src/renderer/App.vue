@@ -65,20 +65,28 @@ import { UserUpsert } from '@/renderer/store/network/actions';
 import {
   Advanced,
   Appearance,
-  Clip,
   Development,
   Drive,
   General,
   InAppStatus,
-  Room,
-  User,
 } from '@/renderer/store/types';
 import * as subscriptions from '@/renderer/subscriptions/index';
 import { ExtendedVue } from '@/renderer/utils/basevue';
 import { handleTransaction } from '@/renderer/utils/in-app-transaction';
+import {
+  Clip,
+  Room,
+  User,
+  User as UserDoc,
+  Message as MessageDoc,
+  Format,
+} from '@/rxdb-v2/src/types';
+import {
+  parseMessageContent,
+  stringifyMessageContent,
+} from '@/rxdb-v2/src/utils';
 import { isSuccess, isSuccessHttp } from '@/utils/result';
 import { IDevice } from '../electron/services/socket.io/types';
-import { clipsModel, userModel, messageModel } from '@/rxdb-v2/dist/src';
 
 import { isAuthenticated } from '../utils/common';
 import {
@@ -183,22 +191,22 @@ export default class App extends ExtendedVue {
   public loadRooms!: () => Promise<Room[]>;
   @Action('findRoomFromUserOrCreate', { namespace: 'network' })
   public findRoomFromUserOrCreate!: (
-    user: Pick<userModel.UserDoc, 'id' | 'username'>
+    user: Pick<UserDoc, 'id' | 'username'>
   ) => Promise<Room>;
   @Action('addOrUpdateMessage', { namespace: 'network' })
   public addOrUpdateMessage!: (args: {
-    message: Omit<messageModel.MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
+    message: Omit<MessageDoc, 'id' | 'updatedAt' | 'createdAt'> & {
       id?: string;
     };
     skipUpsert?: boolean;
-  }) => Promise<messageModel.MessageDoc | undefined>;
+  }) => Promise<MessageDoc | undefined>;
   @Action('findMessage', { namespace: 'network' })
   public findMessage!: (args: {
     roomId: string;
     messageId: string;
-  }) => Promise<messageModel.MessageDoc | undefined>;
+  }) => Promise<MessageDoc | undefined>;
   @Action('upsertUser', { namespace: 'network' })
-  public upsertUser!: (device: UserUpsert) => Promise<userModel.UserDoc>;
+  public upsertUser!: (device: UserUpsert) => Promise<UserDoc>;
   @Action('handleServer', { namespace: 'network' })
   public handleServer!: (action: 'start' | 'close') => Promise<boolean>;
 
@@ -246,7 +254,7 @@ export default class App extends ExtendedVue {
         const filterFormat = (
           clipFormat: 'plainText' | 'richText' | 'htmlText' | 'dataURI',
           present: boolean,
-          formats: clipsModel.Format[]
+          formats: Format[]
         ) => {
           return present
             ? formats
@@ -406,7 +414,7 @@ export default class App extends ExtendedVue {
     // onMessage received (onAuthorize is in App.vue)
     this.$subscribeTo(
       subscriptions.onMessage,
-      async ({ sender, message }: { sender: IDevice; message: messageModel.MessageDoc }) => {
+      async ({ sender, message }: { sender: IDevice; message: MessageDoc }) => {
         //  Find user or create if necessary
         const room: Room = await findRoomFromUserOrCreate(message.id)({
           id: sender.mac,
@@ -418,7 +426,7 @@ export default class App extends ExtendedVue {
           message: {
             ...message,
             roomId: room.id,
-          } as messageModel.MessageDoc,
+          } as MessageDoc,
         });
         // Notify user
         (() => {
@@ -447,7 +455,7 @@ export default class App extends ExtendedVue {
           const message = (await this.findMessage({
             roomId: room.id,
             messageId: data.messageId,
-          })) as messageModel.MessageDoc;
+          })) as MessageDoc;
           // Update the roomId inside the message (Currently is the sender roomId)
           return this.addOrUpdateMessage({
             skipUpsert: data.status === 'next',
@@ -456,8 +464,8 @@ export default class App extends ExtendedVue {
               content: (() => {
                 switch (data.status) {
                   case 'next':
-                    return messageModel.stringifyContent({
-                      path: messageModel.parseContent(message.content).path,
+                    return stringifyMessageContent({
+                      path: parseMessageContent(message.content).path,
                       progress: data.progress,
                     });
                   default:
@@ -474,7 +482,7 @@ export default class App extends ExtendedVue {
                     return 'rejected';
                 }
               })(),
-            } as messageModel.MessageDoc,
+            } as MessageDoc,
           });
         })
       ),

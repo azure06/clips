@@ -1,12 +1,7 @@
-import {
-  clipsModel,
-  messageModel,
-  roomModel,
-  userModel,
-} from '@/rxdb-v2/dist/src';
+import { Clip, User, Room, Message } from '@/rxdb-v2/src/types';
 
 /** Network Types */
-export type Room = roomModel.RoomDoc & { messages: messageModel.MessageDoc[] };
+export type RoomExt = Room & { messages: Message[] };
 
 export type LoDevices = boolean;
 export type LoRooms = boolean;
@@ -16,9 +11,9 @@ export type Loading = [LoDevices, LoRooms, LoMessages];
 
 export interface NetworkState {
   status: 'started' | 'closed'; // Server status
-  thisUser?: userModel.UserDoc;
-  users: userModel.UserDoc[];
-  rooms: Room[];
+  thisUser?: User;
+  users: User[];
+  rooms: RoomExt[];
   loading: Loading;
 }
 
@@ -48,7 +43,7 @@ interface MaintainMode {
   width: number;
 }
 
-export interface User {
+export interface GoogleUser {
   displayName: string;
   emailAddress: string;
   kind: string;
@@ -107,7 +102,7 @@ export interface Advanced {
 }
 
 export interface Appearance {
-  theme: 'dark' | 'light';
+  theme: 'auto' | 'dark' | 'light';
 }
 
 export interface Drive {
@@ -123,7 +118,7 @@ export interface Development {
 }
 
 export interface AppConfState {
-  user: User | null;
+  user: GoogleUser | null;
   labels: Label[];
   general: General;
   advanced: Advanced;
@@ -139,7 +134,7 @@ export interface AppConfState {
 export interface ClipsState {
   loading: boolean;
   processing: boolean;
-  clips: clipsModel.ClipDoc[];
+  clips: Clip[];
   sync?: 'resolved' | 'rejected' | 'pending';
 }
 
@@ -149,5 +144,3 @@ export interface RootState {
   commit: string;
   version: string;
 }
-
-export type Clip = clipsModel.ClipDoc;

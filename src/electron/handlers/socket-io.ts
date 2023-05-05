@@ -2,7 +2,7 @@
 
 import { ipcMain } from 'electron';
 
-import { messageModel } from '@/rxdb-v2/dist/src';
+import { Message } from '@/rxdb-v2/src/types';
 import { INVOCATION } from '@/utils/constants';
 import { Result__ } from '@/utils/result';
 
@@ -20,7 +20,7 @@ export const onSendFile = (
   func: (
     sender: IDevice,
     receiver: IDevice,
-    message: messageModel.MessageDoc
+    message: Message
   ) => Promise<Result__<void>>
 ): void =>
   ipcMain.handle(INVOCATION.SEND_FILE, (event, sender, receiver, message) =>

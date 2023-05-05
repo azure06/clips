@@ -18,10 +18,13 @@ export default new Vuetify({
         background: '#f6f6f8',
       },
       dark: {
-        surfaceVariant: '#2b2b31',
-        surface: '#222226',
-        background: '#1d1d20',
+        surfaceVariant: '#1B2124',
+        surface: '#1B2124',
+        background: '#242A2E',
       },
     },
   },
 });
+
+// primary: '#6200EE',
+// secondary: '#03DAC6',

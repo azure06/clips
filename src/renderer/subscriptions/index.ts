@@ -1,16 +1,16 @@
 import electron, { Rectangle } from 'electron';
-import { Subject, merge, timer } from 'rxjs';
-import { debounce } from 'rxjs/operators';
+import { BehaviorSubject, Subject, merge, timer } from 'rxjs';
+import { debounce, tap } from 'rxjs/operators';
 import { IDevice, Progress } from '@/electron/services/socket.io/types';
-import { clipsModel, messageModel } from '@/rxdb-v2/dist/src';
+import { Message, Clip } from '@/rxdb-v2/src/types';
 
 const resizeSubject = new Subject<Rectangle>();
 const moveSubject = new Subject<Rectangle>();
-const clipSubject = new Subject<clipsModel.ClipDoc>();
+const clipSubject = new Subject<Clip>();
 const navigateSubject = new Subject<{ name: string }>();
 const messageSubject = new Subject<{
   sender: IDevice;
-  message: messageModel.MessageDoc;
+  message: Message;
 }>();
 const authorizeSubject = new Subject<IDevice>();
 const statusSubject = new Subject<
@@ -27,6 +27,9 @@ const statusSubject = new Subject<
     }
 >();
 const transactionsSubject = new Subject<Electron.Transaction[]>();
+const ratioChangeSubject = new BehaviorSubject<
+  ['idle'] | ['running', number, number]
+>(['idle']);
 
 electron.ipcRenderer.on('resize', (event, args: Rectangle) =>
   resizeSubject.next(args)
@@ -52,6 +55,9 @@ electron.ipcRenderer.on(
 electron.ipcRenderer.on('transactions-updated', (event, transactions) =>
   transactionsSubject.next(transactions)
 );
+electron.ipcRenderer.on('search-ratio-change', (event, ratio) =>
+  ratioChangeSubject.next(ratio)
+);
 
 export const clipboardChange = clipSubject.asObservable();
 export const onNavigate = navigateSubject.asObservable();
@@ -63,3 +69,6 @@ export const onBoundsChange = merge(
   moveSubject.asObservable(),
   resizeSubject.asObservable()
 ).pipe(debounce(() => timer(1000)));
+export const onSearchRatioChange = ratioChangeSubject
+  .asObservable()
+  .pipe(tap((value) => console.log('search rate', value)));

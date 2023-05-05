@@ -211,8 +211,8 @@ import { Action, Getter } from 'vuex-class';
 
 import * as storeService from '@/electron/services/electron-store';
 import * as googleDriveInvokers from '@/renderer/invokers/google-drive';
-import { Clip, User } from '@/renderer/store/types';
 import { ExtendedVue } from '@/renderer/utils/basevue';
+import { Clip, User } from '@/rxdb-v2/src/types';
 import { HttpFailure, isSuccessHttp } from '@/utils/result';
 
 @Component({ components: {} })

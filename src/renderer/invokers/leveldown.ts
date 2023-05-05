@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { Observable, lastValueFrom } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
-import { RxDBAdapter } from '@/rxdb-v2/dist/src';
+
 import {
   Methods,
   MethodsReturnType,
@@ -40,7 +40,6 @@ import {
 } from '@/utils/methods';
 import * as methods from '@/utils/methods';
 
-import { Result__, runCatching } from '@/utils/result';
 import { INVOCATION } from '../../utils/constants';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

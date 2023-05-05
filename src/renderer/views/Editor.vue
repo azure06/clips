@@ -71,9 +71,10 @@ import { ImageEditor } from '@toast-ui/vue-image-editor';
 import { Action, Getter } from 'vuex-class';
 
 import { Data } from '@/electron/services/clipboard';
-import { Clip } from '@/renderer/store/types';
+
 import { ExtendedVue } from '@/renderer/utils/basevue';
-import { clipsModel } from '@/rxdb-v2/dist/src';
+
+import { Clip, ClipSearchConditions } from '@/rxdb-v2/src/types';
 import { loadImage } from '@/utils/common';
 import { getClipId } from '@/utils/environment';
 
@@ -90,9 +91,7 @@ export default class Editor extends ExtendedVue {
   @Getter('premium', { namespace: 'configuration' })
   public premium!: boolean;
   @Action('findClips', { namespace: 'clips' })
-  public findClips!: (
-    condition: Partial<clipsModel.ClipSearchConditions>
-  ) => Clip[];
+  public findClips!: (condition: Partial<ClipSearchConditions>) => Clip[];
   @Action('copyToClipboard', { namespace: 'clips' })
   public copyToClipboard!: (data: Data) => Promise<void>;
 

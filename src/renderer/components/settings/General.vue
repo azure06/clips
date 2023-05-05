@@ -87,25 +87,31 @@
     <v-list subheader dense color="surfaceVariant">
       <v-subheader>{{ translations.theme }}</v-subheader>
       <v-list-item>
-        <v-list-item-action>
-          <v-switch
-            :input-value="appearance.theme === 'dark'"
-            @change="
+        <v-select
+          :items="['Auto', 'Light', 'Dark']"
+          :value="myFantasticTheme"
+          @change="
+            (value) =>
               $emit('set-appearance', {
                 ...appearance,
-                theme: appearance.theme === 'dark' ? 'light' : 'dark',
+                theme: (() => {
+                  switch (value) {
+                    case 'Auto':
+                      return 'auto';
+                    case 'Dark':
+                      return 'dark';
+                    case 'Light':
+                      return 'light';
+                  }
+                })(),
               })
-            "
-            dense
-            color="blue darken-2"
-          ></v-switch>
-        </v-list-item-action>
-        <v-list-item-content>
-          <v-list-item-title>{{ translations.darkTheme }}</v-list-item-title>
-          <v-list-item-subtitle>{{
-            translations.switchToDarkTheme
-          }}</v-list-item-subtitle>
-        </v-list-item-content>
+          "
+          filled
+          label="Theme"
+          dense
+          background-color="background"
+          item-color="blue"
+        ></v-select>
       </v-list-item>
     </v-list>
     <v-divider></v-divider>
@@ -262,6 +268,19 @@ export default class General extends Vue {
   public appearance!: Appearance;
   @Prop({ required: true })
   public translations!: unknown;
+
+  public get myFantasticTheme() {
+    switch (this.appearance.theme) {
+      case 'auto':
+        return 'Auto';
+      case 'dark':
+        return 'Dark';
+      case 'light':
+        return 'Light';
+      default:
+        return 'Auto';
+    }
+  }
 
   public get replacer(): typeof replace {
     return replace;
