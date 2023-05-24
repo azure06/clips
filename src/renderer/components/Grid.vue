@@ -185,8 +185,53 @@
               v-if="clipboardMode !== 'select'"
             >
               <div>
-                <!-- Menu -->
+                <v-btn
+                  icon
+                  v-if="
+                    clip.plainText.length < 250 && clip.plainText.trim() !== ''
+                  "
+                  @click.stop="$emit('create-qr-code', clip.plainText)"
+                >
+                  <v-icon>mdi-qrcode</v-icon>
+                </v-btn>
 
+                <!-- Star -->
+                <v-menu offset-x max-height="170">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon v-bind="attrs" v-on="on">
+                      <v-icon :color="colorByLabelId[clip.category]"
+                        >mdi-star</v-icon
+                      >
+                    </v-btn>
+                  </template>
+                  <v-list dense width="190">
+                    <v-list-item-group
+                      :value="indexSelectedLabel(clip)"
+                      color="primary"
+                    >
+                      <v-list-item
+                        v-for="(label, labelIndex) in labelsWithNone"
+                        :key="`${label.id}-${labelIndex}-menu`"
+                        @click="$emit('label-select', label, index)"
+                        dense
+                      >
+                        <v-list-item-icon class="mx-0">
+                          <v-icon
+                            v-text="`mdi-label`"
+                            small
+                            :color="label.color"
+                            v-if="labelIndex !== 0"
+                          ></v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title class="mx-2">{{
+                          label.name
+                        }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list-item-group>
+                  </v-list>
+                </v-menu>
+
+                <!-- Menu -->
                 <div
                   :style="
                     clip.menuState.client
@@ -329,42 +374,6 @@
                     </v-list>
                   </v-menu>
                 </div>
-
-                <!-- Star -->
-                <v-menu offset-x max-height="170">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
-                      <v-icon :color="colorByLabelId[clip.category]"
-                        >mdi-star</v-icon
-                      >
-                    </v-btn>
-                  </template>
-                  <v-list dense width="190">
-                    <v-list-item-group
-                      :value="indexSelectedLabel(clip)"
-                      color="primary"
-                    >
-                      <v-list-item
-                        v-for="(label, labelIndex) in labelsWithNone"
-                        :key="`${label.id}-${labelIndex}-menu`"
-                        @click="$emit('label-select', label, index)"
-                        dense
-                      >
-                        <v-list-item-icon class="mx-0">
-                          <v-icon
-                            v-text="`mdi-label`"
-                            small
-                            :color="label.color"
-                            v-if="labelIndex !== 0"
-                          ></v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title class="mx-2">{{
-                          label.name
-                        }}</v-list-item-title>
-                      </v-list-item>
-                    </v-list-item-group>
-                  </v-list>
-                </v-menu>
               </div>
             </v-list-item-action>
             <v-list-item-action class="pa-0 pl-2 pr-2 ma-0" v-else>

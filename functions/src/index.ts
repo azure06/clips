@@ -1,9 +1,9 @@
-import * as functions from 'firebase-functions';
-import admin from 'firebase-admin';
+import querystring from 'querystring';
 import sendGrid from '@sendgrid/mail';
 import cors from 'cors';
+import admin from 'firebase-admin';
+import * as functions from 'firebase-functions';
 import Stripe from 'stripe';
-import querystring from 'querystring';
 import { uuid } from 'uuidv4';
 import { purchaseTemplate } from './template';
 
@@ -55,8 +55,7 @@ export const createCheckoutSession = functions.https.onRequest((req, res) => {
 });
 
 export const createActivationCode = functions.https.onRequest((req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  corsHandler(req as any, res as any, async () => {
+  corsHandler(req, res, async () => {
     const { email } = req.query;
     return admin
       .firestore()
@@ -75,11 +74,7 @@ export const createActivationCode = functions.https.onRequest((req, res) => {
 
         if (head) {
           await Promise.resolve([
-            admin
-              .firestore()
-              .collection('codes')
-              .doc(email)
-              .set({ code }),
+            admin.firestore().collection('codes').doc(email).set({ code }),
             sendGrid.send({
               to: email,
               from: 'info@infiniticlips.com',
@@ -102,8 +97,7 @@ export const createActivationCode = functions.https.onRequest((req, res) => {
 // Activation
 
 export const activatePremium = functions.https.onRequest((req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  corsHandler(req as any, res as any, async () => {
+  corsHandler(req, res, async () => {
     const { code } = req.query;
     admin
       .firestore()
@@ -154,10 +148,7 @@ export const success = functions.https.onRequest((req, res) => {
             if (isCustomer(customer)) {
               const email = customer.email || '';
               Promise.all([
-                admin
-                  .firestore()
-                  .collection('emails')
-                  .add({ email }),
+                admin.firestore().collection('emails').add({ email }),
                 sendGrid.send({
                   to: email,
                   from: 'info@infiniticlips.com',

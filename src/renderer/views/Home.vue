@@ -67,6 +67,7 @@
         @edit-image="(index) => editImage(clips[index])"
         @edit-text="editText"
         @open-with-editor="withCommand"
+        @create-qr-code="(value) => (qrcodeModal = ['open', 200, value])"
       />
     </v-container>
 
@@ -112,7 +113,7 @@
       </v-card>
     </v-dialog>
 
-    <!-- Dialog -->
+    <!-- Processing Dialog -->
     <v-dialog v-model="processing" hide-overlay persistent width="300">
       <v-card color="blue darken-2" dark>
         <v-card-text>
@@ -126,7 +127,7 @@
       </v-card>
     </v-dialog>
 
-    <!-- Dialog -->
+    <!-- Snackbar Dialog -->
     <v-snackbar
       v-model="snackbar"
       :color="$vuetify.theme.dark ? 'surface' : 'primary'"
@@ -134,6 +135,11 @@
     >
       {{ snackbarText }}
     </v-snackbar>
+
+    <QRCodeModal
+      :qrcode-modal="qrcodeModal"
+      @input="(value) => (qrcodeModal = value)"
+    />
 
     <!-- Search bar -->
     <SearchBar
@@ -179,6 +185,7 @@ import { Action, Getter, Mutation } from 'vuex-class';
 import { Data } from '@/electron/services/clipboard';
 import AppBar from '@/renderer/components/AppBar.vue';
 import Grid from '@/renderer/components/Grid.vue';
+import QRCodeModal from '@/renderer/components/qrcode/QRCodeModal.vue';
 import SearchBar from '@/renderer/components/SearchBar.vue';
 import * as remote from '@/renderer/invokers/remote';
 import { copySilently } from '@/renderer/store/clips/actions';
@@ -234,7 +241,7 @@ const KEY_F = 'KeyF';
 const KEY_N = 'KeyN';
 
 @Component<Home>({
-  components: { AppBar, SearchBar, Grid },
+  components: { AppBar, SearchBar, Grid, QRCodeModal },
   subscriptions() {
     const keyboardEvent = fromEvent<KeyboardEvent>(document, 'keydown').pipe(
       withLatestFrom(
@@ -452,6 +459,8 @@ export default class Home extends ExtendedVue {
     | 'Last 24 hours'
     | 'Today'
     | 'None' = 'None';
+
+  public qrcodeModal: ['closed'] | ['open', string] = ['closed'];
 
   public get isWindowsOrLinux(): boolean {
     return (
