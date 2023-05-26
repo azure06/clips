@@ -36,7 +36,6 @@ import * as socketIoService from './services/socket.io/server';
 import { IDevice } from './services/socket.io/types';
 import { iDevice as getIDevice } from './services/socket.io/utils/network';
 import { tray } from './services/tray';
-import { editorWindow } from './services/windows/editor';
 import { mainWindow } from './services/windows/main';
 import * as withCommand from './services/with-editor';
 import { clipsWorker } from './workers/worker-threads';
@@ -336,11 +335,6 @@ export function onReady(): void {
     shortcutHandler(storeService.getAppConf, win)
   );
   configurationHandler.onSetStartup(autoLauncherHandler);
-  configurationHandler.onOpenEditor(
-    runCatching((clipId) => {
-      editorWindow.create(clipId);
-    })
-  );
   configurationHandler.withCommand(async (args, data) =>
     withCommand.withCommand(args, data)
   );

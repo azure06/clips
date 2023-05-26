@@ -12,9 +12,6 @@ import * as Sentry from '@/utils/sentry';
 
 import vuetify from './plugins/vuetify';
 import App from './renderer/App.vue';
-import AppEditor from './renderer/AppEditor.vue';
-
-import { isEditorView } from './utils/environment';
 
 Vue.config.productionTip = false;
 Vue.use(VueRx);
@@ -26,13 +23,12 @@ Vue.use(VueDOMPurifyHTML, {
 });
 Vue.component('qr-code', VueQRCodeComponent);
 
-if (!isEditorView(window.process.argv))
-  setTimeout(() => Sentry.init(environment.sentry), 0);
+setTimeout(() => Sentry.init(environment.sentry), 0);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const vm = new Vue({
   router,
   store,
   vuetify,
-  render: (h) => h(isEditorView(window.process.argv) ? AppEditor : App),
+  render: (h) => h(App),
 }).$mount('#app');

@@ -261,15 +261,9 @@
                     <v-list dense>
                       <!-- Edit Text/Image -->
                       <v-list-item
+                        v-if="clip.displayingFormat !== 'dataURI'"
                         link
-                        @click="
-                          $emit(
-                            clip.displayingFormat === 'dataURI'
-                              ? 'edit-image'
-                              : 'edit-text',
-                            index
-                          )
-                        "
+                        @click="$emit('edit-text', index)"
                       >
                         <v-list-item-avatar class="pa-0 ma-0">
                           <v-icon v-text="`mdi-pencil`" dense></v-icon>

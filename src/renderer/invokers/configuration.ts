@@ -14,10 +14,6 @@ export const setShortcut = (
 export const setStartup = (startup: unknown): Promise<Result__<boolean>> =>
   ipcRenderer.invoke(INVOCATION.SET_STARTUP, startup);
 
-// Image Edit:
-export const openEditor = (clipId: string): Promise<Result__<void>> =>
-  ipcRenderer.invoke(INVOCATION.OPEN_EDITOR, clipId);
-
 // Relaunch App
 export const relaunchApp = (): Promise<Result__<void>> =>
   ipcRenderer.invoke(INVOCATION.RELAUNCH_APP);

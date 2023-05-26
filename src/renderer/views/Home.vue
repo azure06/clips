@@ -64,7 +64,6 @@
         @edit-label="modifyLabel"
         @remove-label="removeLabel"
         @create-label="addLabel"
-        @edit-image="(index) => editImage(clips[index])"
         @edit-text="editText"
         @open-with-editor="withCommand"
         @create-qr-code="(value) => (qrcodeModal = ['open', 200, value])"
@@ -408,8 +407,6 @@ export default class Home extends ExtendedVue {
     clip: Clip;
     threshold: number;
   }) => Promise<Clip[]>;
-  @Action('editImage', { namespace: 'clips' })
-  public editImage!: (clipId: Clip) => void;
   @Action('withCommand', { namespace: 'clips' })
   public withCommand!: (args: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

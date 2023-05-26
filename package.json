@@ -21,7 +21,6 @@
     "@sentry/electron": "^3.0.4",
     "@sentry/integrations": "^6.18.2",
     "@sentry/vue": "^7.17.2",
-    "@toast-ui/vue-image-editor": "^3.15.2",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^11.0.2",

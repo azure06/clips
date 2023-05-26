@@ -41,9 +41,6 @@ export const onSetShortcut = (
   );
 
 // Image Editor
-export const onOpenEditor = (
-  func: (fileId: string) => Promise<Result__<void>>
-): void => ipcMain.handle(INVOCATION.OPEN_EDITOR, (_, fileId) => func(fileId));
 
 // Relaunch Electron App
 export const onRelaunchApp = (func: () => Promise<Result__<void>>): void =>

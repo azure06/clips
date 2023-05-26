@@ -6,7 +6,6 @@ import Advanced from '../components/settings/Advanced.vue';
 import General from '../components/settings/General.vue';
 import Language from '../components/settings/Language.vue';
 import Account from '../views/Account.vue';
-import Editor from '../views/Editor.vue';
 import GoogleDrive from '../views/GoogleDrive.vue';
 import Home from '../views/Home.vue';
 import Note from '../views/Note.vue';
@@ -53,11 +52,6 @@ const routes = [
         component: Room,
       },
     ],
-  },
-  {
-    path: '/editor',
-    name: 'editor',
-    component: Editor,
   },
   {
     path: '/settings',

@@ -151,7 +151,6 @@ const actions: ActionTree<ClipsState, RootState> = {
         )
         .pipe(tap(() => commit('setLoadingStatus', false)))
     ),
-  editImage: async (_, clip: Clip) => configurationInvokers.openEditor(clip.id),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   withCommand: async (
     { rootState },

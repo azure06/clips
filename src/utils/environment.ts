@@ -54,12 +54,6 @@ export function whenRenderer<T>(func: () => T, func2: () => T): T {
 
 /** Editor View Helpers */
 
-export const isEditorView = (env: string[]): boolean => {
-  // window.process.argv
-  const [clipId] = env.filter((arg) => arg.startsWith('--clip-id='));
-  return !!clipId;
-};
-
 export const getClipId = (env: string[]): string => {
   // window.process.argv
   const [clipId] = env.filter((arg) => arg.startsWith('--clip-id='));
