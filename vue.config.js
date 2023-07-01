@@ -32,6 +32,10 @@ module.exports = {
           entitlementsInherit: 'build/entitlements.mac.plist',
           provisioningProfile: 'build/embedded.provisionprofile',
         },
+        protocols: {
+          name: 'clips',
+          schemes: ['infiniti-clips'],
+        },
         mas: {
           hardenedRuntime: false, //IMPORTANT!!!!
           type: 'distribution',

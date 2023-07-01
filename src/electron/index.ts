@@ -326,6 +326,10 @@ export function onReady(): void {
   win.on('move', () => win.webContents.send('move', win.getBounds()));
 
   configurationHandler.eventHandler(storeService.getAppConf, win);
+  app.on('open-url', (e, url) => {
+    console.info('open-url', url);
+    // win.webContents.send(`CustomProtocol.ipcEventName`, {});
+  });
   remoteHandler.onGetCurrentWindow(
     runCatching(mainWindow.onGetCurrentWindow(win))
   );
@@ -339,12 +343,12 @@ export function onReady(): void {
     withCommand.withCommand(args, data)
   );
 
-  const [complationRate, workerSearchClips] = clipsWorker(
+  const [completionRate, workerSearchClips] = clipsWorker(
     methods.countAllDocuments,
     methods.findClips
   );
 
-  complationRate.subscribe((searchRation) =>
+  completionRate.subscribe((searchRation) =>
     win.webContents.send('search-ratio-change', searchRation)
   );
 

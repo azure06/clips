@@ -24,6 +24,9 @@ const appLocked =
         { scheme: 'app', privileges: { secure: true, standard: true } },
       ]);
 
+      const result = app.setAsDefaultProtocolClient('infiniti-clips');
+      console.info('registered-default-protocol:', result);
+
       // Quit when all windows are closed.
       app.on('window-all-closed', () => {
         // On macOS it is common for applications and their menu bar
