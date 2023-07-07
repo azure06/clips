@@ -12,10 +12,10 @@ import {
   take,
   tap,
 } from 'rxjs';
-import { Clip, ClipSearchConditions } from '@/rxdb-v2/src/types';
-import { Result__, isSuccess, toFailure, toSuccess } from '@/utils/result';
 import { uuid } from 'uuidv4';
 import { SearchFilters } from '@/rxdb-v2/src/internal/clips/model';
+import { Clip, ClipSearchConditions } from '@/rxdb-v2/src/types';
+import { Result__, isSuccess, toFailure, toSuccess } from '@/utils/result';
 
 declare const __static: string;
 

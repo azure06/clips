@@ -686,7 +686,7 @@ export default class Home extends ExtendedVue {
         },
       };
 
-      console.log(this.searchConditions);
+      console.info(`search-conditions:`, this.searchConditions);
 
       this.searchQuery =
         typeof args === 'string'

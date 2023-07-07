@@ -37,7 +37,7 @@ export async function getCurrentWindow<T1 extends ActionGetCurrentWindow, T2>(ac
     payload
   );
   // TODO REMOVE LOG
-  console.log(action, result);
+  console.info('action', action, result);
   return result;
 }
 

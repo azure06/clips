@@ -3,7 +3,7 @@ const { parentPort, workerData } = require('node:worker_threads');
 
 const { data, regex } = workerData;
 
-console.log('-- regex:', regex);
+console.info('-- regex:', regex);
 
 parentPort.postMessage(
   regex === undefined

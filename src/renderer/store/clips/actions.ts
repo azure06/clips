@@ -93,7 +93,6 @@ const actions: ActionTree<ClipsState, RootState> = {
         .pipe(tap(() => commit('setLoadingStatus', true)))
         .pipe(concatMap(() => methods('findClips', searchConditions)))
         .pipe(map((result) => (isSuccess(result) ? result.data : [])))
-        .pipe(tap((result) => console.log(result.map((value) => value.id))))
         .pipe(tap((clips) => commit('loadClips', { clips })))
         .pipe(tap(() => commit('setLoadingStatus', false)))
     ),
@@ -170,7 +169,7 @@ const actions: ActionTree<ClipsState, RootState> = {
           result.data
         );
     };
-    const arr = await Promise.all(
+    const result = await Promise.all(
       advanced.commands.map(async ([_, command, argu, format, action]) => {
         switch (format) {
           case 'all':
@@ -201,7 +200,6 @@ const actions: ActionTree<ClipsState, RootState> = {
         }
       })
     );
-    console.log(arr);
   },
   removeClips: async ({ commit }, ids: string[]) =>
     lastValueFrom(

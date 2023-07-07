@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts">
-import { concatMap, delay, map, of, startWith } from 'rxjs';
+import { delay, map, startWith } from 'rxjs';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component<QRCodeModal>({
@@ -72,7 +72,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     return {
       qrCodeModalObs: this.$watchAsObservable(() => this.qrcodeModal).pipe(
         map(({ newValue }) => newValue),
-        concatMap((value) => of(value).pipe(startWith(['closed']))),
         delay(100),
         startWith(['closed'])
       ),
