@@ -1,10 +1,6 @@
 import VueRx from '@azure06/vue-rx';
 import Vue from 'vue';
 import VueDOMPurifyHTML from 'vue-dompurify-html';
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
-import VueQRCodeComponent from 'vue-qrcode-component';
 import { environment } from '@/renderer/environment';
 import router from '@/renderer/router';
 import store from '@/renderer/store';
@@ -21,7 +17,6 @@ Vue.use(VueDOMPurifyHTML, {
     FORBID_TAGS: ['a'],
   },
 });
-Vue.component('qr-code', VueQRCodeComponent);
 
 setTimeout(() => Sentry.init(environment.sentry), 0);
 

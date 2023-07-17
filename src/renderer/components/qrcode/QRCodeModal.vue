@@ -18,12 +18,13 @@
                 class="pa-2"
                 style="background-color: rgba(255, 255, 255, 0.95)"
               >
-                <qr-code
+                <qrcode-vue
                   v-if="qrCodeModalObs[0] === 'open'"
                   :size="qrCodeModalObs[1]"
-                  :text="qrCodeModalObs[2]"
-                  color="#263030"
-                ></qr-code>
+                  :value="qrCodeModalObs[2]"
+                  :foreground="'#263030'"
+                  style="display: flex"
+                />
               </div>
             </div>
             <!-- <v-slider
@@ -66,6 +67,7 @@
 <script lang="ts">
 import { delay, map, startWith } from 'rxjs';
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import QrcodeVue from 'qrcode.vue';
 
 @Component<QRCodeModal>({
   subscriptions() {
@@ -77,6 +79,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
       ),
     };
   },
+  components: { QrcodeVue },
 })
 export default class QRCodeModal extends Vue {
   @Prop({ required: true, default: ['closed'] })
