@@ -16,12 +16,14 @@ const corsHandler = cors({ origin: true });
 //  response.send("Hello from Firebase!");
 // });
 
-const CLIPS_DOMAIN = functions.config().domain.clips;
-const FUNCTIONS_DOMAIN = functions.config().domain.functions;
+console.info(functions.config());
+
+const CLIPS_DOMAIN = functions.config()?.domain?.clips;
+const FUNCTIONS_DOMAIN = functions.config()?.domain?.functions;
 const stripe = new Stripe(functions.config().stripe.sk, {
   apiVersion: '2020-08-27',
 });
-sendGrid.setApiKey(functions.config().sendgrid.apikey);
+sendGrid.setApiKey(functions.config().sendgrid?.apikey);
 admin.initializeApp();
 
 // Stripe
@@ -29,22 +31,25 @@ admin.initializeApp();
 export const createCheckoutSession = functions.https.onRequest((req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   corsHandler(req as any, res as any, async () => {
-    const price = (await stripe.prices.list()).data;
+    const prices = (await stripe.prices.list()).data;
+    const lineItems = prices
+      .filter((price) => price.id === 'price_1IMGhXLYRLGPQaikwLhICWwz')
+      .map((item) => ({
+        // price_data: {
+        //   currency: 'usd',
+        //   product_data: {
+        //     name: 'Clips Premium',
+        //     images: ['https://infiniticlips.com/logo.svg'],
+        //   },
+        //   unit_amount: 599,
+        // },
+        price: item.id,
+        quantity: 1,
+      }));
     return stripe.checkout.sessions
       .create({
         payment_method_types: ['card'],
-        line_items: price.map((item) => ({
-          // price_data: {
-          //   currency: 'usd',
-          //   product_data: {
-          //     name: 'Clips Premium',
-          //     images: ['https://infiniticlips.com/logo.svg'],
-          //   },
-          //   unit_amount: 599,
-          // },
-          price: item.id,
-          quantity: 1,
-        })),
+        line_items: lineItems,
         mode: 'payment',
         success_url: `${FUNCTIONS_DOMAIN}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${CLIPS_DOMAIN}/premium`,
@@ -75,11 +80,7 @@ export const createActivationCode = functions.https.onRequest((req, res) => {
 
         if (head) {
           await Promise.resolve([
-            admin
-              .firestore()
-              .collection('codes')
-              .doc(email)
-              .set({ code }),
+            admin.firestore().collection('codes').doc(email).set({ code }),
             sendGrid.send({
               to: email,
               from: 'info@infiniticlips.com',
@@ -154,10 +155,7 @@ export const success = functions.https.onRequest((req, res) => {
             if (isCustomer(customer)) {
               const email = customer.email || '';
               Promise.all([
-                admin
-                  .firestore()
-                  .collection('emails')
-                  .add({ email }),
+                admin.firestore().collection('emails').add({ email }),
                 sendGrid.send({
                   to: email,
                   from: 'info@infiniticlips.com',
